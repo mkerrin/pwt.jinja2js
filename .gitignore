@@ -3,4 +3,8 @@ bin
 develop-eggs
 eggs
 parts
+
+etc/settings.ini
+
 *.egg-info
+*.pyc
