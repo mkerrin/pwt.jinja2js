@@ -14,6 +14,11 @@ setup(
                         "Jinja2",
                         ],
 
+    entry_points = """
+[nose.plugins]
+test-suites = jscomp.nose_test_suites:Suites
+""",
+
     include_package_data = True,
     zip_safe = False,
     )
