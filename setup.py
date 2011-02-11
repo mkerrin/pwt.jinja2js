@@ -11,7 +11,7 @@ setup(
     install_requires = ["setuptools",
                         "WebOb",
                         "MarkupSafe",
-                        "Jinja",
+                        "Jinja2",
                         ],
 
     include_package_data = True,

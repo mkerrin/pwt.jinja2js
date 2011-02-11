@@ -5,6 +5,7 @@ eggs
 parts
 
 etc/settings.ini
+archive
 
 *.egg-info
 *.pyc
