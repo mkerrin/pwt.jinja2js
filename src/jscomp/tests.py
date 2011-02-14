@@ -1,6 +1,8 @@
 import unittest
 from cStringIO import StringIO
 
+import soy_wsgi
+
 import jinja2
 import jinja2.compiler
 import jinja2.optimizer
@@ -247,3 +249,21 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
         jscompiler.generate(
             node, self.env, "for.html", "for.html", stream = stream)
         source_code = stream.getvalue()
+
+
+import webtest
+
+class SoyServer(unittest.TestCase):
+
+    def get_app(self):
+        return webtest.TestApp(
+            soy_wsgi.Resources(
+                url = "/soy/", packages = "jscomp:test_templates"))
+
+    def test_soy1(self):
+        app = self.get_app()
+        self.assertRaises(webtest.AppError, app.get, "/soy/missing.soy")
+
+    def test_soy2(self):
+        app = self.get_app()
+        res = app.get("/soy/example.soy")

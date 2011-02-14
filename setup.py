@@ -12,6 +12,8 @@ setup(
                         "WebOb",
                         "MarkupSafe",
                         "Jinja2",
+
+                        "WebTest",
                         ],
 
     entry_points = """

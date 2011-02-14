@@ -8,6 +8,13 @@ use = egg:Paste#urlmap
 / = home
 /favicon.ico = static
 
+/soy = soy_templates
+
+[app:soy_templates]
+paste.app_factory = jscomp.soy_wsgi:Resources
+url = /soy/
+packages = jscomp
+
 [app:static]
 use = egg:Paste#static
 document_root = ${buildout:directory}/media
