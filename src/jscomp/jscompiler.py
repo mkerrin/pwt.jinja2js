@@ -3,7 +3,31 @@ from cStringIO import StringIO
 from jinja2.visitor import NodeVisitor
 import jinja2.nodes
 import jinja2.compiler
+import jinja2.ext
 from jinja2.utils import Markup, concat, escape, is_python_keyword, next
+
+class NamespaceNode(jinja2.nodes.Stmt):
+    fields = ("namespace",)
+
+class Namespace(jinja2.ext.Extension):
+    """
+    [Token(1, 'name', 'examples'),
+     Token(1, 'dot', u'.'),
+     Token(1, 'name', 'const'),
+     Token(1, 'block_end', u'%}')
+     ]
+    """
+
+    tags = set(["namespace"])
+
+    def parse(self, parser):
+        node = NamespaceNode(lineno = next(parser.stream).lineno)
+        namespace = []
+        while not parser.is_tuple_end():
+            namespace.append(parser.stream.next().value)
+        node.namespace = "".join(namespace)
+        return node
+
 
 def generate(node, environment, name, filename, stream = None):
     """Generate the python source for a node tree."""
@@ -92,6 +116,11 @@ class CodeGenerator(NodeVisitor):
         """
         assert frame is None, "no root frame allowed"
 
+        namespace = list(node.find_all(NamespaceNode))
+        if len(namespace) != 1:
+            raise ValueError("You must supply one namespace for your template")
+        namespace = namespace[0].namespace
+
         have_extends = node.find(jinja2.nodes.Extends) is not None
         if have_extends:
             raise ValueError("JSCompiler doesn't support extends")
@@ -101,11 +130,7 @@ class CodeGenerator(NodeVisitor):
             raise ValueError("JSCompiler doesn't support blocks")
 
         eval_ctx = jinja2.nodes.EvalContext(self.environment, self.name)
-
-        self.writeline("function root(opt_data, opt_sb) {")
-        self.indent()
-
-        self.writeline("var output = opt_sb || new soy.StringBuilder();")
+        eval_ctx.namespace = namespace
 
         # process the root
         frame = jinja2.compiler.Frame(eval_ctx)
@@ -116,10 +141,6 @@ class CodeGenerator(NodeVisitor):
         # pull_dependencies(node.body)
         self.blockvisit(node.body, frame)
 
-        self.writeline("if (!opt_sb) return output.toString();")
-        self.outdent()
-        self.writeline("};")
-
     def blockvisit(self, nodes, frame):
         """
         Visit a list of noes ad block in a frame.
@@ -129,6 +150,12 @@ class CodeGenerator(NodeVisitor):
             self.visit(node, frame)
 
     def visit_Output(self, node, frame):
+        # XXX - JS is only interested in macros etc, as all of JavaScript
+        # is rendered into the global namespace so we need to ignore data in
+        # the templates that is out side the macros.
+        if frame.toplevel:
+            return
+
         finalize = str # unicode
 
         # try to evaluate as many chunks as possible into a static
@@ -180,6 +207,60 @@ class CodeGenerator(NodeVisitor):
 
     def visit_Name(self, node, frame):
         self.write("opt_data." + node.name)
+        frame.assigned_names.add(node.name)
+
+    def function_scoping(self, node, frame, children = None, find_special = True):
+        if children is None:
+            children = node.iter_child_nodes()
+        children = list(children)
+        func_frame = frame.inner()
+        func_frame.inspect(children, hard_scope = True)
+
+        # variables that are undeclared (accessed before declaration) and
+        # declared locally *and* part of an outside scope raise a template
+        # assertion error. Reason: we can't generate reasonable code from
+        # it without aliasing all the variables.
+        # this could be fixed in Python 3 where we have the nonlocal
+        # keyword or if we switch to bytecode generation
+        overriden_closure_vars = (
+            func_frame.identifiers.undeclared &
+            func_frame.identifiers.declared &
+            (func_frame.identifiers.declared_locally |
+             func_frame.identifiers.declared_parameter)
+        )
+        if overriden_closure_vars:
+            self.fail("It's not possible to set and access variables "
+                      "derived from an outer scope! (affects: %s)" %
+                      ", ".join(sorted(overriden_closure_vars)), node.lineno)
+
+        # remove variables from a closure from the frame's undeclared
+        # identifiers.
+        func_frame.identifiers.undeclared -= (
+            func_frame.identifiers.undeclared &
+            func_frame.identifiers.declared
+        )
+
+        undeclared = jinja2.compiler.find_undeclared(children, ("caller", "kwargs", "varargs"))
+
+        return func_frame
+
+    def macro_body(self, node, frame, children = None):
+        frame = self.function_scoping(node, frame, children = children)
+        # macros are delayed, they never require output checks
+        frame.require_output_check = False
+
+        self.writeline("%s.%s = function(opt_data, opt_sb) {" %(
+            frame.eval_ctx.namespace, node.name))
+        self.indent()
+        self.writeline("var output = opt_sb || new soy.StringBuilder();")
+        self.blockvisit(node.body, frame)
+        self.writeline("if (!opt_sb) return output.toString();")
+        self.outdent()
+        self.writeline("}")
+        
+
+    def visit_Macro(self, node, frame):
+        body = self.macro_body(node, frame)
         frame.assigned_names.add(node.name)
 
     def visit_For(self, node, frame):
