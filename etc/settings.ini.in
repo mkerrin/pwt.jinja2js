@@ -9,6 +9,8 @@ use = egg:Paste#urlmap
 /favicon.ico = static
 
 /soy = soy_templates
+/closure = closure
+/media = static
 
 [app:soy_templates]
 paste.app_factory = jscomp.soy_wsgi:Resources
@@ -17,7 +19,11 @@ packages = jscomp
 
 [app:static]
 use = egg:Paste#static
-document_root = ${buildout:directory}/media
+document_root = ${buildout:directory}/src/jscomp/media
+
+[app:closure]
+use = egg:Paste#static
+document_root = ${closure-library:location}/closure-library
 
 [app:home]
 paste.app_factory = jscomp.app:main
