@@ -39,6 +39,19 @@ def generate(node, environment, name, filename, stream = None):
         return generator.stream.getvalue()
 
 
+class JSFrame(jinja2.compiler.Frame):
+
+    def __init__(self, eval_ctx, parent = None):
+        super(JSFrame, self).__init__(eval_ctx, parent)
+
+        # mapping of node names to assigned names so that we avoid overwriting
+        # variables and can assign variables for the 'for' loop.
+        self.reassigned_names = {}
+
+    def inner(self):
+        return JSFrame(self.eval_ctx, self)
+
+
 class CodeGenerator(NodeVisitor):
 
     def __init__(self, environment, name, filename, stream = None):
@@ -133,7 +146,7 @@ class CodeGenerator(NodeVisitor):
         eval_ctx.namespace = namespace
 
         # process the root
-        frame = jinja2.compiler.Frame(eval_ctx)
+        frame = JSFrame(eval_ctx)
         frame.inspect(node.body)
         frame.toplevel = frame.rootlevel = True
 
@@ -206,8 +219,13 @@ class CodeGenerator(NodeVisitor):
         self.write(");")
 
     def visit_Name(self, node, frame):
-        self.write("opt_data." + node.name)
-        frame.assigned_names.add(node.name)
+        try:
+            name = frame.reassigned_names[node.name]
+            self.write(name)
+            frame.assigned_names.add(name) # neccessary?
+        except KeyError:
+            self.write("opt_data." + node.name)
+            frame.assigned_names.add(node.name)
 
     def function_scoping(self, node, frame, children = None, find_special = True):
         if children is None:
@@ -257,7 +275,6 @@ class CodeGenerator(NodeVisitor):
         self.writeline("if (!opt_sb) return output.toString();")
         self.outdent()
         self.writeline("}")
-        
 
     def visit_Macro(self, node, frame):
         body = self.macro_body(node, frame)
@@ -265,3 +282,53 @@ class CodeGenerator(NodeVisitor):
 
     def visit_For(self, node, frame):
         children = node.iter_child_nodes(exclude = ("iter",))
+
+        # try to figure out if we have an extended loop.  An extended loop
+        # is necessary if the loop is in recursive mode if the special loop
+        # variable is accessed in the body.
+        extended_loop = node.recursive or "loop" in \
+                        jinja2.compiler.find_undeclared(node.iter_child_nodes(
+                            only=("body",)), ("loop",))
+        if extended_loop:
+            raise NotImplementedError(
+                "JSCompiler doesn't support recursive / extended loops")
+
+        loop_frame = frame.inner()
+        loop_frame.inspect(children)
+
+        # if we don't have an recursive loop we have to find the shadowed
+        # variables at that point.  Because loops can be nested but the loop
+        # variable is a special one we have to enforce aliasing for it.
+        ## if not node.recursive:
+        ##     aliases = self.push_scope(loop_frame, ('loop',))
+        for name in node.find_all(jinja2.nodes.Name):
+            if name.ctx == 'store' and name.name == 'loop':
+                self.fail('Can\'t assign to special loop variable '
+                          'in for-loop target', name.lineno)
+
+        self.writeline("var %sList = " % node.target.name)
+        # frame.reassigned_names[node.target.name] = "%sList" % node.target.name
+        self.visit(node.iter, loop_frame)
+        self.write(";")
+
+        self.writeline("var %(name)sListLen = %(name)sList.length;" %{"name": node.target.name})
+        if node.else_:
+            self.writeline("if (%sListLen > 0) {" % node.target.name)
+            self.indent()
+
+        self.writeline("for (var %(name)sIndex = 0; %(name)sIndex < %(name)sListLen; %(name)sIndex++) {" %{"name": node.target.name})
+        self.indent()
+
+        self.writeline("var %(name)sData = %(name)sList[%(name)sIndex];" %{"name": node.target.name})
+        loop_frame.reassigned_names[node.target.name] = "%sData" % node.target.name
+        self.blockvisit(node.body, loop_frame)
+        self.outdent()
+        self.writeline("}")
+
+        if node.else_:
+            self.outdent()
+            self.writeline("} else {")
+            self.indent()
+            self.blockvisit(node.else_, frame)
+            self.outdent()
+            self.writeline("}")

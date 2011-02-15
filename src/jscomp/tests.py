@@ -81,7 +81,7 @@ class CompilerTemplateTestCase(unittest.TestCase):
 
         return node
 
-    def test_for_compile1(self):
+    def test_for1(self):
         # load
         name = "for.html"
 
@@ -244,12 +244,29 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
 }""")
 
     def test_for1(self):
+        # XXX - test recursive loop
         node = self.get_compile("for.html")
         stream = StringIO()
         jscompiler.generate(
             node, self.env, "for.html", "for.html", stream = stream)
         source_code = stream.getvalue()
 
+        self.assertEqual(source_code, """examples.for.fortest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    opt_sb.append('\\n');
+    var itemList = opt_data.data;
+    var itemListLen = itemList.length;
+    if (itemListLen > 0) {
+        for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
+            var itemData = itemList[itemIndex];
+            opt_sb.append('\\n  Item ', itemData, '.\\n');
+        }
+    } else {
+        opt_sb.append('\\n  No items.\\n');
+    }
+    opt_sb.append('\\n');
+    if (!opt_sb) return output.toString();
+}""")
 
 import webtest
 
