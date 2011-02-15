@@ -203,7 +203,7 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
         source, filename, uptodate = self.loader.get_source(env, name)
         # code = env.compile(source, name, filename)
 
-        node = env._parse(source, name, filename)
+        node = env._parse(node, name, filename)
         # jinja2.optimizer.optimize(source, env)
 
         return node
@@ -297,6 +297,21 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
     opt_sb.append('\\n');
     if (!opt_sb) return output.toString();
 }""")
+
+
+class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):
+
+    def get_compile(self, name, env = None):
+        env = env or self.env
+        # load
+        source, filename, uptodate = self.loader.get_source(env, name)
+        # code = env.compile(source, name, filename)
+
+        node = env._parse(source, name, filename)
+        node = jinja2.optimizer.optimize(node, env)
+
+        return node
+
 
 import webtest
 
