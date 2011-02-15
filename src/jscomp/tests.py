@@ -110,6 +110,16 @@ class CompilerTemplateTestCase(unittest.TestCase):
 ##   Item 5.
 ## """)
 
+    def test_if1(self):
+        import pdb
+        pdb.set_trace()
+        node = self.get_template_node("if1.html")
+
+        stream = StringIO()
+        jinja2.compiler.generate(
+            node, self.env, "if1.html", "if1.html", stream = stream)
+        source_code = stream.getvalue()
+
     def test_const1(self):
         name = "const.html"
 
@@ -194,7 +204,7 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
         # code = env.compile(source, name, filename)
 
         node = env._parse(source, name, filename)
-        # jinja2.optimizer.optimize(source)
+        # jinja2.optimizer.optimize(source, env)
 
         return node
 
@@ -263,6 +273,28 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
         }
     } else {
         opt_sb.append('\\n  No items.\\n');
+    }
+    opt_sb.append('\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_if1(self):
+        import pdb
+        pdb.set_trace()
+        node = self.get_compile("if1.html")
+
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """examples.if1.iftest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    opt_sb.append('\\n');
+    if (opt_data.option) {
+        opt_sb.append('\\nOption set.\\n');
+    } else {
+        opt_sb.append('\\nNo option.\\n');
     }
     opt_sb.append('\\n');
     if (!opt_sb) return output.toString();

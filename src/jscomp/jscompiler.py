@@ -75,6 +75,9 @@ class CodeGenerator(NodeVisitor):
         # the number of new lines before the next write()
         self._new_lines = 0
 
+        # the line number of the last written statement
+        self._last_line = 0
+
         # true if nothing was written so far.
         self._first_write = True
 
@@ -332,3 +335,21 @@ class CodeGenerator(NodeVisitor):
             self.blockvisit(node.else_, frame)
             self.outdent()
             self.writeline("}")
+
+    def visit_If(self, node, frame):
+        if_frame = frame.soft()
+        self.writeline("if (", node)
+        self.visit(node.test, if_frame)
+        self.write(") {")
+
+        self.indent()
+        self.blockvisit(node.body, if_frame)
+        self.outdent()
+
+        if node.else_:
+            self.writeline("} else {")
+            self.indent()
+            self.blockvisit(node.else_, if_frame)
+            self.outdent()
+
+        self.writeline("}")
