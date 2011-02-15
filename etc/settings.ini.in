@@ -21,3 +21,4 @@ document_root = ${buildout:directory}/media
 
 [app:home]
 paste.app_factory = jscomp.app:main
+packages = jscomp
