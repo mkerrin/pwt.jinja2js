@@ -203,7 +203,7 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
         source, filename, uptodate = self.loader.get_source(env, name)
         # code = env.compile(source, name, filename)
 
-        node = env._parse(node, name, filename)
+        node = env._parse(source, name, filename)
         # jinja2.optimizer.optimize(node, env)
 
         return node
