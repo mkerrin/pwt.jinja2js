@@ -204,7 +204,7 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
         # code = env.compile(source, name, filename)
 
         node = env._parse(node, name, filename)
-        # jinja2.optimizer.optimize(source, env)
+        # jinja2.optimizer.optimize(node, env)
 
         return node
 
