@@ -1,6 +1,14 @@
 <html>
   <head>
     <title>Hello</title>
+    <script type="text/javascript">
+      CLOSURE_NO_DEPS = true;
+      CLOSURE_BASE_PATH = "http://localhost:8000";
+    </script>
+    <script type="text/javascript" src="/closure/closure/goog/base.js"></script>
+    <script type="text/javascript" src="/media/deps.js"></script>
+
+    <script type="text/javascript" src="/soy/hello_popup.soy"></script>
   </head>
   <body>
     <h3>Hello, World!</h3>
@@ -11,5 +19,9 @@
       <li>No items.</li>
       {% endfor %}
     </ul>
+
+    <script type="text/javascript">
+      document.write(examples.hello({"name": "Michael"}));
+    </script>
   </body>
 </html>
