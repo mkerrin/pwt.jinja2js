@@ -4,5 +4,12 @@
   </head>
   <body>
     <h3>Hello, World!</h3>
+    <ul>
+      {% for item in data %}
+      <li>Item {{ item }}</li>
+      {% else %}
+      <li>No items.</li>
+      {% endfor %}
+    </ul>
   </body>
 </html>
