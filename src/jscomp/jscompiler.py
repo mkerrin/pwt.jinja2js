@@ -65,6 +65,8 @@ class CodeGenerator(NodeVisitor):
         self.filename = filename
         self.stream = stream
 
+        self.encoding = "utf-8"
+
         # the current line number
         self.code_lineno = 1
 
@@ -153,6 +155,9 @@ class CodeGenerator(NodeVisitor):
         frame.inspect(node.body)
         frame.toplevel = frame.rootlevel = True
 
+        self.writeline("goog.provide(" + repr(namespace.encode(self.encoding)) + ");")
+        self.writeline("goog.require('soy');")
+
         # pull_locals(frame)
         # pull_dependencies(node.body)
         self.blockvisit(node.body, frame)
@@ -206,7 +211,7 @@ class CodeGenerator(NodeVisitor):
                 body.append([const])
 
         first = True
-        self.writeline("opt_sb.append(")
+        self.writeline("output.append(")
         for item in body:
             if isinstance(item, list):
                 if not first:

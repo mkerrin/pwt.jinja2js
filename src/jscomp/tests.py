@@ -111,8 +111,6 @@ class CompilerTemplateTestCase(unittest.TestCase):
 ## """)
 
     def test_if1(self):
-        import pdb
-        pdb.set_trace()
         node = self.get_template_node("if1.html")
 
         stream = StringIO()
@@ -221,9 +219,11 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
             node, self.env, "const.html", "const.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """examples.const.hello = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """goog.provide('examples.const');
+goog.require('soy');
+examples.const.hello = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
-    opt_sb.append('\\nHello, world!\\n');
+    output.append('\\nHello, world!\\n');
     if (!opt_sb) return output.toString();
 }""")
 
@@ -234,9 +234,11 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
             node, self.env, "var1.html", "var1.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """examples.var1.hello = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """goog.provide('examples.var1');
+goog.require('soy');
+examples.var1.hello = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
-    opt_sb.append('\\n', opt_data.name, '\\n');
+    output.append('\\n', opt_data.name, '\\n');
     if (!opt_sb) return output.toString();
 }""")
 
@@ -247,9 +249,11 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
             node, self.env, "var2.html", "var2.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """examples.var2.helloName = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """goog.provide('examples.var2');
+goog.require('soy');
+examples.var2.helloName = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
-    opt_sb.append('\\nHello, ', opt_data.name, '!\\n');
+    output.append('\\nHello, ', opt_data.name, '!\\n');
     if (!opt_sb) return output.toString();
 }""")
 
@@ -261,20 +265,22 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
             node, self.env, "for.html", "for.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """examples.for.fortest = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """goog.provide('examples.for');
+goog.require('soy');
+examples.for.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
-    opt_sb.append('\\n');
+    output.append('\\n');
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
     if (itemListLen > 0) {
         for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
             var itemData = itemList[itemIndex];
-            opt_sb.append('\\n  Item ', itemData, '.\\n');
+            output.append('\\n  Item ', itemData, '.\\n');
         }
     } else {
-        opt_sb.append('\\n  No items.\\n');
+        output.append('\\n  No items.\\n');
     }
-    opt_sb.append('\\n');
+    output.append('\\n');
     if (!opt_sb) return output.toString();
 }""")
 
@@ -286,15 +292,17 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
             node, self.env, "for.html", "for.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """examples.if1.iftest = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """goog.provide('examples.if1');
+goog.require('soy');
+examples.if1.iftest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
-    opt_sb.append('\\n');
+    output.append('\\n');
     if (opt_data.option) {
-        opt_sb.append('\\nOption set.\\n');
+        output.append('\\nOption set.\\n');
     } else {
-        opt_sb.append('\\nNo option.\\n');
+        output.append('\\nNo option.\\n');
     }
-    opt_sb.append('\\n');
+    output.append('\\n');
     if (!opt_sb) return output.toString();
 }""")
 
