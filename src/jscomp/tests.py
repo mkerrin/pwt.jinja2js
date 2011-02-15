@@ -279,8 +279,6 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
 }""")
 
     def test_if1(self):
-        import pdb
-        pdb.set_trace()
         node = self.get_compile("if1.html")
 
         stream = StringIO()
