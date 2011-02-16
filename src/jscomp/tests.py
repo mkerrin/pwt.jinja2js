@@ -3,67 +3,9 @@ from cStringIO import StringIO
 
 import soy_wsgi
 
-import jinja2
 import jinja2.compiler
 import jinja2.optimizer
 import jinja2.runtime
-
-class DictBCache(jinja2.BytecodeCache):
-
-    def __init__(self):
-        self.cache = {}
-
-    def load_bytecode(self, bucket):
-        if bucket.key in self.cache:
-            raise Exception("Never happens")
-            stream = self.cache[bucket.key]
-            bucket.load_bytecode(stream)
-
-    def dump_bytecode(self, bucket):
-        # write bytecode in bucket to cache
-        stream = self.cache[bucket.key] = StringIO()
-        bucket.write_bytecode(stream)
-
-
-class TemplatesTestCase(unittest.TestCase):
-
-    def test_get_template(self):
-        env = jinja2.Environment(
-            loader = jinja2.PackageLoader("jscomp", "test_templates"))
-        tmpl = env.get_template("hello.html")
-        self.assertEqual(tmpl.render(), """<ul>
-  
-  <li>No items.</li>
-  
-</ul>""")
-
-    def test_get_template2(self):
-        # cached
-        env = jinja2.Environment(
-            loader = jinja2.PackageLoader("jscomp", "test_templates"),
-            bytecode_cache = DictBCache())
-        tmpl = env.get_template("hello.html")
-        self.assertEqual(tmpl.render(), """<ul>
-  
-  <li>No items.</li>
-  
-</ul>""")
-
-    def test_get_template3(self):
-        # use cached package
-        env = jinja2.Environment(
-            loader = jinja2.PackageLoader("jscomp", "test_templates"),
-            bytecode_cache = DictBCache())
-        # load
-        env.get_template("hello.html")
-        # get cached
-        tmpl = env.get_template("hello.html")
-        self.assertEqual(tmpl.render(), """<ul>
-  
-  <li>No items.</li>
-  
-</ul>""")
-
 
 class CompilerTemplateTestCase(unittest.TestCase):
 
@@ -77,7 +19,7 @@ class CompilerTemplateTestCase(unittest.TestCase):
         # code = env.compile(source, name, filename)
 
         node = self.env._parse(source, name, filename)
-        # jinja2.optimizer.optimize(source)
+        # node = jinja2.optimizer.optimize(node, self.env)
 
         return node
 
