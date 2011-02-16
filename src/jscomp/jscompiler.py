@@ -266,58 +266,44 @@ class CodeGenerator(NodeVisitor):
         self.visit(node.node, frame)
         self.write(".%s" % node.attr)
 
-    def function_scoping(self, node, frame, children = None, find_special = True):
-        if children is None:
-            children = node.iter_child_nodes()
-        children = list(children)
-        func_frame = frame.inner()
-        func_frame.inspect(children, hard_scope = True)
+    def binop(operator):
+        def visitor(self, node, frame):
+            self.write("(")
+            self.visit(node.left, frame)
+            self.write(" %s " % BINOPERATORS[operator])
+            self.visit(node.right, frame)
+            self.write(")")
+        return visitor
 
-        # variables that are undeclared (accessed before declaration) and
-        # declared locally *and* part of an outside scope raise a template
-        # assertion error. Reason: we can't generate reasonable code from
-        # it without aliasing all the variables.
-        # this could be fixed in Python 3 where we have the nonlocal
-        # keyword or if we switch to bytecode generation
-        overriden_closure_vars = (
-            func_frame.identifiers.undeclared &
-            func_frame.identifiers.declared &
-            (func_frame.identifiers.declared_locally |
-             func_frame.identifiers.declared_parameter)
-        )
-        if overriden_closure_vars:
-            self.fail("It's not possible to set and access variables "
-                      "derived from an outer scope! (affects: %s)" %
-                      ", ".join(sorted(overriden_closure_vars)), node.lineno)
+    visit_And = binop("and")
+    visit_Or = binop("or")
 
-        # remove variables from a closure from the frame's undeclared
-        # identifiers.
-        func_frame.identifiers.undeclared -= (
-            func_frame.identifiers.undeclared &
-            func_frame.identifiers.declared
-        )
+    def visit_Compare(self, node, frame):
+        self.visit(node.expr, frame)
+        for op in node.ops:
+            self.visit(op, frame)
 
-        undeclared = jinja2.compiler.find_undeclared(children, ("caller", "kwargs", "varargs"))
+    def visit_Operand(self, node, frame):
+        self.write(" %s " % OPERATORS[node.op])
+        self.visit(node.expr, frame)
 
-        return func_frame
+    def visit_If(self, node, frame):
+        if_frame = frame.soft()
+        self.writeline("if (", node)
+        self.visit(node.test, if_frame)
+        self.write(") {")
 
-    def macro_body(self, node, frame, children = None):
-        frame = self.function_scoping(node, frame, children = children)
-        # macros are delayed, they never require output checks
-        frame.require_output_check = False
-
-        self.writeline("%s.%s = function(opt_data, opt_sb) {" %(
-            frame.eval_ctx.namespace, node.name))
         self.indent()
-        self.writeline("var output = opt_sb || new soy.StringBuilder();")
-        self.blockvisit(node.body, frame)
-        self.writeline("if (!opt_sb) return output.toString();")
+        self.blockvisit(node.body, if_frame)
         self.outdent()
-        self.writeline("}")
 
-    def visit_Macro(self, node, frame):
-        body = self.macro_body(node, frame)
-        frame.assigned_names.add(node.name)
+        if node.else_:
+            self.writeline("} else {")
+            self.indent()
+            self.blockvisit(node.else_, if_frame)
+            self.outdent()
+
+        self.writeline("}")
 
     def visit_For(self, node, frame):
         children = node.iter_child_nodes(exclude = ("iter",))
@@ -372,41 +358,56 @@ class CodeGenerator(NodeVisitor):
             self.outdent()
             self.writeline("}")
 
-    def binop(operator):
-        def visitor(self, node, frame):
-            self.write("(")
-            self.visit(node.left, frame)
-            self.write(" %s " % BINOPERATORS[operator])
-            self.visit(node.right, frame)
-            self.write(")")
-        return visitor
+    def function_scoping(
+            self, node, frame, children = None, find_special = True):
+        if children is None:
+            children = node.iter_child_nodes()
+        children = list(children)
+        func_frame = frame.inner()
+        func_frame.inspect(children, hard_scope = True)
 
-    visit_And = binop("and")
-    visit_Or = binop("or")
+        # variables that are undeclared (accessed before declaration) and
+        # declared locally *and* part of an outside scope raise a template
+        # assertion error. Reason: we can't generate reasonable code from
+        # it without aliasing all the variables.
+        # this could be fixed in Python 3 where we have the nonlocal
+        # keyword or if we switch to bytecode generation
+        overriden_closure_vars = (
+            func_frame.identifiers.undeclared &
+            func_frame.identifiers.declared &
+            (func_frame.identifiers.declared_locally |
+             func_frame.identifiers.declared_parameter)
+        )
+        if overriden_closure_vars:
+            self.fail("It's not possible to set and access variables "
+                      "derived from an outer scope! (affects: %s)" %
+                      ", ".join(sorted(overriden_closure_vars)), node.lineno)
 
-    def visit_Compare(self, node, frame):
-        self.visit(node.expr, frame)
-        for op in node.ops:
-            self.visit(op, frame)
+        # remove variables from a closure from the frame's undeclared
+        # identifiers.
+        func_frame.identifiers.undeclared -= (
+            func_frame.identifiers.undeclared &
+            func_frame.identifiers.declared
+        )
 
-    def visit_Operand(self, node, frame):
-        self.write(" %s " % OPERATORS[node.op])
-        self.visit(node.expr, frame)
+        undeclared = jinja2.compiler.find_undeclared(children, ("caller", "kwargs", "varargs"))
 
-    def visit_If(self, node, frame):
-        if_frame = frame.soft()
-        self.writeline("if (", node)
-        self.visit(node.test, if_frame)
-        self.write(") {")
+        return func_frame
 
+    def macro_body(self, node, frame, children = None):
+        frame = self.function_scoping(node, frame, children = children)
+        # macros are delayed, they never require output checks
+        frame.require_output_check = False
+
+        self.writeline("%s.%s = function(opt_data, opt_sb) {" %(
+            frame.eval_ctx.namespace, node.name))
         self.indent()
-        self.blockvisit(node.body, if_frame)
+        self.writeline("var output = opt_sb || new soy.StringBuilder();")
+        self.blockvisit(node.body, frame)
+        self.writeline("if (!opt_sb) return output.toString();")
         self.outdent()
-
-        if node.else_:
-            self.writeline("} else {")
-            self.indent()
-            self.blockvisit(node.else_, if_frame)
-            self.outdent()
-
         self.writeline("}")
+
+    def visit_Macro(self, node, frame):
+        body = self.macro_body(node, frame)
+        frame.assigned_names.add(node.name)
