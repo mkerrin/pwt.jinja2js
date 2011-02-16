@@ -1,0 +1,9 @@
+{% namespace tests.for %}
+
+{% macro for1() -%}
+{% for item in data %}{{ item }}{% endfor %}
+{%- endmacro %}
+
+{% macro for2() -%}
+{% for item in data %}{{ item }}{% else %}Empty{% endfor %}
+{%- endmacro %}

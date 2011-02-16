@@ -29,6 +29,23 @@ class Namespace(jinja2.ext.Extension):
         return node
 
 
+BINOPERATORS = {
+    "and": "&&",
+    "or": "||",
+    }
+
+OPERATORS = {
+    "eq":    "==",
+    "ne":    "!=",
+    "gt":    ">",
+    "gteq":  ">=",
+    "lt":    "<",
+    "lteq":  "<=",
+    ## "in":    "in",
+    ## "notin": "not in"
+    }
+
+
 def generate(node, environment, name, filename, stream = None):
     """Generate the python source for a node tree."""
     if not isinstance(node, jinja2.nodes.Template):
@@ -235,6 +252,20 @@ class CodeGenerator(NodeVisitor):
             self.write("opt_data." + node.name)
             frame.assigned_names.add(node.name)
 
+    def visit_Const(self, node, frame):
+        # XXX - need to know the JavaScript ins and out here.
+        val = node.value
+        if val is None:
+            self.write("null")
+        else:
+            self.write(repr(val))
+
+    def visit_Getattr(self, node, frame):
+        self.visit(node.node, frame)
+        self.write(" && ")
+        self.visit(node.node, frame)
+        self.write(".%s" % node.attr)
+
     def function_scoping(self, node, frame, children = None, find_special = True):
         if children is None:
             children = node.iter_child_nodes()
@@ -340,6 +371,27 @@ class CodeGenerator(NodeVisitor):
             self.blockvisit(node.else_, frame)
             self.outdent()
             self.writeline("}")
+
+    def binop(operator):
+        def visitor(self, node, frame):
+            self.write("(")
+            self.visit(node.left, frame)
+            self.write(" %s " % BINOPERATORS[operator])
+            self.visit(node.right, frame)
+            self.write(")")
+        return visitor
+
+    visit_And = binop("and")
+    visit_Or = binop("or")
+
+    def visit_Compare(self, node, frame):
+        self.visit(node.expr, frame)
+        for op in node.ops:
+            self.visit(op, frame)
+
+    def visit_Operand(self, node, frame):
+        self.write(" %s " % OPERATORS[node.op])
+        self.visit(node.expr, frame)
 
     def visit_If(self, node, frame):
         if_frame = frame.soft()
