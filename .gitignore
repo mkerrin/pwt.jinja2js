@@ -5,6 +5,7 @@ eggs
 parts
 
 etc/settings.ini
+src/jscomp/media/deps.js
 archive
 
 *.egg-info
