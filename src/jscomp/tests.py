@@ -137,16 +137,18 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
             extensions = ["jscomp.jscompiler.Namespace"],
             )
 
-    def get_compile(self, name, env = None):
-        env = env or self.env
-        # load
-        source, filename, uptodate = self.loader.get_source(env, name)
-        # code = env.compile(source, name, filename)
-
-        node = env._parse(source, name, filename)
-        # jinja2.optimizer.optimize(node, env)
+    def get_compile_from_string(self, source, name = None, filename = None):
+        node = self.env._parse(source, name, filename)
+        # node = jinja2.optimizer.optimize(node, self.env)
 
         return node
+
+    def get_compile(self, name):
+        # load
+        source, filename, uptodate = self.loader.get_source(self.env, name)
+        # code = env.compile(source, name, filename)
+
+        return self.get_compile_from_string(source, name, filename)
 
     def test_missing_namespace1(self):
         node = self.get_compile("const.html")
@@ -225,6 +227,99 @@ examples.for.fortest = function(opt_data, opt_sb) {
     output.append('\\n');
     if (!opt_sb) return output.toString();
 }""")
+
+    def test_for2(self):
+        # test loop.index0 variables
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.index0 }}{% endfor %}{% endmacro %}")
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx');
+goog.require('soy');
+xxx.fortest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    var itemList = opt_data.data;
+    var itemListLen = itemList.length;
+    for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
+        var itemData = itemList[itemIndex];
+        output.append(itemIndex);
+    }
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_for3(self):
+        # test loop.index variables
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.index }}{% endfor %}{% endmacro %}")
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx');
+goog.require('soy');
+xxx.fortest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    var itemList = opt_data.data;
+    var itemListLen = itemList.length;
+    for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
+        var itemData = itemList[itemIndex];
+        output.append(itemIndex + 1);
+    }
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_for4(self):
+        # test loop.revindex & loop.revindex0 variables
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.revindex }} - {{loop.revindex0 }}{% endfor %}{% endmacro %}")
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx');
+goog.require('soy');
+xxx.fortest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    var itemList = opt_data.data;
+    var itemListLen = itemList.length;
+    for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
+        var itemData = itemList[itemIndex];
+        output.append(itemListLen - itemIndex - 1, ' - ', itemListLen - itemIndex);
+    }
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_for5(self):
+        # test loop.length & loop.first & loop.last variables
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.length }} - {{loop.first }} - {{ loop.last }}{% endfor %}{% endmacro %}")
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx');
+goog.require('soy');
+xxx.fortest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    var itemList = opt_data.data;
+    var itemListLen = itemList.length;
+    for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
+        var itemData = itemList[itemIndex];
+        output.append(itemListLen, ' - ', itemIndex == 0, ' - ', itemIndex == (itemListLen - 1));
+    }
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_for6(self):
+        # test invalid loop access
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.missing }}{% endfor %}{% endmacro %}")
+        stream = StringIO()
+        self.assertRaises(
+            AttributeError,
+            jscompiler.generate,
+            node, self.env, "for.html", "for.html", stream = stream)
 
     def test_if1(self):
         node = self.get_compile("if1.html")

@@ -7,3 +7,7 @@
 {% macro for2() -%}
 {% for item in data %}{{ item }}{% else %}Empty{% endfor %}
 {%- endmacro %}
+
+{% macro forloop1() -%}
+{% for item in data %}{{ loop.index }} - {{ loop.index0 }}<br/>{% endfor %}
+{%- endmacro %}

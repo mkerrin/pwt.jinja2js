@@ -58,4 +58,8 @@ $(document).ready(function() {
                 equals(tests.for.for2({data: [1, 2, 3]}), "123");
                 equals(tests.for.for2({data: []}), "Empty");
             });
+
+        test("forloop1", function() {
+                equals(tests.for.forloop1({data: [5, 4, 3]}), "1 - 0<br/>2 - 1<br/>3 - 2<br/>");
+            });
     });

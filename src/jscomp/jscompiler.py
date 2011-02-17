@@ -56,33 +56,71 @@ def generate(node, environment, name, filename, stream = None):
         return generator.stream.getvalue()
 
 
+class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
+
+    # def visit_Name
+
+    def visit_If(self, node):
+        self.visit(node.test)
+        for body in node.body:
+            self.visit(body)
+        for else_ in node.else_:
+            self.visit(else_)
+
+    # def visit_Macro
+
+    def visit_Import(self, node):
+        raise NotImplementedError("import identifier")
+
+    def visit_FromImport(self, node):
+        raise NotImplementedError("from import identifier")
+
+    # def visit_Assign
+
+    # def visit_For
+
+    # def visit_Callblock
+
+    # def visit_FilterBlock
+
+    # def visit_Block
+
+
 class JSFrame(jinja2.compiler.Frame):
 
     def __init__(self, eval_ctx, parent = None):
         super(JSFrame, self).__init__(eval_ctx, parent)
 
-        # mapping of node names to assigned names so that we avoid overwriting
-        # variables and can assign variables for the 'for' loop.
+        # mapping of visit_Name callback to reassign variable names for use
+        # in 'for' loops
         self.reassigned_names = {}
+
+        # name -> method mapping for handling special variables in the
+        # for loop
+        self.forloop_buffer = None
+
+    def inspect(self, nodes, hard_scope = False):
+        """Walk the node and check for identifiers.  If the scope is hard (eg:
+        enforce on a python level) overrides from outer scopes are tracked
+        differently.
+        """
+        visitor = JSFrameIdentifierVisitor(self.identifiers, hard_scope)
+        for node in nodes:
+            visitor.visit(node)
 
     def inner(self):
         return JSFrame(self.eval_ctx, self)
 
 
-class CodeGenerator(NodeVisitor):
+class BaseCodeGenerator(NodeVisitor):
 
-    def __init__(self, environment, name, filename, stream = None):
-        super(CodeGenerator, self).__init__()
+    def __init__(self, stream = None):
+        super(BaseCodeGenerator, self).__init__()
 
         if stream is None:
             stream = StringIO()
 
-        self.environment = environment
-        self.name = name
-        self.filename = filename
         self.stream = stream
-
-        self.encoding = "utf-8"
 
         # the current line number
         self.code_lineno = 1
@@ -143,6 +181,26 @@ class CodeGenerator(NodeVisitor):
             self._write_debug_info = node.lineno
             self._last_line = node.lineno
 
+    def blockvisit(self, nodes, frame):
+        """
+        Visit a list of noes ad block in a frame.
+        """
+        # if frame.buffer
+        for node in nodes:
+            self.visit(node, frame)
+
+
+class CodeGenerator(BaseCodeGenerator):
+
+    def __init__(self, environment, name, filename, stream = None):
+        super(CodeGenerator, self).__init__(stream)
+
+        self.environment = environment
+        self.name = name
+        self.filename = filename
+
+        self.encoding = "utf-8"
+
     def visit_Template(self, node, frame = None):
         """
         Setup the template output.
@@ -172,20 +230,32 @@ class CodeGenerator(NodeVisitor):
         frame.inspect(node.body)
         frame.toplevel = frame.rootlevel = True
 
+        # XXX - Need to validate the template here. Only accept macros
+
         self.writeline("goog.provide(" + repr(namespace.encode(self.encoding)) + ");")
         self.writeline("goog.require('soy');")
+
+        # XXX - need to pull in extra requirements by inspecting any
+        # call blocks.
 
         # pull_locals(frame)
         # pull_dependencies(node.body)
         self.blockvisit(node.body, frame)
 
-    def blockvisit(self, nodes, frame):
-        """
-        Visit a list of noes ad block in a frame.
-        """
-        # if frame.buffer
-        for node in nodes:
-            self.visit(node, frame)
+    def visit_Macro(self, node, frame):
+        self.writeline("")
+        generator = MacroCodeGenerator(self.stream)
+        generator.visit(node, frame)
+
+
+class MacroCodeGenerator(BaseCodeGenerator):
+    # split out the macro code generator. This generate the guts of the
+    # JavaScript we need to render the templates. Note that we do this
+    # here seperate from the template generator above as we want to restrict
+    # the Jinja2 template syntax for the JS implementation and we want to
+    # format the generate code a bit like the templates. Gaps between templates,
+    # comments should be displayed in the JS file. We need them for any closure
+    # compiler hints we may want to put in.
 
     def visit_Output(self, node, frame):
         # XXX - JS is only interested in macros etc, as all of JavaScript
@@ -260,11 +330,37 @@ class CodeGenerator(NodeVisitor):
         else:
             self.write(repr(val))
 
+    def loop_handler(node, frame):
+        if node.attr == "index":
+            self.write("")
+
     def visit_Getattr(self, node, frame):
-        self.visit(node.node, frame)
-        self.write(" && ")
-        self.visit(node.node, frame)
-        self.write(".%s" % node.attr)
+        if frame.forloop_buffer:
+            if node.attr == "index0":
+                self.write("%sIndex" % frame.forloop_buffer)
+            elif node.attr == "index":
+                self.write("%sIndex" % frame.forloop_buffer)
+                self.write(" + 1")
+            elif node.attr == "revindex0":
+                self.write("%sListLen - %sIndex" %(frame.forloop_buffer,
+                                                   frame.forloop_buffer))
+            elif node.attr == "revindex":
+                self.write("%sListLen - %sIndex - 1" %(frame.forloop_buffer,
+                                                       frame.forloop_buffer))
+            elif node.attr == "first":
+                self.write("%sIndex == 0" % frame.forloop_buffer)
+            elif node.attr == "last":
+                self.write("%sIndex == (%sListLen - 1)" %(frame.forloop_buffer,
+                                                          frame.forloop_buffer))
+            elif node.attr == "length":
+                self.write("%sListLen" % frame.forloop_buffer)
+            else:
+                raise AttributeError("loop.%s not defined" % node.attr)
+        else:
+            self.visit(node.node, frame)
+            self.write(" && ") # need to make sure that the node is defined
+            self.visit(node.node, frame)
+            self.write(".%s" % node.attr)
 
     def binop(operator):
         def visitor(self, node, frame):
@@ -308,31 +404,27 @@ class CodeGenerator(NodeVisitor):
     def visit_For(self, node, frame):
         children = node.iter_child_nodes(exclude = ("iter",))
 
-        # try to figure out if we have an extended loop.  An extended loop
-        # is necessary if the loop is in recursive mode if the special loop
-        # variable is accessed in the body.
-        extended_loop = node.recursive or "loop" in \
-                        jinja2.compiler.find_undeclared(node.iter_child_nodes(
-                            only=("body",)), ("loop",))
-        if extended_loop:
+        if node.recursive:
             raise NotImplementedError(
-                "JSCompiler doesn't support recursive / extended loops")
+                "JSCompiler doesn't support recursive loops")
 
-        loop_frame = frame.inner()
-        loop_frame.inspect(children)
+        # try to figure out if we have an extended loop.  An extended loop
+        # is necessary if the loop is in recursive mode or if the special loop
+        # variable is accessed in the body.
+        extended_loop = "loop" in jinja2.compiler.find_undeclared(
+            node.iter_child_nodes(only = ("body",)), ("loop",))
 
-        # if we don't have an recursive loop we have to find the shadowed
-        # variables at that point.  Because loops can be nested but the loop
-        # variable is a special one we have to enforce aliasing for it.
-        ## if not node.recursive:
-        ##     aliases = self.push_scope(loop_frame, ('loop',))
+        loop_frame = frame.soft() # JavaScript for loops don't change namespace
+
+        if extended_loop:
+            loop_frame.identifiers.add_special("loop")
+            loop_frame.forloop_buffer = node.target.name
         for name in node.find_all(jinja2.nodes.Name):
-            if name.ctx == 'store' and name.name == 'loop':
-                self.fail('Can\'t assign to special loop variable '
-                          'in for-loop target', name.lineno)
+            if name.ctx == "store" and name.name == "loop":
+                self.fail("Can't assign to special loop variable "
+                          "in for-loop target", name.lineno)
 
         self.writeline("var %sList = " % node.target.name)
-        # frame.reassigned_names[node.target.name] = "%sList" % node.target.name
         self.visit(node.iter, loop_frame)
         self.write(";")
 
@@ -362,7 +454,7 @@ class CodeGenerator(NodeVisitor):
             self, node, frame, children = None, find_special = True):
         if children is None:
             children = node.iter_child_nodes()
-        children = list(children)
+
         func_frame = frame.inner()
         func_frame.inspect(children, hard_scope = True)
 
