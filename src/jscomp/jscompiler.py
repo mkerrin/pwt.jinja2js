@@ -211,7 +211,9 @@ class CodeGenerator(BaseCodeGenerator):
 
         namespace = list(node.find_all(NamespaceNode))
         if len(namespace) != 1:
-            raise ValueError("You must supply one namespace for your template")
+            raise jinja2.compiler.TemplateAssertionError(
+                "You must supply one namespace for your template",
+                0, self.name, self.filename)
         namespace = namespace[0].namespace
 
         have_extends = node.find(jinja2.nodes.Extends) is not None

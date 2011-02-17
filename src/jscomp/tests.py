@@ -158,10 +158,9 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
         return self.get_compile_from_string(source, name, filename)
 
     def test_missing_namespace1(self):
-        node = self.get_compile("const.html")
+        node = self.get_compile("missing_namespace.html")
         stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "const.html", "const.html", stream = stream)
+        self.assertRaises(jinja2.compiler.TemplateAssertionError, jscompiler.generate, node, self.env, "", "", stream = stream)
 
     def test_const1(self):
         node = self.get_compile_from_string("""{% macro hello() %}
