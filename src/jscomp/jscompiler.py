@@ -247,6 +247,9 @@ class CodeGenerator(BaseCodeGenerator):
         generator = MacroCodeGenerator(self.stream)
         generator.visit(node, frame)
 
+    def visit_TemplateData(self, node, frame):
+        self.writeline(node.data, node)
+
 
 class MacroCodeGenerator(BaseCodeGenerator):
     # split out the macro code generator. This generate the guts of the

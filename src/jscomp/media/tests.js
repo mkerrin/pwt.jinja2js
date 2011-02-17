@@ -20,6 +20,12 @@ $(document).ready(function() {
                 equals(tests.if.basicif2({option: {data: true}}), "Option data set.");
             });
 
+        test("basicif3", function() {
+                equals(tests.if.basicif3({option: "XXX"}), "XXX");
+                equals(tests.if.basicif3({option: true}), "true");
+                equals(tests.if.basicif3({option: false}), "");
+            });
+
         test("ifand1", function() {
                 equals(tests.if.ifand1({}), "");
                 equals(tests.if.ifand1({option: true, option2: false}), "");

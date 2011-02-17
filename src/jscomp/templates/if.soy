@@ -4,6 +4,8 @@
 
 {% macro basicif2() %}{% if option.data %}Option data set.{% else %}No option data set.{% endif %}{% endmacro %}
 
+{% macro basicif3() %}{% if option %}{{ option }}{% endif %}{% endmacro %}
+
 {% macro ifand1() %}{% if option and option2 %}Equal{% endif %}{% endmacro %}
 
 {% macro ifor1() %}{% if option or option2 %}Equal{% endif %}{% endmacro %}
