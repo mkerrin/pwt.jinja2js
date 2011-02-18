@@ -198,7 +198,8 @@ class BaseCodeGenerator(NodeVisitor):
 
     def blockvisit(self, nodes, frame):
         """
-        Visit a list of noes ad block in a frame.
+        Visit a list of noes ad block in a frame. Some times we want to
+        pass lists to the the visit method. Get around this here.
         """
         # if frame.buffer
         for node in nodes:
