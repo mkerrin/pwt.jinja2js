@@ -254,7 +254,7 @@ class CodeGenerator(BaseCodeGenerator):
         self.blockvisit(node.body, frame)
 
     def visit_Macro(self, node, frame):
-        self.writeline("")
+        self.writeline("", node)
         generator = MacroCodeGenerator(self.stream)
         generator.visit(node, frame)
 
