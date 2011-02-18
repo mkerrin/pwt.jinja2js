@@ -123,8 +123,12 @@ class JSFrame(jinja2.compiler.Frame):
 
 class BaseCodeGenerator(NodeVisitor):
 
-    def __init__(self, stream = None):
+    def __init__(self, environment, name, filename, stream = None):
         super(BaseCodeGenerator, self).__init__()
+
+        self.environment = environment
+        self.name = name
+        self.filename = filename
 
         if stream is None:
             stream = StringIO()
@@ -149,6 +153,8 @@ class BaseCodeGenerator(NodeVisitor):
 
         # the current indentation
         self._indentation = 0
+
+        self.encoding = "utf-8"
 
     # Copied
     def indent(self):
@@ -201,15 +207,6 @@ class BaseCodeGenerator(NodeVisitor):
 
 class CodeGenerator(BaseCodeGenerator):
 
-    def __init__(self, environment, name, filename, stream = None):
-        super(CodeGenerator, self).__init__(stream)
-
-        self.environment = environment
-        self.name = name
-        self.filename = filename
-
-        self.encoding = "utf-8"
-
     def visit_Template(self, node, frame = None):
         """
         Setup the template output.
@@ -255,7 +252,7 @@ class CodeGenerator(BaseCodeGenerator):
 
     def visit_Macro(self, node, frame):
         self.writeline("", node)
-        generator = MacroCodeGenerator(self.stream)
+        generator = MacroCodeGenerator(self.environment, self.name, self.filename, self.stream)
         generator.visit(node, frame)
 
     def visit_TemplateData(self, node, frame):
@@ -329,21 +326,33 @@ class MacroCodeGenerator(BaseCodeGenerator):
             else:
                 body.append([const])
 
-        first = True
-        self.writeline("output.append(")
+        start = True
         for item in body:
             if isinstance(item, list):
-                if not first:
+                if start:
+                    self.writeline("output.append(", node)
+                    start = False
+                else:
                     self.write(", ")
                 self.write(repr("".join(item)))
             else:
                 # XXX - escape / do not escape variables.
-                if not first:
-                    self.write(", ")
-                self.visit(item, frame)
-
-            first = False
-        self.write(");")
+                if isinstance(item, jinja2.nodes.Call):
+                    if not start:
+                        self.write(");")
+                        start = True
+                    self.writeline("")
+                    self.visit(item, frame)
+                    self.write(";")
+                else:
+                    if start:
+                        self.writeline("output.append(", item)
+                        start = False
+                    else:
+                        self.write(", ")
+                    self.visit(item, frame)
+        if not start:
+            self.write(");")
 
     def visit_Name(self, node, frame):
         try:
@@ -362,6 +371,10 @@ class MacroCodeGenerator(BaseCodeGenerator):
         val = node.value
         if val is None:
             self.write("null")
+        elif val is True:
+            self.write("true")
+        elif val is False:
+            self.write("false")
         else:
             self.write(repr(val))
 
@@ -544,9 +557,21 @@ class MacroCodeGenerator(BaseCodeGenerator):
         frame.assigned_names.add("%s.%s" %(frame.eval_ctx.namespace, node.name))
 
     def signature(self, node, frame, extra_kwargs = {}):
-        for arg in node.args:
-            self.write(', ')
-            self.visit(arg, frame)
+        if node.args:
+            raise jinja2.compiler.TemplateAssertionError(
+                "Function call with positional arguments not allowed with JS",
+                node.lineno, self.name, self.filename)
+
+        start = True
+        self.write("{")
+        for kwarg in node.kwargs:
+            if not start:
+                self.write(", ")
+                start = False
+            self.write(kwarg.key)
+            self.write(": ")
+            self.visit(kwarg.value, frame)
+        self.write("}")
 
         if node.dyn_args or node.dyn_kwargs:
             raise jinja2.compiler.TemplateAssertionError(
@@ -560,4 +585,4 @@ class MacroCodeGenerator(BaseCodeGenerator):
         self.write("(")
         extra_kwargs = forward_caller and {"caller": "caller"} or None
         self.signature(node, frame, extra_kwargs)
-        self.write(")")
+        self.write(", output)")

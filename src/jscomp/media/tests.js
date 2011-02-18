@@ -75,4 +75,8 @@ $(document).ready(function() {
         test("call1", function() {
                 equals(tests.call.call1({}), "I was called!");
             });
+
+        test("call2", function() {
+                equals(tests.call.call2({}), "Michael was called!");
+            });
     });

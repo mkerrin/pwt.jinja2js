@@ -151,7 +151,7 @@ class CompilerTemplateTestCase(unittest.TestCase):
 import jscompiler
 
 def generateMacro(node, environment, name, filename, stream):
-    generator = jscompiler.MacroCodeGenerator(stream)
+    generator = jscompiler.MacroCodeGenerator(environment, None, None, stream)
     eval_ctx = jinja2.nodes.EvalContext(environment, name)
     eval_ctx.namespace = "test"
     generator.blockvisit(node.body, jscompiler.JSFrame(eval_ctx))
@@ -468,7 +468,7 @@ xxx.testif = function(opt_data, opt_sb) {
 
 xxx.testcall = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
-    output.append(xxx.testif());
+    xxx.testif({}, output);
     if (!opt_sb) return output.toString();
 }""")
 
@@ -499,9 +499,85 @@ xxx.ns1.testif = function(opt_data, opt_sb) {
 
 xxx.ns1.testcall = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
-    output.append(xxx.ns1.testif());
+    xxx.ns1.testif({}, output);
     if (!opt_sb) return output.toString();
-}""")   
+}""")
+
+    def test_call_macro3(self):
+        # call with parament set
+        node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
+{% macro testif(option) -%}
+{% if option %}{{ option }}{% endif %}{% endmacro %}
+{% macro testcall() %}{{ xxx.ns1.testif(option = true) }}{% endmacro %}""")
+
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx.ns1');
+goog.require('soy');
+
+
+xxx.ns1.testif = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    if (opt_data.option) {
+        output.append(opt_data.option);
+    }
+    if (!opt_sb) return output.toString();
+}
+
+
+xxx.ns1.testcall = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    xxx.ns1.testif({option: true}, output);
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_call_macro4(self):
+        # call with parament set, and extra output
+        node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
+{% macro testif(option) -%}
+{% if option %}{{ option }}{% endif %}{% endmacro %}
+{% macro testcall() %}Hello, {{ xxx.ns1.testif(option = true) }}!{% endmacro %}""")
+
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx.ns1');
+goog.require('soy');
+
+
+xxx.ns1.testif = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    if (opt_data.option) {
+        output.append(opt_data.option);
+    }
+    if (!opt_sb) return output.toString();
+}
+
+
+xxx.ns1.testcall = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('Hello, ');
+    xxx.ns1.testif({option: true}, output);
+    output.append('!');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_call_macro5(self):
+        # call with variable arguments
+        node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
+{% macro testif(option) -%}
+{% if option %}{{ option }}{% endif %}{% endmacro %}
+{% macro testcall() %}Hello, {{ xxx.ns1.testif(true) }}!{% endmacro %}""")
+
+        stream = StringIO()
+        self.assertRaises(jinja2.compiler.TemplateAssertionError,
+                          jscompiler.generate,
+                          node, self.env, "", "", stream = stream)
 
 
 class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):

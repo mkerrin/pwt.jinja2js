@@ -1,5 +1,7 @@
 {% namespace tests.call %}
 
-{% macro callme() %}I was called!{% endmacro %}
+{% macro callme() %}{% if name %}{{name }}{% else %}I{% endif %} was called!{% endmacro %}
 
 {% macro call1() %}{{ tests.call.callme() }}{% endmacro %}
+
+{% macro call2() %}{{ tests.call.callme(name = "Michael") }}{% endmacro %}
