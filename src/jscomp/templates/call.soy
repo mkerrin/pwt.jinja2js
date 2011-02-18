@@ -1,0 +1,5 @@
+{% namespace tests.call %}
+
+{% macro callme() %}I was called!{% endmacro %}
+
+{% macro call1() %}{{ tests.call.callme() }}{% endmacro %}
