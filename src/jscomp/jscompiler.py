@@ -58,6 +58,11 @@ def generate(node, environment, name, filename, stream = None):
 
 class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
 
+    def __init__(self, identifiers, hard_scope, ctx):
+        super(JSFrameIdentifierVisitor, self).__init__(identifiers, hard_scope)
+
+        self.ctx = ctx
+
     # def visit_Name
 
     def visit_If(self, node):
@@ -67,7 +72,10 @@ class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
         for else_ in node.else_:
             self.visit(else_)
 
-    # def visit_Macro
+    def visit_Macro(self, node):
+        self.identifiers.declared_locally.add(
+            "%s.%s" %(self.ctx.namespace, node.name)
+            )
 
     def visit_Import(self, node):
         raise NotImplementedError("import identifier")
@@ -104,7 +112,8 @@ class JSFrame(jinja2.compiler.Frame):
         enforce on a python level) overrides from outer scopes are tracked
         differently.
         """
-        visitor = JSFrameIdentifierVisitor(self.identifiers, hard_scope)
+        visitor = JSFrameIdentifierVisitor(
+            self.identifiers, hard_scope, self.eval_ctx)
         for node in nodes:
             visitor.visit(node)
 
@@ -253,6 +262,24 @@ class CodeGenerator(BaseCodeGenerator):
         self.writeline(node.data, node)
 
 
+class GetNodeName(NodeVisitor):
+
+    def visit_Name(self, node, frame, names):
+        try:
+            names.append(frame.reassigned_names[node.name])
+        except KeyError:
+            names.append(node.name)
+
+    def visit_Getattr(self, node, frame, names):
+        self.visit(node.node, frame, names)
+        names.append(node.attr)
+
+    def getName(self, node, frame):
+        names = []
+        self.visit(node, frame, names)
+        return ".".join(names)
+            
+
 class MacroCodeGenerator(BaseCodeGenerator):
     # split out the macro code generator. This generate the guts of the
     # JavaScript we need to render the templates. Note that we do this
@@ -324,8 +351,11 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.write(name)
             frame.assigned_names.add(name) # neccessary?
         except KeyError:
-            self.write("opt_data." + node.name)
-            frame.assigned_names.add(node.name)
+            if node.name in frame.identifiers.declared:
+                self.write(node.name)
+            else:
+                self.write("opt_data." + node.name)
+                frame.assigned_names.add(node.name)
 
     def visit_Const(self, node, frame):
         # XXX - need to know the JavaScript ins and out here.
@@ -340,7 +370,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.write("")
 
     def visit_Getattr(self, node, frame):
-        if frame.forloop_buffer:
+        if frame.forloop_buffer and node.node.name == "loop":
             if node.attr == "index0":
                 self.write("%sIndex" % frame.forloop_buffer)
             elif node.attr == "index":
@@ -362,10 +392,14 @@ class MacroCodeGenerator(BaseCodeGenerator):
             else:
                 raise AttributeError("loop.%s not defined" % node.attr)
         else:
-            self.visit(node.node, frame)
-            self.write(" && ") # need to make sure that the node is defined
-            self.visit(node.node, frame)
-            self.write(".%s" % node.attr)
+            possible_macro = GetNodeName().getName(node, frame)
+            if possible_macro in frame.identifiers.declared:
+                self.write(possible_macro)
+            else:
+                self.visit(node.node, frame)
+                self.write(" && ") # need to make sure that the node is defined
+                self.visit(node.node, frame)
+                self.write(".%s" % node.attr)
 
     def binop(operator):
         def visitor(self, node, frame):
@@ -507,4 +541,23 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
     def visit_Macro(self, node, frame):
         body = self.macro_body(node, frame)
-        frame.assigned_names.add(node.name)
+        frame.assigned_names.add("%s.%s" %(frame.eval_ctx.namespace, node.name))
+
+    def signature(self, node, frame, extra_kwargs = {}):
+        for arg in node.args:
+            self.write(', ')
+            self.visit(arg, frame)
+
+        if node.dyn_args or node.dyn_kwargs:
+            raise jinja2.compiler.TemplateAssertionError(
+                "JS Does not support positional or keyword arguments",
+                node.lineno, self.name, self.filename)
+
+    def visit_Call(self, node, frame, forward_caller = False):
+        # function symbol to call
+        self.visit(node.node, frame)
+        # function signature
+        self.write("(")
+        extra_kwargs = forward_caller and {"caller": "caller"} or None
+        self.signature(node, frame, extra_kwargs)
+        self.write(")")

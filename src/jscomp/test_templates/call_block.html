@@ -1,0 +1,11 @@
+{% namespace examples.call %}
+
+{% macro helloName(name) %}
+Hello, {{ name }}!
+{% endmacro %}
+
+{% macro main() %}
+{{ helloName("Me") }}
+{% endmacro %}
+
+{{ main() }}

@@ -53,6 +53,29 @@ class CompilerTemplateTestCase(unittest.TestCase):
 ##   Item 5.
 ## """)
 
+    def test_call1(self):
+        name = "call_block.html"
+
+        node = self.get_template_node(name)
+
+        stream = StringIO()
+        jinja2.compiler.generate(node, self.env, name, name, stream = stream)
+        source_code = stream.getvalue()
+        code = compile(source_code, name, "exec")
+
+        # from_code
+        namespace = {
+            "environment": self.env,
+            "__file__": name
+            }
+        exec code in namespace
+
+        context = jinja2.runtime.new_context(
+            self.env, name, namespace["blocks"], {"data": [1, 3, 5]})
+
+        self.assertEqual(
+            "".join(namespace["root"](context)).strip(), "Hello, Me!")
+
     def test_if1(self):
         node = self.get_template_node("if1.html")
 
@@ -132,6 +155,7 @@ def generateMacro(node, environment, name, filename, stream):
     eval_ctx = jinja2.nodes.EvalContext(environment, name)
     eval_ctx.namespace = "test"
     generator.blockvisit(node.body, jscompiler.JSFrame(eval_ctx))
+
 
 class JSCompilerTemplateTestCase(unittest.TestCase):
 
@@ -332,6 +356,48 @@ xxx.fortest = function(opt_data, opt_sb) {
             jscompiler.generate,
             node, self.env, "for.html", "for.html", stream = stream)
 
+    def test_for7(self):
+        # test loop.index with other variable.
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.index }} - {{ name }}{% endfor %}{% endmacro %}")
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx');
+goog.require('soy');
+xxx.fortest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    var itemList = opt_data.data;
+    var itemListLen = itemList.length;
+    for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
+        var itemData = itemList[itemIndex];
+        output.append(itemIndex + 1, ' - ', opt_data.name);
+    }
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_for8(self):
+        # test loop.index with other variable, with attribute
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.index }} - {{ param.name }}{% endfor %}{% endmacro %}")
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx');
+goog.require('soy');
+xxx.fortest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    var itemList = opt_data.data;
+    var itemListLen = itemList.length;
+    for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
+        var itemData = itemList[itemIndex];
+        output.append(itemIndex + 1, ' - ', opt_data.param && opt_data.param.name);
+    }
+    if (!opt_sb) return output.toString();
+}""")
+
     def test_if1(self):
         node = self.get_compile_from_string("""{% macro iftest() %}
 {% if option %}
@@ -375,6 +441,67 @@ xxx.testif = function(opt_data, opt_sb) {
     }
     if (!opt_sb) return output.toString();
 }""")
+
+    def test_call_macro1(self):
+        node = self.get_compile_from_string("""{% namespace xxx %}
+{% macro testif(option) -%}
+{% if option %}{{ option }}{% endif %}{% endmacro %}
+{% macro testcall() %}{{ xxx.testif() }}{% endmacro %}""")
+
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx');
+goog.require('soy');
+
+
+xxx.testif = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    if (opt_data.option) {
+        output.append(opt_data.option);
+    }
+    if (!opt_sb) return output.toString();
+}
+
+
+xxx.testcall = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(xxx.testif());
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_call_macro2(self):
+        # multiple name namespace
+        node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
+{% macro testif(option) -%}
+{% if option %}{{ option }}{% endif %}{% endmacro %}
+{% macro testcall() %}{{ xxx.ns1.testif() }}{% endmacro %}""")
+
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx.ns1');
+goog.require('soy');
+
+
+xxx.ns1.testif = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    if (opt_data.option) {
+        output.append(opt_data.option);
+    }
+    if (!opt_sb) return output.toString();
+}
+
+
+xxx.ns1.testcall = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(xxx.ns1.testif());
+    if (!opt_sb) return output.toString();
+}""")   
 
 
 class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):

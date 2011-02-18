@@ -2,6 +2,7 @@
 
 goog.importScript_("/soy/if.soy");
 goog.importScript_("/soy/for.soy");
+goog.importScript_("/soy/call.soy");
 
 $(document).ready(function() {
         module("if.soy");
@@ -67,5 +68,11 @@ $(document).ready(function() {
 
         test("forloop1", function() {
                 equals(tests.for.forloop1({data: [5, 4, 3]}), "1 - 0<br/>2 - 1<br/>3 - 2<br/>");
+            });
+
+        module("call macro");
+
+        test("call1", function() {
+                equals(tests.call.call1({}), "I was called!");
             });
     });
