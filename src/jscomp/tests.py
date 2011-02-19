@@ -579,6 +579,18 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
                           jscompiler.generate,
                           node, self.env, "", "", stream = stream)
 
+    def test_call_macro6(self):
+        # call with keywrod arguments
+        node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
+{% macro testif(option) -%}
+{% if option %}{{ option }}{% endif %}{% endmacro %}
+{% macro testcall() %}Hello, {{ xxx.ns1.testif(**{option: true}) }}!{% endmacro %}""")
+
+        stream = StringIO()
+        self.assertRaises(
+            jinja2.compiler.TemplateAssertionError,
+            jscompiler.generate, node, self.env, "", "", stream = stream)
+
 
 class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):
 
