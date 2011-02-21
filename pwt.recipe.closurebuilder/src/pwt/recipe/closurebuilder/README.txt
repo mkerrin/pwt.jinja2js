@@ -1,5 +1,9 @@
+==================================
 Closure builder zc.buildout recipe
 ==================================
+
+Dependencies
+============
 
   >>> import os.path
 
@@ -14,6 +18,8 @@ Closure builder zc.buildout recipe
   ... goog.provide('pwt.provideB');
   ... ''')
 
+  >>> mkdir('js/goog')
+  >>> write('js/goog/base.js', open(os.path.join(os.path.dirname(__file__), "goog/base.js")).read())
 
 roots
 -----
@@ -37,6 +43,7 @@ roots
   // Please do not edit.
   goog.addDependency('a.js', ['pwt.provideA'], ['pwt.provideB']);
   goog.addDependency('b.js', ['pwt.provideB'], []);
+  goog.addDependency('goog/base.js', [], []);
 
 
 roots with prefix
@@ -62,3 +69,42 @@ roots with prefix
   // Please do not edit.
   goog.addDependency('/media/a.js', ['pwt.provideA'], ['pwt.provideB']);
   goog.addDependency('/media/b.js', ['pwt.provideB'], []);
+  goog.addDependency('/media/goog/base.js', [], []);
+
+
+Compile
+=======
+
+  >>> write('buildout.cfg', '''
+  ... [buildout]
+  ... parts = deps.js compiled.js
+  ...
+  ... [deps.js]
+  ... recipe = pwt.recipe.closurebuilder:dependency
+  ... output = %(dir)s/d1.js
+  ... roots = %(dir)s/js
+  ...
+  ... [compiled.js]
+  ... recipe = pwt.recipe.closurebuilder:compile
+  ... dependency = deps.js
+  ... output = %(dir)s
+  ... inputs = %(dir)s/js/a.js
+  ... ''' %{'dir': sample_buildout})
+
+  >>> print system(buildout) #doctest:+ELLIPSIS
+  Uninstalling deps.js.
+  Installing deps.js.
+  Installing compiled.js.
+  root: Compiling with the following command: java -jar ...
+  <BLANKLINE>
+
+  >>> ls(sample_buildout)
+  -  .installed.cfg
+  d  bin
+  -  buildout.cfg
+  -  d1.js
+  -  db5293d69c7cf152489f73b7221b146d.js
+  d  develop-eggs
+  d  eggs
+  d  js
+  d  parts

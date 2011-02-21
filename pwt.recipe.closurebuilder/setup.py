@@ -18,6 +18,7 @@ setup(
     entry_points = """
 [zc.buildout]
 dependency = pwt.recipe.closurebuilder:Deps
+compile = pwt.recipe.closurebuilder:Compile
 """,
 
     include_package_data = True,
