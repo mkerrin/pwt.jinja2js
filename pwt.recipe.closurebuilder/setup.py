@@ -11,6 +11,9 @@ setup(
     install_requires = ["setuptools",
                         "zc.buildout",
                         ],
+    extras_require = {
+        "test": ["zope.testing"],
+        },
 
     entry_points = """
 [zc.buildout]
@@ -19,4 +22,6 @@ dependency = pwt.recipe.closurebuilder:Deps
 
     include_package_data = True,
     zip_safe = False,
+
+    test_suite = "pwt.recipe.closurebuilder.tests.test_suite",
     )
