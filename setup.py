@@ -9,6 +9,7 @@ setup(
     package_dir = {"": "src"},
 
     install_requires = ["setuptools",
+                        "pwt.recipe.closurebuilder",
                         "WebOb",
                         "MarkupSafe",
                         "Jinja2",

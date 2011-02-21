@@ -1,8 +1,8 @@
 // goog.require("");
 
-goog.importScript_("/soy/if.soy");
-goog.importScript_("/soy/for.soy");
-goog.importScript_("/soy/call.soy");
+goog.require("tests.if");
+goog.require("tests.for");
+goog.require("tests.call");
 
 $(document).ready(function() {
         module("if.soy");
