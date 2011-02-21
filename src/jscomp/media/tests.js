@@ -1,7 +1,7 @@
-// goog.require("");
+goog.provide("tests");
 
-goog.require("tests.if");
-goog.require("tests.for");
+goog.require("tests.iftest");
+goog.require("tests.fortest");
 goog.require("tests.call");
 
 $(document).ready(function() {
@@ -9,65 +9,65 @@ $(document).ready(function() {
 
         // test with option
         test("basicif", function() {
-                equals(tests.if.basicif({}), "No option set.");
-                equals(tests.if.basicif({option: false}), "No option set.");
-                equals(tests.if.basicif({option: true}), "Option set.");
+                equals(tests.iftest.basicif({}), "No option set.");
+                equals(tests.iftest.basicif({option: false}), "No option set.");
+                equals(tests.iftest.basicif({option: true}), "Option set.");
             });
 
         // test with option.data
         test("basicif2", function() {
-                equals(tests.if.basicif2({}), "No option data set.");
-                equals(tests.if.basicif2({option: true}), "No option data set.");
-                equals(tests.if.basicif2({option: {data: true}}), "Option data set.");
+                equals(tests.iftest.basicif2({}), "No option data set.");
+                equals(tests.iftest.basicif2({option: true}), "No option data set.");
+                equals(tests.iftest.basicif2({option: {data: true}}), "Option data set.");
             });
 
         test("basicif3", function() {
-                equals(tests.if.basicif3({option: "XXX"}), "XXX");
-                equals(tests.if.basicif3({option: true}), "true");
-                equals(tests.if.basicif3({option: false}), "");
+                equals(tests.iftest.basicif3({option: "XXX"}), "XXX");
+                equals(tests.iftest.basicif3({option: true}), "true");
+                equals(tests.iftest.basicif3({option: false}), "");
             });
 
         test("ifand1", function() {
-                equals(tests.if.ifand1({}), "");
-                equals(tests.if.ifand1({option: true, option2: false}), "");
-                equals(tests.if.ifand1({option: false, option2: true}), "");
-                equals(tests.if.ifand1({option: false, option2: false}), "");
-                equals(tests.if.ifand1({option: true, option2: true}), "Equal");
+                equals(tests.iftest.ifand1({}), "");
+                equals(tests.iftest.ifand1({option: true, option2: false}), "");
+                equals(tests.iftest.ifand1({option: false, option2: true}), "");
+                equals(tests.iftest.ifand1({option: false, option2: false}), "");
+                equals(tests.iftest.ifand1({option: true, option2: true}), "Equal");
             });
 
         test("ifor1", function() {
-                equals(tests.if.ifor1({}), "");
-                equals(tests.if.ifor1({option: true, option2: false}), "Equal");
-                equals(tests.if.ifor1({option: false, option2: true}), "Equal");
-                equals(tests.if.ifor1({option: false, option2: false}), "");
-                equals(tests.if.ifor1({option: true, option2: true}), "Equal");
+                equals(tests.iftest.ifor1({}), "");
+                equals(tests.iftest.ifor1({option: true, option2: false}), "Equal");
+                equals(tests.iftest.ifor1({option: false, option2: true}), "Equal");
+                equals(tests.iftest.ifor1({option: false, option2: false}), "");
+                equals(tests.iftest.ifor1({option: true, option2: true}), "Equal");
             });
 
         test("ifequal", function() {
-                equals(tests.if.ifequal1({}), "");
-                equals(tests.if.ifequal1({option: 1}), "Equal");
-                equals(tests.if.ifequal1({option: 2}), "");
+                equals(tests.iftest.ifequal1({}), "");
+                equals(tests.iftest.ifequal1({option: 1}), "Equal");
+                equals(tests.iftest.ifequal1({option: 2}), "");
 
-                equals(tests.if.ifequal2({}), "Equal");
-                equals(tests.if.ifequal2({option: null}), "Equal");
-                equals(tests.if.ifequal2({option: 1}), "");
+                equals(tests.iftest.ifequal2({}), "Equal");
+                equals(tests.iftest.ifequal2({option: null}), "Equal");
+                equals(tests.iftest.ifequal2({option: 1}), "");
             });
 
         module("for.soy");
 
         test("for1", function() {
-                equals(tests.for.for1({data: [1, 2, 3]}), "123");
-                equals(tests.for.for1({data: []}), "");
-                raises(function() { tests.for.for1({}); });
+                equals(tests.fortest.for1({data: [1, 2, 3]}), "123");
+                equals(tests.fortest.for1({data: []}), "");
+                raises(function() { tests.fortest.for1({}); });
             });
 
         test("for2", function() {
-                equals(tests.for.for2({data: [1, 2, 3]}), "123");
-                equals(tests.for.for2({data: []}), "Empty");
+                equals(tests.fortest.for2({data: [1, 2, 3]}), "123");
+                equals(tests.fortest.for2({data: []}), "Empty");
             });
 
         test("forloop1", function() {
-                equals(tests.for.forloop1({data: [5, 4, 3]}), "1 - 0<br/>2 - 1<br/>3 - 2<br/>");
+                equals(tests.fortest.forloop1({data: [5, 4, 3]}), "1 - 0<br/>2 - 1<br/>3 - 2<br/>");
             });
 
         module("call macro");

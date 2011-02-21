@@ -1,5 +1,6 @@
 import re
 import os.path
+import tempfile
 
 import pwt.recipe.closurebuilder
 from pwt.recipe.closurebuilder import depswriter
@@ -10,15 +11,43 @@ import jinja2.parser
 import jinja2.environment
 import jinja2.visitor
 
+import jscompiler
+
 class Source(jinja2.visitor.NodeVisitor):
 
-    def __init__(self, source, path):
-        self.source = source
-        self.node = jinja2.environment.Environment(extensions = ["jscomp.jscompiler.Namespace"])._parse(source, os.path.basename(path), path)
+    def __init__(self, path):
+        self.env = jinja2.environment.Environment(
+            extensions = ["jscomp.jscompiler.Namespace"]
+            )
+
+        self.source = source.GetFileContents(path)
+        self.node = self.env._parse(self.source, os.path.basename(path), path)
+
+        self._path = path
 
         self.provides = set([])
-        self.requires = set([])
+        # Manually added
+        self.requires = set(["soy"])
         self.scan()
+
+        self.tmp = None
+
+    def GetSourcePath(self):
+        jscode = jscompiler.generate(
+            self.node, self.env, os.path.basename(self._path), self._path)
+        self.tmp = tempfile.NamedTemporaryFile(delete = False)
+        self.tmp.write(jscode)
+        self.tmp.close()
+
+        return jscode, self.tmp.name
+
+    def __del__(self):
+        # Remove any temporary files when the program is finishing
+        if self.tmp:
+            os.remove(self.tmp.name)
+
+    def GetPath(self):
+        return self._path
 
     def visit_NamespaceNode(self, node):
         self.provides.add(node.namespace.encode("utf-8"))
@@ -41,8 +70,10 @@ class Deps(pwt.recipe.closurebuilder.Deps):
 
         path_to_source = {}
         for path in treescan.ScanTree(".", path_filter = self.extension_filter):
-            prefixed_path = depswriter._NormalizePathSeparators(os.path.join(prefix, path))
-            path_to_source[prefixed_path] = Source(source.GetFileContents(path), path)
+            prefixed_path = depswriter._NormalizePathSeparators(
+                os.path.join(prefix, path))
+            path_to_source[prefixed_path] = Source(
+                os.path.join(start_wd, root, path))
 
         os.chdir(start_wd)
 
@@ -57,7 +88,8 @@ class Deps(pwt.recipe.closurebuilder.Deps):
 
             path_to_source.update(self.get_sources(root))
 
-        for root_with_prefix in self.options.get("root_with_prefix", "").split("\n"):
+        for root_with_prefix in \
+                self.options.get("root_with_prefix", "").split("\n"):
             if not root_with_prefix:
                 continue
 
@@ -65,3 +97,8 @@ class Deps(pwt.recipe.closurebuilder.Deps):
             path_to_source.update(self.get_sources(root, prefix))
 
         return path_to_source
+
+
+class Compile(pwt.recipe.closurebuilder.Deps):
+
+    pass
