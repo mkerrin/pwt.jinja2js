@@ -12,16 +12,20 @@ setup(
                         "WebOb",
                         "MarkupSafe",
                         "Jinja2",
-
-                        "WebTest",
                         ],
+    extras_require = {
+        "test": [
+            "pwt.recipe.closurebuilder[test]",
+            "WebTest",
+            ],
+        },
 
     entry_points = """
 [nose.plugins]
 test-suites = jscomp.nose_test_suites:Suites
 
 [zc.buildout]
-default = jscomp.recipe:Deps
+dependency = jscomp.recipe:Deps
 """,
 
     include_package_data = True,

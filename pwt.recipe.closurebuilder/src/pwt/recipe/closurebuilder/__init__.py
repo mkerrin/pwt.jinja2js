@@ -68,4 +68,5 @@ class Deps(object):
 
         return ()
 
-    uninstall = update = install
+    def update(self):
+        return self.install()
