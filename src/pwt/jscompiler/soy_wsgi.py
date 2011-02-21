@@ -21,14 +21,16 @@ class Resources(object):
             loader = jinja2.ChoiceLoader(loaders)
 
         self.env = jinja2.Environment(
-            loader = loader, extensions = ["jscomp.jscompiler.Namespace"])
+            loader = loader,
+            extensions = ["pwt.jscompiler.jscompiler.Namespace"])
 
     @webob.dec.wsgify
     def __call__(self, request):
         path = request.path[len(self.url):]
 
         try:
-            source, filename, uptodate = self.env.loader.get_source(self.env, path)
+            source, filename, uptodate = self.env.loader.get_source(
+                self.env, path)
         except jinja2.TemplateNotFound:
             return webob.Response("Not found", status = 404)
 

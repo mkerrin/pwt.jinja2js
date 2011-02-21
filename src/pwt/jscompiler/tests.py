@@ -23,10 +23,10 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
     def setUp(self):
         super(JSCompilerTemplateTestCase, self).setUp()
 
-        self.loader = jinja2.PackageLoader("jscomp", "test_templates")
+        self.loader = jinja2.PackageLoader("pwt.jscompiler", "test_templates")
         self.env = jinja2.Environment(
             loader = self.loader,
-            extensions = ["jscomp.jscompiler.Namespace"],
+            extensions = ["pwt.jscompiler.jscompiler.Namespace"],
             )
 
     def get_compile_from_string(self, source, name = None, filename = None):
@@ -474,7 +474,7 @@ class SoyServer(unittest.TestCase):
     def get_app(self):
         return webtest.TestApp(
             soy_wsgi.Resources(
-                url = "/soy/", packages = "jscomp:test_templates"))
+                url = "/soy/", packages = "pwt.jscompiler:test_templates"))
 
     def test_soy1(self):
         app = self.get_app()

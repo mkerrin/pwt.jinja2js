@@ -17,7 +17,7 @@ class Source(jinja2.visitor.NodeVisitor):
 
     def __init__(self, path):
         self.env = jinja2.environment.Environment(
-            extensions = ["jscomp.jscompiler.Namespace"]
+            extensions = ["pwt.jscompiler.jscompiler.Namespace"]
             )
 
         self.source = source.GetFileContents(path)

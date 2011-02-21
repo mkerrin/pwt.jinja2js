@@ -5,8 +5,7 @@ eggs
 parts
 
 etc/settings.ini
-src/jscomp/media/deps.js
-archive
+src/pwt/jscompiler/media/deps.js
 
 *.egg-info
 *.pyc

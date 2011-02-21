@@ -16,7 +16,8 @@ class main(object):
             loader = jinja2.ChoiceLoader(loaders)
 
         self.env = jinja2.Environment(
-            loader = loader, extensions = ["jscomp.jscompiler.Namespace"])
+            loader = loader,
+            extensions = ["pwt.jscompiler.jscompiler.Namespace"])
 
     @webob.dec.wsgify
     def __call__(self, request):

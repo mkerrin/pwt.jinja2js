@@ -13,18 +13,18 @@ use = egg:Paste#urlmap
 /media = static
 
 [app:soy_templates]
-paste.app_factory = jscomp.soy_wsgi:Resources
+paste.app_factory = pwt.jscompiler.soy_wsgi:Resources
 url = /soy/
-packages = jscomp
+packages = pwt.jscompiler
 
 [app:static]
 use = egg:Paste#static
-document_root = ${buildout:directory}/src/jscomp/media
+document_root = ${buildout:directory}/src/pwt/jscompiler/media
 
 [app:closure]
 use = egg:Paste#static
 document_root = ${closure-library:location}/closure-library
 
 [app:home]
-paste.app_factory = jscomp.app:main
-packages = jscomp
+paste.app_factory = pwt.jscompiler.app:main
+packages = pwt.jscompiler

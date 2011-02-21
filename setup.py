@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name = "jscomp",
+    name = "pwt.jscompiler",
     author = "Michael Kerrin",
     author_email = "michael.kerrin@gmail.com",
 
@@ -23,10 +23,10 @@ setup(
 
     entry_points = """
 [nose.plugins]
-test-suites = jscomp.nose_test_suites:Suites
+test-suites = pwt.jscompiler.nose_test_suites:Suites
 
 [zc.buildout]
-dependency = jscomp.recipe:Deps
+dependency = pwt.jscompiler.recipe:Deps
 """,
 
     include_package_data = True,
