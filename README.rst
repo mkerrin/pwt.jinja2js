@@ -31,5 +31,5 @@ To run a basic server in order to run the JavaScript tests.
 
  * ./bin/serve --reload
 
-Then go to http://localhost:8000/ in your browser in order to run the JavaScript
-tests.
+Then go to http://localhost:8000/media/tests.html in your browser in order to
+run the JavaScript tests.
