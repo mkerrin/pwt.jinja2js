@@ -6,6 +6,3 @@ parts
 
 etc/settings.ini
 src/pwt/jscompiler/media/deps.js
-
-*.egg-info
-*.pyc
