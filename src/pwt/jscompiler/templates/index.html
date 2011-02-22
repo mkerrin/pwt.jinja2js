@@ -8,18 +8,17 @@
     <script type="text/javascript" src="/closure/closure/goog/base.js"></script>
     <script type="text/javascript" src="/media/deps.js"></script>
 
-    <script type="text/javascript" src="/soy/hello_popup.soy"></script>
+    <script type="text/javascript" src="/soy/hello.soy"></script>
   </head>
   <body>
-    <h3>Hello, World!</h3>
+    <h3>pwt.jscompiler</h3>
+
     <ul>
-      {% for item in data %}
-      <li>Item {{ item }}</li>
-      {% else %}
-      <li>No items.</li>
-      {% endfor %}
+      <li><a href="/tests.html">Tests</a></li>
+      <li><a href="/tests_compiled.html">Tests (with compiled JavaScript)</a></li>
     </ul>
 
+    <h4>Example</h4>
     <script type="text/javascript">
       document.write(examples.hello({"name": "Michael"}));
     </script>

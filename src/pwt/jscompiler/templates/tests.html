@@ -2,14 +2,15 @@
   <head>
     <link rel="stylesheet" href="/media/qunit.css" type="text/css" />
 
+    <script type="text/javascript" src="/media/jquery-1.5.js"></script>
+    <script type="text/javascript" src="/media/qunit.js"></script>
+
     <script type="text/javascript">
       CLOSURE_NO_DEPS = true;
       CLOSURE_BASE_PATH = "http://localhost:8000";
     </script>
     <script type="text/javascript" src="/closure/closure/goog/base.js"></script>
-    <script type="text/javascript" src="/media/deps.js"></script>
-    <script type="text/javascript" src="/media/jquery-1.5.js"></script>
-    <script type="text/javascript" src="/media/qunit.js"></script>
+    <script type="text/javascript" src="{{ deps_js }}"></script>
 
     <script type="text/javascript" src="/media/tests.js"></script>
   </head>

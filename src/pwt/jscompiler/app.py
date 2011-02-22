@@ -5,9 +5,9 @@ import jinja2
 
 class main(object):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **config):
         loaders = []
-        for package in kwargs["packages"].split():
+        for package in config.pop("packages").split():
             loaders.append(jinja2.PackageLoader(*package.split(":")))
 
         if len(loaders) == 1:
@@ -19,7 +19,13 @@ class main(object):
             loader = loader,
             extensions = ["pwt.jscompiler.jscompiler.Namespace"])
 
+        self.config = config
+
     @webob.dec.wsgify
     def __call__(self, request):
-        template = self.env.get_template("hello.html")
-        return webob.Response(template.render(data = [1, 3, 5]))
+        path = request.path.split("/")[1]
+        if not path:
+            path = "index.html"
+
+        template = self.env.get_template(path)
+        return webob.Response(template.render(**self.config))

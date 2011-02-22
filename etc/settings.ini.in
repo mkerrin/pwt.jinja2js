@@ -9,6 +9,7 @@ use = egg:Paste#urlmap
 /favicon.ico = static
 
 /soy = soy_templates
+
 /closure = closure
 /media = static
 
@@ -27,4 +28,10 @@ document_root = ${closure-library:location}/closure-library
 
 [app:home]
 paste.app_factory = pwt.jscompiler.app:main
+
+# configure Jinja2 loader
 packages = pwt.jscompiler
+
+deps_js = /media/${deps.js:filename}
+
+compiled_tests_js = /media/${compiled_tests.js:filename}
