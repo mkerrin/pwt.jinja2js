@@ -9,6 +9,7 @@ from jinja2.utils import Markup, concat, escape, is_python_keyword, next
 class NamespaceNode(jinja2.nodes.Stmt):
     fields = ("namespace",)
 
+
 class Namespace(jinja2.ext.Extension):
     """
     [Token(1, 'name', 'examples'),
@@ -274,7 +275,9 @@ class GetNodeName(NodeVisitor):
 
     def getName(self, node, frame):
         names = []
+
         self.visit(node, frame, names)
+
         return ".".join(names)
             
 
@@ -378,10 +381,6 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.write("false")
         else:
             self.write(repr(val))
-
-    def loop_handler(node, frame):
-        if node.attr == "index":
-            self.write("")
 
     def visit_Getattr(self, node, frame):
         if frame.forloop_buffer and node.node.name == "loop":
