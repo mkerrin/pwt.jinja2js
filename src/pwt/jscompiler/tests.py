@@ -43,7 +43,9 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
         return self.get_compile_from_string(source, name, filename)
 
     def test_missing_namespace1(self):
-        node = self.get_compile("missing_namespace.html")
+        node = self.get_compile_from_string("""{% macro hello() %}
+Hello, world!
+{% endmacro %}""")
         stream = StringIO()
         self.assertRaises(jinja2.compiler.TemplateAssertionError, jscompiler.generate, node, self.env, "", "", stream = stream)
 
