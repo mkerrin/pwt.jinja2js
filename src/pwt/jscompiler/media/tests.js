@@ -3,6 +3,7 @@ goog.provide("tests");
 goog.require("tests.iftest");
 goog.require("tests.fortest");
 goog.require("tests.call");
+goog.require("tests.importtest");
 
 $(document).ready(function() {
         module("if.soy");
@@ -78,5 +79,11 @@ $(document).ready(function() {
 
         test("call2", function() {
                 equals(tests.call.call2({}), "Michael was called!");
+            });
+
+        module("import macros");
+
+        test("import1", function() {
+                equals(tests.importtest.testcall({}), "Hello, Michael!");
             });
     });

@@ -59,9 +59,10 @@ def generate(node, environment, name, filename, stream = None):
 
 class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
 
-    def __init__(self, identifiers, hard_scope, ctx):
+    def __init__(self, identifiers, hard_scope, environment, ctx):
         super(JSFrameIdentifierVisitor, self).__init__(identifiers, hard_scope)
 
+        self.environment = environment
         self.ctx = ctx
 
     # def visit_Name
@@ -75,18 +76,42 @@ class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
 
     def visit_Macro(self, node):
         self.identifiers.declared_locally.add(
-            "%s.%s" %(self.ctx.namespace, node.name)
+            ("%s.%s" %(self.ctx.namespace, node.name)).encode("utf-8")
             )
 
     def visit_Import(self, node):
-        raise NotImplementedError("import identifier")
+        # register import target as declare_locally
+        super(JSFrameIdentifierVisitor, self).visit_Import(node)
 
-    def visit_FromImport(self, node):
-        raise NotImplementedError("from import identifier")
+        # Need to find namespace
+        name = node.template.value
+        source, filename, uptodate = self.environment.loader.get_source(
+            self.environment, name)
+        fromnode = self.environment._parse(source, name, filename)
+
+        # Need to find the namespace
+        namespace = list(fromnode.find_all(NamespaceNode))
+        if len(namespace) != 1:
+            raise jinja2.compiler.TemplateAssertionError(
+                "You must supply one namespace for your template",
+                0,
+                name,
+                filename)
+        namespace = namespace[0].namespace
+
+        self.identifiers.imports[node.target] = namespace.encode("utf-8")
+
+        # Need to find all the macros defined in this namespace
+
+    # def visit_FromImport(self, node):
 
     # def visit_Assign
 
-    # def visit_For
+    def visit_For(self, node):
+        # declare the iteration variable
+        self.visit(node.iter)
+        # declare the target variable
+        self.visit(node.target)
 
     # def visit_Callblock
 
@@ -97,8 +122,13 @@ class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
 
 class JSFrame(jinja2.compiler.Frame):
 
-    def __init__(self, eval_ctx, parent = None):
+    def __init__(self, environment, eval_ctx, parent = None):
         super(JSFrame, self).__init__(eval_ctx, parent)
+
+        # map local variables to imported code
+        self.identifiers.imports = {}
+
+        self.environment = environment
 
         # mapping of visit_Name callback to reassign variable names for use
         # in 'for' loops
@@ -114,12 +144,14 @@ class JSFrame(jinja2.compiler.Frame):
         differently.
         """
         visitor = JSFrameIdentifierVisitor(
-            self.identifiers, hard_scope, self.eval_ctx)
+            self.identifiers, hard_scope, self.environment, self.eval_ctx)
         for node in nodes:
             visitor.visit(node)
 
     def inner(self):
-        return JSFrame(self.eval_ctx, self)
+        frame = JSFrame(self.environment, self.eval_ctx, self)
+        frame.identifiers.imports = self.identifiers.imports
+        return frame
 
 
 class BaseCodeGenerator(NodeVisitor):
@@ -207,16 +239,24 @@ class BaseCodeGenerator(NodeVisitor):
             self.visit(node, frame)
 
 
+class GetRequirements(NodeVisitor):
+
+    def visit_Template(self, node):
+        namespace = list(node.find_all(NamespaceNode))
+        if len(namespace) != 1:
+            raise jinja2.compiler.TemplateAssertionError(
+                "You must supply one namespace for your template",
+                0, self.name, self.filename)
+        namespace = namespace[0].namespace
+
 class CodeGenerator(BaseCodeGenerator):
 
-    def visit_Template(self, node, frame = None):
+    def visit_Template(self, node):
         """
         Setup the template output.
 
         Includes imports, macro definitions, etc.
         """
-        assert frame is None, "no root frame allowed"
-
         namespace = list(node.find_all(NamespaceNode))
         if len(namespace) != 1:
             raise jinja2.compiler.TemplateAssertionError(
@@ -236,7 +276,7 @@ class CodeGenerator(BaseCodeGenerator):
         eval_ctx.namespace = namespace
 
         # process the root
-        frame = JSFrame(eval_ctx)
+        frame = JSFrame(self.environment, eval_ctx)
         frame.inspect(node.body)
         frame.toplevel = frame.rootlevel = True
 
@@ -252,9 +292,17 @@ class CodeGenerator(BaseCodeGenerator):
         # pull_dependencies(node.body)
         self.blockvisit(node.body, frame)
 
+    def visit_Import(self, node, frame):
+        namespace = frame.identifiers.imports[node.target]
+        self.writeline("goog.require('%s');" % namespace.encode("utf-8"), node)
+
     def visit_Macro(self, node, frame):
         self.writeline("", node)
-        generator = MacroCodeGenerator(self.environment, self.name, self.filename, self.stream)
+        generator = MacroCodeGenerator(
+            self.environment,
+            self.name,
+            self.filename,
+            self.stream)
         generator.visit(node, frame)
 
     def visit_TemplateData(self, node, frame):
@@ -359,16 +407,29 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.write(");")
 
     def visit_Name(self, node, frame):
-        try:
-            name = frame.reassigned_names[node.name]
+        # declared_parameter
+        # declared
+        # outer_undeclared
+        # declared_locally
+        # undeclared
+        name = node.name
+
+        if name in frame.identifiers.declared_parameter:
+            self.write("opt_data." + name)
+            frame.assigned_names.add("opt_data." + name) # neccessary?
+        elif name in frame.identifiers.declared or \
+                 name in frame.identifiers.declared_locally:
+            try:
+                name = frame.reassigned_names[name]
+            except KeyError:
+                pass
             self.write(name)
             frame.assigned_names.add(name) # neccessary?
-        except KeyError:
-            if node.name in frame.identifiers.declared:
-                self.write(node.name)
-            else:
-                self.write("opt_data." + node.name)
-                frame.assigned_names.add(node.name)
+        elif name in frame.identifiers.imports:
+            self.write(frame.identifiers.imports[name])
+        else:
+            raise Exception("Where is the parameter %s (%s:%d)" %(
+                name, self.filename, node.lineno))
 
     def visit_Const(self, node, frame):
         # XXX - need to know the JavaScript ins and out here.
@@ -405,6 +466,11 @@ class MacroCodeGenerator(BaseCodeGenerator):
             else:
                 raise AttributeError("loop.%s not defined" % node.attr)
         else:
+            # declared_parameter
+            # declared
+            # outer_undeclared
+            # declared_locally
+            # undeclared
             possible_macro = GetNodeName().getName(node, frame)
             if possible_macro in frame.identifiers.declared:
                 self.write(possible_macro)

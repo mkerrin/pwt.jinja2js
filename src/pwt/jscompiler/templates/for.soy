@@ -1,13 +1,13 @@
 {% namespace tests.fortest %}
 
-{% macro for1() -%}
+{% macro for1(data) -%}
 {% for item in data %}{{ item }}{% endfor %}
 {%- endmacro %}
 
-{% macro for2() -%}
+{% macro for2(data) -%}
 {% for item in data %}{{ item }}{% else %}Empty{% endfor %}
 {%- endmacro %}
 
-{% macro forloop1() -%}
+{% macro forloop1(data) -%}
 {% for item in data %}{{ loop.index }} - {{ loop.index0 }}<br/>{% endfor %}
 {%- endmacro %}

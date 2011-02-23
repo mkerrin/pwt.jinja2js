@@ -2,22 +2,12 @@ import webob
 import webob.dec
 
 import jinja2
+import soy_wsgi
 
-class main(object):
+class main(soy_wsgi.JinjaEnvironment):
 
     def __init__(self, *args, **config):
-        loaders = []
-        for package in config.pop("packages").split():
-            loaders.append(jinja2.PackageLoader(*package.split(":")))
-
-        if len(loaders) == 1:
-            loader = loaders[0]
-        else:
-            loader = jinja2.ChoiceLoader(loaders)
-
-        self.env = jinja2.Environment(
-            loader = loader,
-            extensions = ["pwt.jscompiler.jscompiler.Namespace"])
+        super(main, self).__init__(*args, **config)
 
         self.config = config
 

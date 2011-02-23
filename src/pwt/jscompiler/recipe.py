@@ -12,13 +12,12 @@ import jinja2.environment
 import jinja2.visitor
 
 import jscompiler
+import soy_wsgi
 
-class Source(jinja2.visitor.NodeVisitor):
+class Source(jinja2.visitor.NodeVisitor, soy_wsgi.JinjaEnvironment):
 
-    def __init__(self, path):
-        self.env = jinja2.environment.Environment(
-            extensions = ["pwt.jscompiler.jscompiler.Namespace"]
-            )
+    def __init__(self, path, packages = ""):
+        soy_wsgi.JinjaEnvironment.__init__(self, packages = packages)
 
         self.source = source.GetFileContents(path)
         self.node = self.env._parse(self.source, os.path.basename(path), path)
@@ -52,6 +51,23 @@ class Source(jinja2.visitor.NodeVisitor):
     def visit_NamespaceNode(self, node):
         self.provides.add(node.namespace.encode("utf-8"))
 
+    def visit_Import(self, node):
+        name = node.template.value
+        source, filename, uptodate = self.env.loader.get_source(self.env, name)
+        fromnode = self.env._parse(source, name, filename)
+
+        # Need to find the namespace
+        namespace = list(fromnode.find_all(jscompiler.NamespaceNode))
+        if len(namespace) != 1:
+            raise jinja2.compiler.TemplateAssertionError(
+                "You must supply one namespace for your template",
+                0,
+                name,
+                filename)
+        namespace = namespace[0].namespace
+
+        self.requires.add(namespace.encode("utf-8"))
+
     def scan(self):
         self.visit(self.node)
 
@@ -73,7 +89,8 @@ class Deps(pwt.recipe.closurebuilder.Deps):
             prefixed_path = depswriter._NormalizePathSeparators(
                 os.path.join(prefix, path))
             path_to_source[prefixed_path] = Source(
-                os.path.join(start_wd, root, path))
+                os.path.join(start_wd, root, path),
+                self.options.get("packages", ""))
 
         os.chdir(start_wd)
 
@@ -97,8 +114,3 @@ class Deps(pwt.recipe.closurebuilder.Deps):
             path_to_source.update(self.get_sources(root, prefix))
 
         return path_to_source
-
-
-class Compile(pwt.recipe.closurebuilder.Deps):
-
-    pass

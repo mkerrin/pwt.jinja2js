@@ -1,0 +1,5 @@
+{% namespace test.ns1 %}
+
+{% macro input(name, value='', type='text') -%}
+    <input type="{{ type }}" value="{{ value }}" name="{{ name }}">
+{%- endmacro %}

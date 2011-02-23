@@ -6,11 +6,9 @@ import jinja2
 
 import jscompiler
 
-class Resources(object):
+class JinjaEnvironment(object):
 
     def __init__(self, *args, **kwargs):
-        self.url = kwargs["url"]
-
         loaders = []
         for package in kwargs["packages"].split():
             loaders.append(jinja2.PackageLoader(*package.split(":")))
@@ -23,6 +21,12 @@ class Resources(object):
         self.env = jinja2.Environment(
             loader = loader,
             extensions = ["pwt.jscompiler.jscompiler.Namespace"])
+
+class Resources(JinjaEnvironment):
+
+    def __init__(self, *args, **kwargs):
+        super(Resources, self).__init__(*args, **kwargs)
+        self.url = kwargs["url"]
 
     @webob.dec.wsgify
     def __call__(self, request):

@@ -1,14 +1,14 @@
 {% namespace tests.iftest %}
 
-{% macro basicif() %}{% if option %}Option set.{% else %}No option set.{% endif %}{% endmacro %}
+{% macro basicif(option) %}{% if option %}Option set.{% else %}No option set.{% endif %}{% endmacro %}
 
-{% macro basicif2() %}{% if option.data %}Option data set.{% else %}No option data set.{% endif %}{% endmacro %}
+{% macro basicif2(option) %}{% if option.data %}Option data set.{% else %}No option data set.{% endif %}{% endmacro %}
 
-{% macro basicif3() %}{% if option %}{{ option }}{% endif %}{% endmacro %}
+{% macro basicif3(option) %}{% if option %}{{ option }}{% endif %}{% endmacro %}
 
-{% macro ifand1() %}{% if option and option2 %}Equal{% endif %}{% endmacro %}
+{% macro ifand1(option, option2) %}{% if option and option2 %}Equal{% endif %}{% endmacro %}
 
-{% macro ifor1() %}{% if option or option2 %}Equal{% endif %}{% endmacro %}
+{% macro ifor1(option, option2) %}{% if option or option2 %}Equal{% endif %}{% endmacro %}
 
-{% macro ifequal1() %}{% if option == 1 %}Equal{% endif %}{% endmacro %}
-{% macro ifequal2() %}{% if option == None %}Equal{% endif %}{% endmacro %}
+{% macro ifequal1(option) %}{% if option == 1 %}Equal{% endif %}{% endmacro %}
+{% macro ifequal2(option) %}{% if option == None %}Equal{% endif %}{% endmacro %}

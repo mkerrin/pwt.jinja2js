@@ -15,7 +15,7 @@ def generateMacro(node, environment, name, filename, stream):
     generator = jscompiler.MacroCodeGenerator(environment, None, None, stream)
     eval_ctx = jinja2.nodes.EvalContext(environment, name)
     eval_ctx.namespace = "test"
-    generator.blockvisit(node.body, jscompiler.JSFrame(eval_ctx))
+    generator.blockvisit(node.body, jscompiler.JSFrame(environment, eval_ctx))
 
 
 class JSCompilerTemplateTestCase(unittest.TestCase):
@@ -65,7 +65,7 @@ Hello, world!
 }""")
 
     def test_var1(self):
-        node = self.get_compile_from_string("""{% macro hello() %}
+        node = self.get_compile_from_string("""{% macro hello(name) %}
 {{ name }}
 {% endmacro %}
 """)
@@ -80,7 +80,7 @@ Hello, world!
 }""")
 
     def test_var2(self):
-        node = self.get_compile_from_string("""{% macro helloName() %}
+        node = self.get_compile_from_string("""{% macro helloName(name) %}
 Hello, {{ name }}!
 {% endmacro %}
 """)
@@ -96,7 +96,8 @@ Hello, {{ name }}!
 
     def test_for1(self):
         # XXX - test recursive loop
-        node = self.get_compile_from_string("""{% macro fortest() %}
+        node = self.get_compile_from_string("""{% namespace test %}
+{% macro fortest(data) %}
 {% for item in data %}
   Item {{ item }}.
 {% else %}
@@ -105,11 +106,15 @@ Hello, {{ name }}!
 {% endmacro %}
 """)
         stream = StringIO()
-        generateMacro(
+        jscompiler.generate(
             node, self.env, "for.html", "for.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """goog.provide('test');
+goog.require('soy');
+
+
+test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     output.append('\\n');
     var itemList = opt_data.data;
@@ -128,7 +133,7 @@ Hello, {{ name }}!
 
     def test_for2(self):
         # test loop.index0 variables
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.index0 }}{% endfor %}{% endmacro %}")
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data) %}{% for item in data %}{{ loop.index0 }}{% endfor %}{% endmacro %}")
         stream = StringIO()
         jscompiler.generate(
             node, self.env, "for.html", "for.html", stream = stream)
@@ -149,7 +154,7 @@ xxx.fortest = function(opt_data, opt_sb) {
 
     def test_for3(self):
         # test loop.index variables
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.index }}{% endfor %}{% endmacro %}")
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data) %}{% for item in data %}{{ loop.index }}{% endfor %}{% endmacro %}")
         stream = StringIO()
         jscompiler.generate(
             node, self.env, "for.html", "for.html", stream = stream)
@@ -170,7 +175,7 @@ xxx.fortest = function(opt_data, opt_sb) {
 
     def test_for4(self):
         # test loop.revindex & loop.revindex0 variables
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.revindex }} - {{loop.revindex0 }}{% endfor %}{% endmacro %}")
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data) %}{% for item in data %}{{ loop.revindex }} - {{loop.revindex0 }}{% endfor %}{% endmacro %}")
         stream = StringIO()
         jscompiler.generate(
             node, self.env, "for.html", "for.html", stream = stream)
@@ -191,7 +196,7 @@ xxx.fortest = function(opt_data, opt_sb) {
 
     def test_for5(self):
         # test loop.length & loop.first & loop.last variables
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.length }} - {{loop.first }} - {{ loop.last }}{% endfor %}{% endmacro %}")
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data) %}{% for item in data %}{{ loop.length }} - {{loop.first }} - {{ loop.last }}{% endfor %}{% endmacro %}")
         stream = StringIO()
         jscompiler.generate(
             node, self.env, "for.html", "for.html", stream = stream)
@@ -212,7 +217,7 @@ xxx.fortest = function(opt_data, opt_sb) {
 
     def test_for6(self):
         # test invalid loop access
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.missing }}{% endfor %}{% endmacro %}")
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data) %}{% for item in data %}{{ loop.missing }}{% endfor %}{% endmacro %}")
         stream = StringIO()
         self.assertRaises(
             AttributeError,
@@ -221,7 +226,7 @@ xxx.fortest = function(opt_data, opt_sb) {
 
     def test_for7(self):
         # test loop.index with other variable.
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.index }} - {{ name }}{% endfor %}{% endmacro %}")
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data, name) %}{% for item in data %}{{ loop.index }} - {{ name }}{% endfor %}{% endmacro %}")
         stream = StringIO()
         jscompiler.generate(
             node, self.env, "for.html", "for.html", stream = stream)
@@ -242,7 +247,7 @@ xxx.fortest = function(opt_data, opt_sb) {
 
     def test_for8(self):
         # test loop.index with other variable, with attribute
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest() %}{% for item in data %}{{ loop.index }} - {{ param.name }}{% endfor %}{% endmacro %}")
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data, param) %}{% for item in data %}{{ loop.index }} - {{ param.name }}{% endfor %}{% endmacro %}")
         stream = StringIO()
         jscompiler.generate(
             node, self.env, "for.html", "for.html", stream = stream)
@@ -262,7 +267,7 @@ xxx.fortest = function(opt_data, opt_sb) {
 }""")
 
     def test_if1(self):
-        node = self.get_compile_from_string("""{% macro iftest() %}
+        node = self.get_compile_from_string("""{% macro iftest(option) %}
 {% if option %}
 Option set.
 {% else %}
@@ -288,7 +293,7 @@ No option.
 }""")
 
     def test_if2(self):
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro testif() %}{% if option %}{{ option }}{% endif %}{% endmacro %}")
+        node = self.get_compile_from_string("{% namespace xxx %}{% macro testif(option) %}{% if option %}{{ option }}{% endif %}{% endmacro %}")
 
         stream = StringIO()
         jscompiler.generate(
@@ -438,9 +443,9 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
 {% macro testcall() %}Hello, {{ xxx.ns1.testif(true) }}!{% endmacro %}""")
 
         stream = StringIO()
-        self.assertRaises(jinja2.compiler.TemplateAssertionError,
-                          jscompiler.generate,
-                          node, self.env, "", "", stream = stream)
+        self.assertRaises(
+            jinja2.compiler.TemplateAssertionError,
+            jscompiler.generate, node, self.env, "", "", stream = stream)
 
     def test_call_macro6(self):
         # call with keywrod arguments
@@ -453,6 +458,66 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
         self.assertRaises(
             jinja2.compiler.TemplateAssertionError,
             jscompiler.generate, node, self.env, "", "", stream = stream)
+
+    def test_call_macro7(self):
+        # call with string keyword
+        node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
+{% macro hello(name) -%}
+Hello, {% if name %}{{ name }}{% else %}world{% endif %}!{% endmacro %}
+
+{% macro testcall() %}{{ xxx.ns1.hello(name = "Michael") }}{% endmacro %}""")
+
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx.ns1');
+goog.require('soy');
+
+
+xxx.ns1.hello = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('Hello, ');
+    if (opt_data.name) {
+        output.append(opt_data.name);
+    } else {
+        output.append('world');
+    }
+    output.append('!');
+    if (!opt_sb) return output.toString();
+}
+
+
+
+xxx.ns1.testcall = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    xxx.ns1.hello({name: 'Michael'}, output);
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_import1(self):
+        node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
+{% import 'test_import.soy' as forms %}
+{% macro hello(name) %}{{ forms.input(name = 'test') }}{% endmacro %}""")
+
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx.ns1');
+goog.require('soy');
+
+
+goog.require('test.ns1');
+
+
+xxx.ns1.hello = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    test.ns1 && test.ns1.input({name: 'test'}, output);
+    if (!opt_sb) return output.toString();
+}""")
 
 
 class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):
