@@ -522,14 +522,9 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
 
 class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):
 
-    def get_compile(self, name, env = None):
-        env = env or self.env
-        # load
-        source, filename, uptodate = self.loader.get_source(env, name)
-        # code = env.compile(source, name, filename)
-
-        node = env._parse(source, name, filename)
-        node = jinja2.optimizer.optimize(node, env)
+    def get_compile_from_string(self, source, name = None, filename = None):
+        node = self.env._parse(source, name, filename)
+        node = jinja2.optimizer.optimize(node, self.env)
 
         return node
 
