@@ -239,16 +239,6 @@ class BaseCodeGenerator(NodeVisitor):
             self.visit(node, frame)
 
 
-class GetRequirements(NodeVisitor):
-
-    def visit_Template(self, node):
-        namespace = list(node.find_all(NamespaceNode))
-        if len(namespace) != 1:
-            raise jinja2.compiler.TemplateAssertionError(
-                "You must supply one namespace for your template",
-                0, self.name, self.filename)
-        namespace = namespace[0].namespace
-
 class CodeGenerator(BaseCodeGenerator):
 
     def visit_Template(self, node):
