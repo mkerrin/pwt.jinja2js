@@ -396,6 +396,18 @@ class MacroCodeGenerator(BaseCodeGenerator):
         if not start:
             self.write(");")
 
+    def visit_Const(self, node, frame):
+        # XXX - need to know the JavaScript ins and out here.
+        val = node.value
+        if val is None:
+            self.write("null")
+        elif val is True:
+            self.write("true")
+        elif val is False:
+            self.write("false")
+        else:
+            self.write(repr(val))
+
     def visit_Name(self, node, frame):
         # declared_parameter
         # declared
@@ -410,28 +422,18 @@ class MacroCodeGenerator(BaseCodeGenerator):
         elif name in frame.identifiers.declared or \
                  name in frame.identifiers.declared_locally:
             try:
+                # Has this variable been reassigned to avoid duplication
                 name = frame.reassigned_names[name]
             except KeyError:
                 pass
             self.write(name)
+
             frame.assigned_names.add(name) # neccessary?
         elif name in frame.identifiers.imports:
             self.write(frame.identifiers.imports[name])
         else:
             raise Exception("Where is the parameter %s (%s:%d)" %(
                 name, self.filename, node.lineno))
-
-    def visit_Const(self, node, frame):
-        # XXX - need to know the JavaScript ins and out here.
-        val = node.value
-        if val is None:
-            self.write("null")
-        elif val is True:
-            self.write("true")
-        elif val is False:
-            self.write("false")
-        else:
-            self.write(repr(val))
 
     def visit_Getattr(self, node, frame):
         if frame.forloop_buffer and node.node.name == "loop":
@@ -456,17 +458,10 @@ class MacroCodeGenerator(BaseCodeGenerator):
             else:
                 raise AttributeError("loop.%s not defined" % node.attr)
         else:
-            # declared_parameter
-            # declared
-            # outer_undeclared
-            # declared_locally
-            # undeclared
             possible_macro = GetNodeName().getName(node, frame)
             if possible_macro in frame.identifiers.declared:
                 self.write(possible_macro)
             else:
-                self.visit(node.node, frame)
-                self.write(" && ") # need to make sure that the node is defined
                 self.visit(node.node, frame)
                 self.write(".%s" % node.attr)
 

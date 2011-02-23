@@ -261,7 +261,7 @@ xxx.fortest = function(opt_data, opt_sb) {
     var itemListLen = itemList.length;
     for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
         var itemData = itemList[itemIndex];
-        output.append(itemIndex + 1, ' - ', opt_data.param && opt_data.param.name);
+        output.append(itemIndex + 1, ' - ', opt_data.param.name);
     }
     if (!opt_sb) return output.toString();
 }""")
@@ -515,7 +515,7 @@ goog.require('test.ns1');
 
 xxx.ns1.hello = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
-    test.ns1 && test.ns1.input({name: 'test'}, output);
+    test.ns1.input({name: 'test'}, output);
     if (!opt_sb) return output.toString();
 }""")
 

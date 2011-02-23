@@ -17,7 +17,9 @@ $(document).ready(function() {
 
         // test with option.data
         test("basicif2", function() {
-                equals(tests.iftest.basicif2({}), "No option data set.");
+                // undefined error as option is not passed into the if
+                raises(function() { tests.iftest.basicif2({}) });
+
                 equals(tests.iftest.basicif2({option: true}), "No option data set.");
                 equals(tests.iftest.basicif2({option: {data: true}}), "Option data set.");
             });
