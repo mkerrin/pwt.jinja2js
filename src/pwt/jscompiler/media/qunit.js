@@ -8,8 +8,6 @@
  * or GPL (GPL-LICENSE.txt) licenses.
  */
 
-(function(window) {
-
 var defined = {
 	setTimeout: typeof window.setTimeout !== "undefined",
 	sessionStorage: (function() {
@@ -32,6 +30,7 @@ var Test = function(name, testName, expected, testEnvironmentArg, async, callbac
 	this.callback = callback;
 	this.assertions = [];
 };
+
 Test.prototype = {
 	init: function() {
 		var tests = id("qunit-tests");
@@ -298,7 +297,7 @@ var QUnit = {
 			message: msg
 		};
 		msg = escapeHtml(msg);
-		QUnit.log(details);
+		// QUnit.log(details);
 		config.current.assertions.push({
 			result: a,
 			message: msg
@@ -415,10 +414,6 @@ var QUnit = {
 
 };
 
-// Backwards compatibility, deprecated
-QUnit.equals = QUnit.equal;
-QUnit.same = QUnit.deepEqual;
-
 // Maintain internal state
 var config = {
 	// The queue of tests to run
@@ -455,16 +450,6 @@ var config = {
 	// Figure out if we're running the tests from a server or not
 	QUnit.isLocal = !!(location.protocol === 'file:');
 })();
-
-// Expose the API as global variables, unless an 'exports'
-// object exists, in that case we assume we're in CommonJS
-if ( typeof exports === "undefined" || typeof require === "undefined" ) {
-	extend(window, QUnit);
-	window.QUnit = QUnit;
-} else {
-	extend(exports, QUnit);
-	exports.QUnit = QUnit;
-}
 
 // define these after exposing globals to keep them in these QUnit namespace only
 extend(QUnit, {
@@ -611,7 +596,7 @@ extend(QUnit, {
 		}
 		output += "</table>";
 		
-		QUnit.log(details);
+		// QUnit.log(details);
 		
 		config.current.assertions.push({
 			result: !!result,
@@ -1408,5 +1393,3 @@ QUnit.diff = (function() {
 		return str;
 	};
 })();
-
-})(this);
