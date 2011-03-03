@@ -27,6 +27,9 @@ test-suites = pwt.jscompiler.nose_test_suites:Suites
 
 [zc.buildout]
 dependency = pwt.jscompiler.recipe:Deps
+
+[paste.app_factory]
+main = pwt.jscompiler.soy_wsgi:Resources
 """,
 
     include_package_data = True,

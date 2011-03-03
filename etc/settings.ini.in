@@ -14,7 +14,7 @@ use = egg:Paste#urlmap
 /media = static
 
 [app:soy_templates]
-paste.app_factory = pwt.jscompiler.soy_wsgi:Resources
+use = egg:pwt.jscompiler
 url = /soy/
 packages = pwt.jscompiler
 
