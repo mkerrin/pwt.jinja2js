@@ -267,7 +267,7 @@ xxx.fortest = function(opt_data, opt_sb) {
 }""")
 
     def test_for9(self):
-        # bug report
+        # bug report - need to rename nested for loop iterators.
         node = self.get_compile_from_string("""{% namespace xxx %}
 {% macro fortest(jobs) %}
 {% for job in jobs %}
