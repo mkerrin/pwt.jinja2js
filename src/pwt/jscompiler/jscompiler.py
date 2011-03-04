@@ -439,13 +439,12 @@ class MacroCodeGenerator(BaseCodeGenerator):
         if name in frame.identifiers.declared_parameter:
             self.write("opt_data." + name)
             frame.assigned_names.add("opt_data." + name) # neccessary?
+        elif name in frame.reassigned_names:
+            self.write(frame.reassigned_names[name])
+
+            frame.assigned_names.add(name) # neccessary?
         elif name in frame.identifiers.declared or \
                  name in frame.identifiers.declared_locally:
-            try:
-                # Has this variable been reassigned to avoid duplication
-                name = frame.reassigned_names[name]
-            except KeyError:
-                pass
             self.write(name)
 
             frame.assigned_names.add(name) # neccessary?

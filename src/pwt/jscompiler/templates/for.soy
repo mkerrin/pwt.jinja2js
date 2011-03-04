@@ -11,3 +11,7 @@
 {% macro forloop1(data) -%}
 {% for item in data %}{{ loop.index }} - {{ loop.index0 }}<br/>{% endfor %}
 {%- endmacro %}
+
+{% macro forloop2(jobs) -%}
+{% for job in jobs %}{% for badge in job.badges %}{{ badge.name }} {% endfor %}{% endfor %}
+{%- endmacro %}

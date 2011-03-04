@@ -266,6 +266,46 @@ xxx.fortest = function(opt_data, opt_sb) {
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_for9(self):
+        # bug report
+        node = self.get_compile_from_string("""{% namespace xxx %}
+{% macro fortest(jobs) %}
+{% for job in jobs %}
+   {% for badge in job.badges %}
+       {{ badge.name }}
+   {% endfor %}
+{% endfor %}
+{% endmacro %}""")
+
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx');
+goog.require('soy');
+
+
+xxx.fortest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\n');
+    var jobList = opt_data.jobs;
+    var jobListLen = jobList.length;
+    for (var jobIndex = 0; jobIndex < jobListLen; jobIndex++) {
+        var jobData = jobList[jobIndex];
+        output.append('\\n   ');
+        var badgeList = jobData.badges;
+        var badgeListLen = badgeList.length;
+        for (var badgeIndex = 0; badgeIndex < badgeListLen; badgeIndex++) {
+            var badgeData = badgeList[badgeIndex];
+            output.append('\\n       ', badgeData.name, '\\n   ');
+        }
+        output.append('\\n');
+    }
+    output.append('\\n');
+    if (!opt_sb) return output.toString();
+}""")   
+
     def test_if1(self):
         node = self.get_compile_from_string("""{% macro iftest(option) %}
 {% if option %}

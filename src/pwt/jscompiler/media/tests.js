@@ -73,6 +73,13 @@ $(document).ready(function() {
                 equals(tests.fortest.forloop1({data: [5, 4, 3]}), "1 - 0<br/>2 - 1<br/>3 - 2<br/>");
             });
 
+        test("forloop2", function() {
+                equals(tests.fortest.forloop2({
+                            jobs: [{badges: [{name: "Badge 1"}, {name: "Badge 2"}, {name: "Badge 3"}]},
+                                   {badges: [{name: "Badge 1.1"}, {name: "Badge 2.1"}]},
+                                   ]}), "Badge 1 Badge 2 Badge 3 Badge 1.1 Badge 2.1 ");
+            });
+
         module("call macro");
 
         test("call1", function() {
