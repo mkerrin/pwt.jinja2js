@@ -83,6 +83,10 @@ window.onload = function() {
                 QUnit.equal(tests.call.call2({}), "Michael was called!");
             });
 
+        QUnit.test("call3", function() {
+                QUnit.equal(tests.call.call3({}), "Michael Kerrin");
+            });
+
         QUnit.module("import macros");
 
         QUnit.test("import1", function() {

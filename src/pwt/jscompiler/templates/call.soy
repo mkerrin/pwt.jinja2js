@@ -5,3 +5,7 @@
 {% macro call1() %}{{ tests.call.callme() }}{% endmacro %}
 
 {% macro call2() %}{{ tests.call.callme(name = "Michael") }}{% endmacro %}
+
+{% macro dictcall(name) %}{{ name.first }} {{ name.second }}{% endmacro %}
+
+{% macro call3() %}{{ tests.call.dictcall(name = {'first': 'Michael', 'second': 'Kerrin'}) }}{% endmacro %}

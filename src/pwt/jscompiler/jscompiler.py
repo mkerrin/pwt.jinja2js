@@ -408,6 +408,21 @@ class MacroCodeGenerator(BaseCodeGenerator):
         else:
             self.write(repr(val))
 
+    def visit_Dict(self, node, frame):
+        self.write("{")
+        first = True
+        for item in node.items:
+            if first:
+                first = False
+            else:
+                self.write(", ")
+
+            self.visit(item.key, frame)
+            self.write(": ")
+            self.visit(item.value, frame)
+
+        self.write("}")
+
     def visit_Name(self, node, frame):
         # declared_parameter
         # declared

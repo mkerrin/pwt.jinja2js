@@ -35,13 +35,6 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
 
         return node
 
-    def get_compile(self, name):
-        # load
-        source, filename, uptodate = self.loader.get_source(self.env, name)
-        # code = env.compile(source, name, filename)
-
-        return self.get_compile_from_string(source, name, filename)
-
     def test_missing_namespace1(self):
         node = self.get_compile_from_string("""{% macro hello() %}
 Hello, world!
@@ -311,9 +304,11 @@ xxx.testif = function(opt_data, opt_sb) {
 }""")
 
     def test_call_macro1(self):
+        # call macro in same template, without arguments.
         node = self.get_compile_from_string("""{% namespace xxx %}
 {% macro testif(option) -%}
 {% if option %}{{ option }}{% endif %}{% endmacro %}
+
 {% macro testcall() %}{{ xxx.testif() }}{% endmacro %}""")
 
         stream = StringIO()
@@ -334,6 +329,7 @@ xxx.testif = function(opt_data, opt_sb) {
 }
 
 
+
 xxx.testcall = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     xxx.testif({}, output);
@@ -341,10 +337,12 @@ xxx.testcall = function(opt_data, opt_sb) {
 }""")
 
     def test_call_macro2(self):
-        # multiple name namespace
+        # call macro in same template where the namespace contains
+        # multiple dotted names.
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
 {% macro testif(option) -%}
 {% if option %}{{ option }}{% endif %}{% endmacro %}
+
 {% macro testcall() %}{{ xxx.ns1.testif() }}{% endmacro %}""")
 
         stream = StringIO()
@@ -365,6 +363,7 @@ xxx.ns1.testif = function(opt_data, opt_sb) {
 }
 
 
+
 xxx.ns1.testcall = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     xxx.ns1.testif({}, output);
@@ -372,10 +371,11 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
 }""")
 
     def test_call_macro3(self):
-        # call with parament set
+        # call macro passing in a argument
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
 {% macro testif(option) -%}
 {% if option %}{{ option }}{% endif %}{% endmacro %}
+
 {% macro testcall() %}{{ xxx.ns1.testif(option = true) }}{% endmacro %}""")
 
         stream = StringIO()
@@ -396,6 +396,7 @@ xxx.ns1.testif = function(opt_data, opt_sb) {
 }
 
 
+
 xxx.ns1.testcall = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     xxx.ns1.testif({option: true}, output);
@@ -403,10 +404,11 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
 }""")
 
     def test_call_macro4(self):
-        # call with parament set, and extra output
+        # call macro passing parament, with extra output
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
 {% macro testif(option) -%}
 {% if option %}{{ option }}{% endif %}{% endmacro %}
+
 {% macro testcall() %}Hello, {{ xxx.ns1.testif(option = true) }}!{% endmacro %}""")
 
         stream = StringIO()
@@ -427,6 +429,7 @@ xxx.ns1.testif = function(opt_data, opt_sb) {
 }
 
 
+
 xxx.ns1.testcall = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     output.append('Hello, ');
@@ -436,7 +439,7 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
 }""")
 
     def test_call_macro5(self):
-        # call with variable arguments
+        # call macro with positional arguments
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
 {% macro testif(option) -%}
 {% if option %}{{ option }}{% endif %}{% endmacro %}
@@ -448,10 +451,11 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
             jscompiler.generate, node, self.env, "", "", stream = stream)
 
     def test_call_macro6(self):
-        # call with keywrod arguments
+        # call macro with dynamic keywrod arguments
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
 {% macro testif(option) -%}
 {% if option %}{{ option }}{% endif %}{% endmacro %}
+
 {% macro testcall() %}Hello, {{ xxx.ns1.testif(**{option: true}) }}!{% endmacro %}""")
 
         stream = StringIO()
@@ -460,7 +464,7 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
             jscompiler.generate, node, self.env, "", "", stream = stream)
 
     def test_call_macro7(self):
-        # call with string keyword
+        # call macro with string keyword
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
 {% macro hello(name) -%}
 Hello, {% if name %}{{ name }}{% else %}world{% endif %}!{% endmacro %}
@@ -496,9 +500,47 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_call_macro8(self):
+        # call macro with parameter sub
+        node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
+{% macro hello(name) -%}
+Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
+
+{% macro testcall() %}{{ xxx.ns1.hello(name = {"first": "Michael"}) }}{% endmacro %}""")
+
+        stream = StringIO()
+        jscompiler.generate(
+            node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('xxx.ns1');
+goog.require('soy');
+
+
+xxx.ns1.hello = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('Hello, ');
+    if (opt_data.name) {
+        output.append(opt_data.name.first);
+    } else {
+        output.append('world');
+    }
+    output.append('!');
+    if (!opt_sb) return output.toString();
+}
+
+
+
+xxx.ns1.testcall = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    xxx.ns1.hello({name: {'first': 'Michael'}}, output);
+    if (!opt_sb) return output.toString();
+}""")
+
     def test_import1(self):
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
 {% import 'test_import.soy' as forms %}
+
 {% macro hello(name) %}{{ forms.input(name = 'test') }}{% endmacro %}""")
 
         stream = StringIO()
@@ -511,6 +553,7 @@ goog.require('soy');
 
 
 goog.require('test.ns1');
+
 
 
 xxx.ns1.hello = function(opt_data, opt_sb) {
