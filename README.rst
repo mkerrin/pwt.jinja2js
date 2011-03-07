@@ -16,10 +16,6 @@ In order to get started with this project and to see what it can do:
  * python bootstrap
  * ./bin/buildout
 
-At some point the build will break. Open the file
-**eggs/Jinja2-2.5.5-py2.6.egg/jinja2/nodes.py** and comment out the last
-line. This will fix this issue.
-
 Testing
 =======
 

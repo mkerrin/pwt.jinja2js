@@ -73,6 +73,13 @@ window.onload = function() {
                 QUnit.equal(tests.fortest.forloop1({data: [5, 4, 3]}), "1 - 0<br/>2 - 1<br/>3 - 2<br/>");
             });
 
+        QUnit.test("forloop2", function() {
+                QUnit.equals(tests.fortest.forloop2({
+                            jobs: [{badges: [{name: "Badge 1"}, {name: "Badge 2"}, {name: "Badge 3"}]},
+                                   {badges: [{name: "Badge 1.1"}, {name: "Badge 2.1"}]},
+                                   ]}), "Badge 1 Badge 2 Badge 3 Badge 1.1 Badge 2.1 ");
+            });
+
         QUnit.module("call macro");
 
         QUnit.test("call1", function() {

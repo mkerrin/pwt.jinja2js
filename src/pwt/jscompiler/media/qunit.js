@@ -21,6 +21,9 @@ var defined = {
 
 var testId = 0;
 
+/**
+ * @constructor
+ */
 var Test = function(name, testName, expected, testEnvironmentArg, async, callback) {
 	this.name = name;
 	this.testName = testName;
