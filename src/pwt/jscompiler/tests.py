@@ -300,6 +300,23 @@ xxx.fortest = function(opt_data, opt_sb) {
 }""")   
 
     def test_if1(self):
+        # test if
+        node = self.get_compile_from_string("""{% macro testif(option) %}{% if option %}{{ option }}{% endif %}{% endmacro %}""")
+
+        stream = StringIO()
+        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    if (opt_data.option) {
+        output.append(opt_data.option);
+    }
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_if2(self):
+        # test if / else
         node = self.get_compile_from_string("""{% macro iftest(option) %}
 {% if option %}
 Option set.
@@ -310,7 +327,7 @@ No option.
 """)
 
         stream = StringIO()
-        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
+        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
         source_code = stream.getvalue()
 
         self.assertEqual(source_code, """test.iftest = function(opt_data, opt_sb) {
@@ -325,20 +342,66 @@ No option.
     if (!opt_sb) return output.toString();
 }""")
 
-    def test_if2(self):
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro testif(option) %}{% if option %}{{ option }}{% endif %}{% endmacro %}")
+    def test_if3(self):
+        # test if ==
+        node = self.get_compile_from_string("""{% macro testif(num) %}{% if num == 0 %}{{ num }}{% endif %}{% endmacro %}""")
 
         stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
+        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """goog.provide('xxx');
-goog.require('soy');
-xxx.testif = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
-    if (opt_data.option) {
-        output.append(opt_data.option);
+    if (opt_data.num == 0) {
+        output.append(opt_data.num);
+    }
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_if4(self):
+        # test if == and !=
+        node = self.get_compile_from_string("""{% macro testif(num) %}{% if num != 0 and num == 2 %}{{ num }}{% endif %}{% endmacro %}""")
+
+        stream = StringIO()
+        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    if ((opt_data.num != 0 && opt_data.num == 2)) {
+        output.append(opt_data.num);
+    }
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_if5(self):
+        # test if > and >= and < and <=
+        node = self.get_compile_from_string("""{% macro testif(num) %}{% if num > 0 and num >= 1 and num < 2 and num <= 3 %}{{ num }}{% endif %}{% endmacro %}""")
+
+        stream = StringIO()
+        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    if ((((opt_data.num > 0 && opt_data.num >= 1) && opt_data.num < 2) && opt_data.num <= 3)) {
+        output.append(opt_data.num);
+    }
+    if (!opt_sb) return output.toString();
+}""")
+
+    def XXXtest_if6(self):
+        # test if in
+        node = self.get_compile_from_string("""{% macro testif(num) %}{% if num in [1, 2, 3] %}{{ num }}{% endif %}{% endmacro %}""")
+
+        stream = StringIO()
+        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    if ((((opt_data.num > 0 && opt_data.num >= 1) && opt_data.num < 2) && opt_data.num <= 3)) {
+        output.append(opt_data.num);
     }
     if (!opt_sb) return output.toString();
 }""")
