@@ -87,6 +87,86 @@ Hello, {{ name }}!
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_var3(self):
+        # variables with numerical addition
+        node = self.get_compile_from_string("""{% macro add(num) %}
+{{ num + 200 }}
+{% endmacro %}
+""")
+        stream = StringIO()
+        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\n', (opt_data.num + 200), '\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_var4(self):
+        # variables with numerical addition to variable
+        node = self.get_compile_from_string("""{% macro add(num, step) %}
+{{ num + step }}
+{% endmacro %}
+""")
+        stream = StringIO()
+        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\n', (opt_data.num + opt_data.step), '\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_var5(self):
+        # variables minus, power of, 
+        node = self.get_compile_from_string("""{% macro add(num, step) %}
+{{ (num - step) ** 2 }}
+{% endmacro %}
+""")
+        stream = StringIO()
+        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\n', Math.pow((opt_data.num - opt_data.step), 2), '\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_var6(self):
+        # variables floor division
+        node = self.get_compile_from_string("""{% macro fd(n1, n2) %}
+{{ Math.floor(n1 / n2) }}
+{% endmacro %}
+""")
+        stream = StringIO()
+        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\n', Math.floor((opt_data.num / opt_data.step)), '\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_var6(self):
+        # variables minus, power of, 
+        node = self.get_compile_from_string("""{% macro add(num, step) %}
+{{ num - (step ** 2) }}
+{% endmacro %}
+""")
+        stream = StringIO()
+        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\n', (opt_data.num - Math.pow(opt_data.step, 2)), '\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
     def test_for1(self):
         # XXX - test recursive loop
         node = self.get_compile_from_string("""{% namespace test %}
@@ -426,6 +506,22 @@ No option.
         self.assertRaises(
             jinja2.compiler.TemplateAssertionError,
             generateMacro, node, self.env, "if.html", "if.html", stream = stream)
+
+    def test_if8(self):
+        # test if > and >= and < and <=
+        node = self.get_compile_from_string("""{% macro testif(num) %}{% if num + 1 == 2 %}{{ num }}{% endif %}{% endmacro %}""")
+
+        stream = StringIO()
+        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    if ((opt_data.num + 1) == 2) {
+        output.append(opt_data.num);
+    }
+    if (!opt_sb) return output.toString();
+}""")
 
     def test_call_macro1(self):
         # call macro in same template, without arguments.

@@ -52,7 +52,7 @@ class Namespace(jinja2.ext.Extension):
 
 BINOPERATORS = {
     "and": "&&",
-    "or": "||",
+    "or":  "||",
     }
 
 OPERATORS = {
@@ -511,13 +511,45 @@ class MacroCodeGenerator(BaseCodeGenerator):
         def visitor(self, node, frame):
             self.write("(")
             self.visit(node.left, frame)
-            self.write(" %s " % BINOPERATORS[operator])
+            self.write(" %s " % BINOPERATORS.get(operator, operator))
             self.visit(node.right, frame)
             self.write(")")
         return visitor
 
+    def Math(operator):
+        def visitor(self, node, frame):
+            self.write("Math.%s(" % operator)
+            self.visit(node.left, frame)
+            self.write(", ")
+            self.visit(node.right, frame)
+            self.write(")")
+        return visitor
+
+    # Math operators
+    visit_Add = binop("+")
+    visit_Sub = binop("-")
+    visit_Mul = binop("*")
+    visit_Div = binop("/")
+
+    def visit_FloorDiv(self, node, frame):
+        self.write("Math.floor(")
+        self.visit(node.left, frame)
+        self.write(" / ")
+        self.visit(node.right, frame)
+        self.write(")")
+
+    visit_Pow = Math("pow")
+    visit_Mod = binop("%")
     visit_And = binop("and")
     visit_Or = binop("or")
+    ## visit_Pos = uaop('+')
+    ## visit_Neg = uaop('-')
+    ## visit_Not = uaop('not ')
+
+    visit_And = binop("and")
+    visit_Or = binop("or")
+
+    del binop, Math
 
     def visit_Compare(self, node, frame):
         self.visit(node.expr, frame)
