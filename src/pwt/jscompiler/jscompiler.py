@@ -428,6 +428,14 @@ class MacroCodeGenerator(BaseCodeGenerator):
         else:
             self.write(repr(val))
 
+    def visit_List(self, node, frame):
+        self.write("[")
+        for idx, item in enumerate(node.items):
+            if idx:
+                self.write(", ")
+            self.visit(item, frame)
+        self.write("]")
+
     def visit_Dict(self, node, frame):
         self.write("{")
         first = True
@@ -513,10 +521,15 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
     def visit_Compare(self, node, frame):
         self.visit(node.expr, frame)
+        # XXX - ops is a list. Can we have a list of comparisons
         for op in node.ops:
             self.visit(op, frame)
 
     def visit_Operand(self, node, frame):
+        if node.op not in OPERATORS:
+            raise jinja2.compiler.TemplateAssertionError(
+                "Comparison operator '%s' not supported in JavaScript",
+                node.lineno, self.name, self.filename)
         self.write(" %s " % OPERATORS[node.op])
         self.visit(node.expr, frame)
 

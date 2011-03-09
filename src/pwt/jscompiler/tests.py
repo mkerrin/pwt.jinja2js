@@ -261,8 +261,7 @@ xxx.fortest = function(opt_data, opt_sb) {
 
     def test_for9(self):
         # bug report - need to rename nested for loop iterators.
-        node = self.get_compile_from_string("""{% namespace xxx %}
-{% macro fortest(jobs) %}
+        node = self.get_compile_from_string("""{% macro fortest(jobs) %}
 {% for job in jobs %}
    {% for badge in job.badges %}
        {{ badge.name }}
@@ -271,15 +270,10 @@ xxx.fortest = function(opt_data, opt_sb) {
 {% endmacro %}""")
 
         stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
+        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """goog.provide('xxx');
-goog.require('soy');
-
-
-xxx.fortest = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     output.append('\\n');
     var jobList = opt_data.jobs;
@@ -297,7 +291,32 @@ xxx.fortest = function(opt_data, opt_sb) {
     }
     output.append('\\n');
     if (!opt_sb) return output.toString();
-}""")   
+}""")
+
+    def test_for10(self):
+        # test for in list loop
+        node = self.get_compile_from_string("""{% macro forinlist(jobs) %}
+{% for job in [1, 2, 3] %}
+   {{ job }}
+{% endfor %}
+{% endmacro %}""")
+
+        stream = StringIO()
+        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.forinlist = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\n');
+    var jobList = [1, 2, 3];
+    var jobListLen = jobList.length;
+    for (var jobIndex = 0; jobIndex < jobListLen; jobIndex++) {
+        var jobData = jobList[jobIndex];
+        output.append('\\n   ', jobData, '\\n');
+    }
+    output.append('\\n');
+    if (!opt_sb) return output.toString();
+}""")
 
     def test_if1(self):
         # test if
@@ -390,21 +409,23 @@ No option.
     if (!opt_sb) return output.toString();
 }""")
 
-    def XXXtest_if6(self):
+    def test_if6(self):
         # test if in
         node = self.get_compile_from_string("""{% macro testif(num) %}{% if num in [1, 2, 3] %}{{ num }}{% endif %}{% endmacro %}""")
 
         stream = StringIO()
-        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
-        source_code = stream.getvalue()
+        self.assertRaises(
+            jinja2.compiler.TemplateAssertionError,
+            generateMacro, node, self.env, "if.html", "if.html", stream = stream)
 
-        self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb) {
-    var output = opt_sb || new soy.StringBuilder();
-    if ((((opt_data.num > 0 && opt_data.num >= 1) && opt_data.num < 2) && opt_data.num <= 3)) {
-        output.append(opt_data.num);
-    }
-    if (!opt_sb) return output.toString();
-}""")
+    def test_if7(self):
+        # test if in
+        node = self.get_compile_from_string("""{% macro testif(num) %}{% if num not in [1, 2, 3] %}{{ num }}{% endif %}{% endmacro %}""")
+
+        stream = StringIO()
+        self.assertRaises(
+            jinja2.compiler.TemplateAssertionError,
+            generateMacro, node, self.env, "if.html", "if.html", stream = stream)
 
     def test_call_macro1(self):
         # call macro in same template, without arguments.
