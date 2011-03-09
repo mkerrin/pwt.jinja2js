@@ -76,7 +76,7 @@ window.onload = function() {
         QUnit.test("forloop2", function() {
                 QUnit.equals(tests.fortest.forloop2({
                             jobs: [{badges: [{name: "Badge 1"}, {name: "Badge 2"}, {name: "Badge 3"}]},
-                                   {badges: [{name: "Badge 1.1"}, {name: "Badge 2.1"}]},
+                                   {badges: [{name: "Badge 1.1"}, {name: "Badge 2.1"}]}
                                    ]}), "Badge 1 Badge 2 Badge 3 Badge 1.1 Badge 2.1 ");
             });
 
