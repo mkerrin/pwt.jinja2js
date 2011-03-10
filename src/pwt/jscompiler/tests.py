@@ -169,7 +169,7 @@ Hello, {{ name }}!
 
     def test_for1(self):
         # XXX - test recursive loop
-        node = self.get_compile_from_string("""{% namespace test %}
+        node = self.get_compile_from_string("""{% namespace xxx %}
 {% macro fortest(data) %}
 {% for item in data %}
   Item {{ item }}.
@@ -183,11 +183,10 @@ Hello, {{ name }}!
             node, self.env, "for.html", "for.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """goog.provide('test');
+        self.assertEqual(source_code, """goog.provide('xxx');
 goog.require('soy');
 
-
-test.fortest = function(opt_data, opt_sb) {
+xxx.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     output.append('\\n');
     var itemList = opt_data.data;
@@ -206,15 +205,12 @@ test.fortest = function(opt_data, opt_sb) {
 
     def test_for2(self):
         # test loop.index0 variables
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data) %}{% for item in data %}{{ loop.index0 }}{% endfor %}{% endmacro %}")
+        node = self.get_compile_from_string("{% macro fortest(data) %}{% for item in data %}{{ loop.index0 }}{% endfor %}{% endmacro %}")
         stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
+        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """goog.provide('xxx');
-goog.require('soy');
-xxx.fortest = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
@@ -227,15 +223,12 @@ xxx.fortest = function(opt_data, opt_sb) {
 
     def test_for3(self):
         # test loop.index variables
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data) %}{% for item in data %}{{ loop.index }}{% endfor %}{% endmacro %}")
+        node = self.get_compile_from_string("{% macro fortest(data) %}{% for item in data %}{{ loop.index }}{% endfor %}{% endmacro %}")
         stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
+        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """goog.provide('xxx');
-goog.require('soy');
-xxx.fortest = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
@@ -248,15 +241,12 @@ xxx.fortest = function(opt_data, opt_sb) {
 
     def test_for4(self):
         # test loop.revindex & loop.revindex0 variables
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data) %}{% for item in data %}{{ loop.revindex }} - {{loop.revindex0 }}{% endfor %}{% endmacro %}")
+        node = self.get_compile_from_string("{% macro fortest(data) %}{% for item in data %}{{ loop.revindex }} - {{loop.revindex0 }}{% endfor %}{% endmacro %}")
         stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
+        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """goog.provide('xxx');
-goog.require('soy');
-xxx.fortest = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
@@ -269,15 +259,12 @@ xxx.fortest = function(opt_data, opt_sb) {
 
     def test_for5(self):
         # test loop.length & loop.first & loop.last variables
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data) %}{% for item in data %}{{ loop.length }} - {{loop.first }} - {{ loop.last }}{% endfor %}{% endmacro %}")
+        node = self.get_compile_from_string("{% macro fortest(data) %}{% for item in data %}{{ loop.length }} - {{loop.first }} - {{ loop.last }}{% endfor %}{% endmacro %}")
         stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
+        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """goog.provide('xxx');
-goog.require('soy');
-xxx.fortest = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
@@ -299,15 +286,12 @@ xxx.fortest = function(opt_data, opt_sb) {
 
     def test_for7(self):
         # test loop.index with other variable.
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data, name) %}{% for item in data %}{{ loop.index }} - {{ name }}{% endfor %}{% endmacro %}")
+        node = self.get_compile_from_string("{% macro fortest(data, name) %}{% for item in data %}{{ loop.index }} - {{ name }}{% endfor %}{% endmacro %}")
         stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
+        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """goog.provide('xxx');
-goog.require('soy');
-xxx.fortest = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
@@ -320,15 +304,12 @@ xxx.fortest = function(opt_data, opt_sb) {
 
     def test_for8(self):
         # test loop.index with other variable, with attribute
-        node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data, param) %}{% for item in data %}{{ loop.index }} - {{ param.name }}{% endfor %}{% endmacro %}")
+        node = self.get_compile_from_string("{% macro fortest(data, param) %}{% for item in data %}{{ loop.index }} - {{ param.name }}{% endfor %}{% endmacro %}")
         stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
+        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """goog.provide('xxx');
-goog.require('soy');
-xxx.fortest = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
@@ -539,7 +520,6 @@ No option.
         self.assertEqual(source_code, """goog.provide('xxx');
 goog.require('soy');
 
-
 xxx.testif = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     if (opt_data.option) {
@@ -547,7 +527,6 @@ xxx.testif = function(opt_data, opt_sb) {
     }
     if (!opt_sb) return output.toString();
 }
-
 
 
 xxx.testcall = function(opt_data, opt_sb) {
@@ -573,7 +552,6 @@ xxx.testcall = function(opt_data, opt_sb) {
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('soy');
 
-
 xxx.ns1.testif = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     if (opt_data.option) {
@@ -581,7 +559,6 @@ xxx.ns1.testif = function(opt_data, opt_sb) {
     }
     if (!opt_sb) return output.toString();
 }
-
 
 
 xxx.ns1.testcall = function(opt_data, opt_sb) {
@@ -606,7 +583,6 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('soy');
 
-
 xxx.ns1.testif = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     if (opt_data.option) {
@@ -614,7 +590,6 @@ xxx.ns1.testif = function(opt_data, opt_sb) {
     }
     if (!opt_sb) return output.toString();
 }
-
 
 
 xxx.ns1.testcall = function(opt_data, opt_sb) {
@@ -639,7 +614,6 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('soy');
 
-
 xxx.ns1.testif = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     if (opt_data.option) {
@@ -647,7 +621,6 @@ xxx.ns1.testif = function(opt_data, opt_sb) {
     }
     if (!opt_sb) return output.toString();
 }
-
 
 
 xxx.ns1.testcall = function(opt_data, opt_sb) {
@@ -699,7 +672,6 @@ Hello, {% if name %}{{ name }}{% else %}world{% endif %}!{% endmacro %}
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('soy');
 
-
 xxx.ns1.hello = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     output.append('Hello, ');
@@ -711,7 +683,6 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
     output.append('!');
     if (!opt_sb) return output.toString();
 }
-
 
 
 xxx.ns1.testcall = function(opt_data, opt_sb) {
@@ -736,7 +707,6 @@ Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('soy');
 
-
 xxx.ns1.hello = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     output.append('Hello, ');
@@ -748,7 +718,6 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
     output.append('!');
     if (!opt_sb) return output.toString();
 }
-
 
 
 xxx.ns1.testcall = function(opt_data, opt_sb) {
@@ -773,7 +742,6 @@ goog.require('soy');
 
 
 goog.require('test.ns1');
-
 
 
 xxx.ns1.hello = function(opt_data, opt_sb) {

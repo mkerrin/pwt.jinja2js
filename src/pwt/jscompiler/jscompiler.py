@@ -307,7 +307,6 @@ class CodeGenerator(BaseCodeGenerator):
         self.writeline("goog.require('%s');" % namespace.encode("utf-8"), node)
 
     def visit_Macro(self, node, frame):
-        self.writeline("", node)
         generator = MacroCodeGenerator(
             self.environment,
             self.name,
@@ -516,15 +515,6 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.write(")")
         return visitor
 
-    def Math(operator):
-        def visitor(self, node, frame):
-            self.write("Math.%s(" % operator)
-            self.visit(node.left, frame)
-            self.write(", ")
-            self.visit(node.right, frame)
-            self.write(")")
-        return visitor
-
     # Math operators
     visit_Add = binop("+")
     visit_Sub = binop("-")
@@ -538,7 +528,13 @@ class MacroCodeGenerator(BaseCodeGenerator):
         self.visit(node.right, frame)
         self.write(")")
 
-    visit_Pow = Math("pow")
+    def visit_Pow(self, node, frame):
+        self.write("Math.pow(")
+        self.visit(node.left, frame)
+        self.write(", ")
+        self.visit(node.right, frame)
+        self.write(")")
+
     visit_Mod = binop("%")
     visit_And = binop("and")
     visit_Or = binop("or")
@@ -549,7 +545,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
     visit_And = binop("and")
     visit_Or = binop("or")
 
-    del binop, Math
+    del binop
 
     def visit_Compare(self, node, frame):
         self.visit(node.expr, frame)
