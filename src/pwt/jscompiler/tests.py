@@ -197,6 +197,48 @@ Hello, {{ name }}!
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_var9(self):
+        # variables -
+        node = self.get_compile_from_string("""{% macro add(num) %}{{ -num + 20 }}{% endmacro %}
+""")
+        stream = StringIO()
+        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream, autoescape = True)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(soy.$$escapeHtml(((-opt_data.num) + 20)));
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_var10(self):
+        # variables +
+        node = self.get_compile_from_string("""{% macro add(num) %}{{ +num + 20 }}{% endmacro %}
+""")
+        stream = StringIO()
+        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream, autoescape = True)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(soy.$$escapeHtml(((+opt_data.num) + 20)));
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_var11(self):
+        # variables not
+        node = self.get_compile_from_string("""{% macro add(bool) %}{{ not bool }}{% endmacro %}
+""")
+        stream = StringIO()
+        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream, autoescape = True)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(soy.$$escapeHtml((!opt_data.bool)));
+    if (!opt_sb) return output.toString();
+}""")
+
     def test_for1(self):
         # XXX - test recursive loop
         node = self.get_compile_from_string("""{% namespace xxx %}

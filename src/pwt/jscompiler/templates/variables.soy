@@ -22,3 +22,7 @@
 {% macro order2(n1, n2) %}{{ (n1 + (n2 ** 2)) }}{% endmacro %}
 {% macro order3(n1, n2, n3) %}{{ n1 + n2 * n3 }}{% endmacro %}
 {% macro order4(n1, n2, n3) %}{{ (n1 + n2) * n3 }}{% endmacro %}
+
+{% macro unaryminus1(num) %}{{ -num + 15 }}{% endmacro %}
+{% macro unaryminus2(num) %}{{ +num + 15 }}{% endmacro %}
+{% macro unarynot(bool) %}{{ not bool }}{% endmacro %}

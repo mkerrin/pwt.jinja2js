@@ -61,6 +61,21 @@ window.onload = function() {
             QUnit.equal(tests.variables.order4({n1: 7, n2: 3, n3: 4}), "40");
         });
 
+    QUnit.test("unaryminus1", function() {
+            QUnit.equal(tests.variables.unaryminus1({num: 10}), "5");
+            QUnit.equal(tests.variables.unaryminus1({num: 5}), "10");
+        });
+
+    QUnit.test("unaryminus2", function() {
+            QUnit.equal(tests.variables.unaryminus2({num: 10}), "25");
+            QUnit.equal(tests.variables.unaryminus2({num: 5}), "20");
+        });
+
+    QUnit.test("unarynot", function() {
+            QUnit.equal(tests.variables.unarynot({bool: 1}), "false");
+            QUnit.equal(tests.variables.unarynot({bool: 0}), "true");
+        });
+
     QUnit.module("if.soy");
 
     // test with option

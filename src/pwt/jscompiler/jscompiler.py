@@ -56,6 +56,9 @@ BINOPERATORS = {
     "or":  "||",
     }
 
+UNARYOP = {
+    "not ": "!"
+    }
 
 OPERATORS = {
     "eq":    "==",
@@ -587,9 +590,17 @@ class MacroCodeGenerator(BaseCodeGenerator):
     visit_Mod = binop("%")
     visit_And = binop("and")
     visit_Or = binop("or")
-    ## visit_Pos = uaop('+')
-    ## visit_Neg = uaop('-')
-    ## visit_Not = uaop('not ')
+
+    def uaop(operator):
+        def visitor(self, node, frame):
+            self.write("(" + UNARYOP.get(operator, operator))
+            self.visit(node.node, frame)
+            self.write(")")
+        return visitor
+
+    visit_Pos = uaop("+")
+    visit_Neg = uaop("-")
+    visit_Not = uaop("not ")
 
     visit_And = binop("and")
     visit_Or = binop("or")
