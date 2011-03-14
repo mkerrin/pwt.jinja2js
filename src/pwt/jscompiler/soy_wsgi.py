@@ -18,9 +18,32 @@ class JinjaEnvironment(object):
         else:
             loader = jinja2.ChoiceLoader(loaders)
 
+        # autoescape, turn off by default no.
+        autoescape = kwargs.get("autoescape", "")
+        if autoescape:
+            auto_templates = []
+            for auto in autoescape.split():
+                if auto.lower() == "false":
+                    autoescape = False
+                    break
+                if auto.lower() == "true":
+                    autoescape = True
+                    break
+
+                auto_templates.append(auto)
+
+            def autoescape(template_name):
+                if template_name in auto_templates:
+                    return True
+
+                return False
+        else:
+            autoescape = False
+
         self.env = jinja2.Environment(
             loader = loader,
-            extensions = ["pwt.jscompiler.jscompiler.Namespace"])
+            extensions = ["pwt.jscompiler.jscompiler.Namespace"],
+            autoescape = autoescape)
 
 class Resources(JinjaEnvironment):
 

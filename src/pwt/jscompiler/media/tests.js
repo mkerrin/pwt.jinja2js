@@ -5,6 +5,7 @@ goog.require("tests.iftest");
 goog.require("tests.fortest");
 goog.require("tests.call");
 goog.require("tests.importtest");
+goog.require("tests.autoescaped");
 
 window.onload = function() {
     QUnit.module("variables.soy");
@@ -152,5 +153,15 @@ window.onload = function() {
 
     QUnit.test("import1", function() {
             QUnit.equal(tests.importtest.testcall({}), "Hello, Michael!");
+        });
+
+    QUnit.module("autoescape");
+
+    QUnit.test("autoescapeoff", function() {
+            QUnit.equal(tests.variables.var1({name: "<b>Michael</b>"}), "Hello <b>Michael</b>");
+        });
+
+    QUnit.test("autoescapeon", function() {
+            QUnit.equal(tests.autoescaped.var1({name: "<b>Michael</b>"}), "Hello &lt;b&gt;Michael&lt;/b&gt;");
         });
 };

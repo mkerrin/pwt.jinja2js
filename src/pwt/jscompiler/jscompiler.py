@@ -30,6 +30,7 @@ class NamespaceNode(jinja2.nodes.Stmt):
 jinja2.nodes.NodeType.__new__ = _failing_new
 del __new__
 
+
 class Namespace(jinja2.ext.Extension):
     """
     [Token(1, 'name', 'examples'),
@@ -54,6 +55,7 @@ BINOPERATORS = {
     "and": "&&",
     "or":  "||",
     }
+
 
 OPERATORS = {
     "eq":    "==",
@@ -157,6 +159,9 @@ class JSFrame(jinja2.compiler.Frame):
         # name -> method mapping for handling special variables in the
         # for loop
         self.forloop_buffer = None
+
+        # Track if we are escaping some output
+        self.escaped = False
 
     def inspect(self, nodes, hard_scope = False):
         """Walk the node and check for identifiers.  If the scope is hard (eg:
@@ -405,15 +410,51 @@ class MacroCodeGenerator(BaseCodeGenerator):
                     self.writeline("")
                     self.visit(item, frame)
                     self.write(";")
+                    continue
+
+                if start:
+                    self.writeline("output.append(", item)
+                    start = False
                 else:
-                    if start:
-                        self.writeline("output.append(", item)
-                        start = False
-                    else:
-                        self.write(", ")
+                    self.write(", ")
+
+                # autoescape, safe
+                if isinstance(item, jinja2.nodes.Filter):
+                    if frame.eval_ctx.autoescape and item.name == "safe":
+                        self.visit(item.node, frame)
+                        continue
+
+                if frame.eval_ctx.autoescape:
+                    self.write("soy.$$escapeHtml(")
+                    escaped_frame = frame.soft()
+                    escaped_frame.escaped = True
+
+                    self.visit(item, escaped_frame)
+
+                    self.write(")")
+                else:
                     self.visit(item, frame)
         if not start:
             self.write(");")
+
+    def visit_Filter(self, node, frame):
+        # safe attribute with autoesacape is handled in visit_Output
+        if node.name == "escape":
+            if node.kwargs:
+                raise Exception("No kwargs")
+
+            if not frame.escaped:
+                self.write("soy.$$escapeHtml(")
+                frame = frame.soft()
+                frame.escaped = True
+                self.visit(node.node, frame)
+                self.write(")")
+            else:
+                self.visit(node.node, frame)
+        else:
+            raise AttributeError("No filter: %s" % node.name)
+            ## self.write(", ")
+            ## self.write_dict(node.kwargs, frame)
 
     def visit_Const(self, node, frame):
         # XXX - need to know the JavaScript ins and out here.
@@ -435,13 +476,11 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.visit(item, frame)
         self.write("]")
 
-    def visit_Dict(self, node, frame):
+    def write_dict(self, items, frame):
+        # write a list of nodes as a dictionary
         self.write("{")
-        first = True
-        for item in node.items:
-            if first:
-                first = False
-            else:
+        for idx, item in enumerate(items):
+            if idx:
                 self.write(", ")
 
             self.visit(item.key, frame)
@@ -449,6 +488,12 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.visit(item.value, frame)
 
         self.write("}")
+
+    def visit_str(self, node, frame):
+        self.write(node)
+
+    def visit_Dict(self, node, frame):
+        self.write_dict(node.items, frame)
 
     def visit_Name(self, node, frame):
         # declared_parameter
@@ -460,6 +505,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
         if name in frame.identifiers.declared_parameter:
             self.write("opt_data." + name)
+
             frame.assigned_names.add("opt_data." + name) # neccessary?
         elif name in frame.reassigned_names:
             self.write(frame.reassigned_names[name])
@@ -471,7 +517,10 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
             frame.assigned_names.add(name) # neccessary?
         elif name in frame.identifiers.imports:
+            # This is an import.
             self.write(frame.identifiers.imports[name])
+
+            frame.assigned_names.add(frame.identifiers.imports[name])
         else:
             raise Exception("Where is the parameter %s (%s:%d)" %(
                 name, self.filename, node.lineno))

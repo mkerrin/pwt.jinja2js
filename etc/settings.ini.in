@@ -17,6 +17,7 @@ use = egg:Paste#urlmap
 use = egg:pwt.jscompiler
 url = /soy/
 packages = pwt.jscompiler
+autoescape = autoescaped.soy
 
 [app:static]
 use = egg:Paste#static

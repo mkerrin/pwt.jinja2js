@@ -11,10 +11,12 @@ import jinja2.runtime
 import jscompiler
 
 
-def generateMacro(node, environment, name, filename, stream):
+def generateMacro(
+        node, environment, name, filename, stream, autoescape = False):
     generator = jscompiler.MacroCodeGenerator(environment, None, None, stream)
     eval_ctx = jinja2.nodes.EvalContext(environment, name)
     eval_ctx.namespace = "test"
+    eval_ctx.autoescape = autoescape
     generator.blockvisit(node.body, jscompiler.JSFrame(environment, eval_ctx))
 
 
@@ -164,6 +166,34 @@ Hello, {{ name }}!
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     output.append('\\n', (opt_data.num - Math.pow(opt_data.step, 2)), '\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_var7(self):
+        # variables + with autoescape on
+        node = self.get_compile_from_string("""{% macro add(num, step) %}{{ num - (step ** 2) }}{% endmacro %}
+""")
+        stream = StringIO()
+        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream, autoescape = True)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(soy.$$escapeHtml((opt_data.num - Math.pow(opt_data.step, 2))));
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_var8(self):
+        # variables + with autoescape and the escape filter
+        node = self.get_compile_from_string("""{% macro add(num, step) %}{{ (num - (step ** 2)) | escape }}{% endmacro %}
+""")
+        stream = StringIO()
+        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream, autoescape = True)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(soy.$$escapeHtml((opt_data.num - Math.pow(opt_data.step, 2))));
     if (!opt_sb) return output.toString();
 }""")
 
@@ -750,11 +780,82 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_filter_escape1(self):
+        # escape filter
+        node = self.get_compile_from_string("""{% macro filtertest(data) %}{{ data|escape }}{% endmacro %}""")
+        stream = StringIO()
+        generateMacro(node, self.env, "filter.html", "filter.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(soy.$$escapeHtml(opt_data.data));
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_filter_escape2(self):
+        # autoescape filter
+        node = self.get_compile_from_string("""{% macro filtertest(data) %}{{ data }}{% endmacro %}""")
+
+        stream = StringIO()
+        generateMacro(node, self.env, "filter.html", "filter.html", stream = stream, autoescape = True)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(soy.$$escapeHtml(opt_data.data));
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_filter_escape3(self):
+        # autoescape with safe filter
+        node = self.get_compile_from_string("""{% macro filtertest(data) %}{{ data|safe }}{% endmacro %}""")
+
+        stream = StringIO()
+        generateMacro(node, self.env, "filter.html", "filter.html", stream = stream, autoescape = True)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(opt_data.data);
+    if (!opt_sb) return output.toString();
+}""")
+
+    def XXXtest_filter1(self):
+        # test filter without kwargs
+        node = self.get_compile_from_string("""{% macro filtertest(data) %}
+{{ data|title() }}
+{% endmacro %}
+""")
+        stream = StringIO()
+        generateMacro(node, self.env, "filter.html", "filter.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\n', jinja2_filters.filter_title(opt_data.data), '\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def XXXtest_filter2(self):
+        # XXX - test filter with kwargs
+        node = self.get_compile_from_string("""{% macro filtertest(data) %}{{ data|truncate(length=280, killwords=False) }}{% endmacro %}
+""")
+        stream = StringIO()
+        generateMacro(node, self.env, "filter.html", "filter.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(jinja2_filters.filter_truncate(opt_data.data, {length: 280, killwords: false}));
+    if (!opt_sb) return output.toString();
+}""")
+
 
 class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):
 
     def get_compile_from_string(self, source, name = None, filename = None):
-        node = self.env._parse(source, name, filename)
+        node = super(JSCompilerTemplateTestCaseOptimized, self).get_compile_from_string(source, name, filename)
         node = jinja2.optimizer.optimize(node, self.env)
 
         return node
