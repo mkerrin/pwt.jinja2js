@@ -298,16 +298,9 @@ class CodeGenerator(BaseCodeGenerator):
         frame.inspect(node.body)
         frame.toplevel = frame.rootlevel = True
 
-        # XXX - Need to validate the template here. Only accept macros
-
         self.writeline("goog.provide(" + repr(namespace.encode(self.encoding)) + ");")
         self.writeline("goog.require('soy');")
 
-        # XXX - need to pull in extra requirements by inspecting any
-        # call blocks.
-
-        # pull_locals(frame)
-        # pull_dependencies(node.body)
         self.blockvisit(node.body, frame)
 
     def visit_Import(self, node, frame):
