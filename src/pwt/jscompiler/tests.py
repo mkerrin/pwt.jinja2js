@@ -59,6 +59,27 @@ Hello, world!
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_undeclared_var1(self):
+        # variable is undeclared
+        node = self.get_compile_from_string("""{% macro hello() %}
+{{ name }}
+{% endmacro %}
+""")
+        stream = StringIO()
+        self.assertRaises(
+            jinja2.compiler.TemplateAssertionError,
+            generateMacro, node, self.env, "var1.html", "var1.html", stream = stream)
+
+    def XXXtest_namespaced_var1(self):
+        # variable is undeclared
+        node = self.get_compile_from_string("""{% macro hello() %}
+{{ goog.color.names.aqua }}
+{% endmacro %}
+""")
+        stream = StringIO()
+        self.assertRaises(
+            AttributeError, generateMacro, node, self.env, "var1.html", "var1.html", stream = stream)
+
     def test_var1(self):
         node = self.get_compile_from_string("""{% macro hello(name) %}
 {{ name }}

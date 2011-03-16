@@ -518,8 +518,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
             frame.assigned_names.add(frame.identifiers.imports[name])
         else:
-            raise Exception("Where is the parameter %s (%s:%d)" %(
-                name, self.filename, node.lineno))
+            raise jinja2.compiler.TemplateAssertionError(
+                "Where is the variable '%s' defined" % name,
+                node.lineno, self.name, self.filename)
 
     def visit_Getattr(self, node, frame):
         if frame.forloop_buffer and node.node.name == "loop":
