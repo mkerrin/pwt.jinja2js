@@ -449,8 +449,6 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 self.visit(node.node, frame)
         else:
             raise AttributeError("No filter: %s" % node.name)
-            ## self.write(", ")
-            ## self.write_dict(node.kwargs, frame)
 
     def visit_Const(self, node, frame):
         # XXX - need to know the JavaScript ins and out here.
@@ -472,10 +470,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.visit(item, frame)
         self.write("]")
 
-    def write_dict(self, items, frame):
-        # write a list of nodes as a dictionary
+    def visit_Dict(self, node, frame):
         self.write("{")
-        for idx, item in enumerate(items):
+        for idx, item in enumerate(node.items):
             if idx:
                 self.write(", ")
 
@@ -484,12 +481,6 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.visit(item.value, frame)
 
         self.write("}")
-
-    def visit_str(self, node, frame):
-        self.write(node)
-
-    def visit_Dict(self, node, frame):
-        self.write_dict(node.items, frame)
 
     def visit_Name(self, node, frame):
         # declared_parameter
