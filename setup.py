@@ -13,6 +13,19 @@ setup(
     description = __doc__,
     long_description = open("README.rst").read(),
 
+    classifiers = [
+        "Development Status :: 5 - Production/Stable",
+        "Environment :: Web Environment",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        # "Programming Language :: Python :: 3",
+        "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: Text Processing :: Markup :: HTML"
+    ],
+
     packages = find_packages("src"),
     package_dir = {"": "src"},
 
