@@ -312,32 +312,19 @@ class CodeGenerator(BaseCodeGenerator):
             self.environment,
             self.name,
             self.filename,
-            self.stream)
+            StringIO())
         generator.visit(node, frame)
+
+        for requirement in generator.requirements:
+            self.writeline("goog.require('%s');" % requirement)
+        if generator.requirements:
+            self.writeline("") # keep whitespace ok
+
+        self.write(generator.stream.getvalue())
 
     def visit_TemplateData(self, node, frame):
         self.writeline(node.data, node)
 
-
-class GetNodeName(NodeVisitor):
-
-    def visit_Name(self, node, frame, names):
-        try:
-            names.append(frame.reassigned_names[node.name])
-        except KeyError:
-            names.append(node.name)
-
-    def visit_Getattr(self, node, frame, names):
-        self.visit(node.node, frame, names)
-        names.append(node.attr)
-
-    def getName(self, node, frame):
-        names = []
-
-        self.visit(node, frame, names)
-
-        return ".".join(names)
-            
 
 class MacroCodeGenerator(BaseCodeGenerator):
     # split out the macro code generator. This generate the guts of the
@@ -347,6 +334,13 @@ class MacroCodeGenerator(BaseCodeGenerator):
     # format the generate code a bit like the templates. Gaps between templates,
     # comments should be displayed in the JS file. We need them for any closure
     # compiler hints we may want to put in.
+
+    def __init__(self, environment, name, filename, stream = None):
+        super(MacroCodeGenerator, self).__init__(
+            environment, name, filename, stream)
+
+        # collect all the namespaced requirements
+        self.requirements = set([])
 
     def visit_Output(self, node, frame):
         # XXX - JS is only interested in macros etc, as all of JavaScript
@@ -482,38 +476,50 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
         self.write("}")
 
-    def visit_Name(self, node, frame):
+    def visit_Name(self, node, frame, dotted_name = None):
         # declared_parameter
         # declared
         # outer_undeclared
         # declared_locally
         # undeclared
         name = node.name
+        isparam = False
 
         if name in frame.identifiers.declared_parameter:
-            self.write("opt_data." + name)
+            output = "opt_data." + name
 
             frame.assigned_names.add("opt_data." + name) # neccessary?
+            isparam = True
         elif name in frame.reassigned_names:
-            self.write(frame.reassigned_names[name])
+            output = frame.reassigned_names[name]
 
             frame.assigned_names.add(name) # neccessary?
+            isparam = True
         elif name in frame.identifiers.declared or \
                  name in frame.identifiers.declared_locally:
-            self.write(name)
+            output = name
 
             frame.assigned_names.add(name) # neccessary?
         elif name in frame.identifiers.imports:
             # This is an import.
-            self.write(frame.identifiers.imports[name])
+            output = frame.identifiers.imports[name]
 
             frame.assigned_names.add(frame.identifiers.imports[name])
         else:
-            raise jinja2.compiler.TemplateAssertionError(
-                "Where is the variable '%s' defined" % name,
-                node.lineno, self.name, self.filename)
+            if dotted_name is None:
+                raise jinja2.compiler.TemplateAssertionError(
+                    "Variable '%s' not defined" % name,
+                    node.lineno, self.name, self.filename)
+            output = node.name
 
-    def visit_Getattr(self, node, frame):
+        if dotted_name is None:
+            self.write(output)
+        else:
+            dotted_name.append(output)
+
+        return isparam
+
+    def visit_Getattr(self, node, frame, dotted_name = None):
         if frame.forloop_buffer and node.node.name == "loop":
             if node.attr == "index0":
                 self.write("%sIndex" % frame.forloop_buffer)
@@ -535,12 +541,19 @@ class MacroCodeGenerator(BaseCodeGenerator):
             else:
                 raise AttributeError("loop.%s not defined" % node.attr)
         else:
-            possible_macro = GetNodeName().getName(node, frame)
-            if possible_macro in frame.identifiers.declared:
-                self.write(possible_macro)
-            else:
-                self.visit(node.node, frame)
-                self.write(".%s" % node.attr)
+            write_variable = False
+            if dotted_name is None:
+                dotted_name = []
+                write_variable = True
+
+            # collect variable name
+            param = self.visit(node.node, frame, dotted_name)
+            dotted_name.append(node.attr)
+
+            if write_variable:
+                if not param:
+                    self.addRequirement(".".join(dotted_name[:-1]), frame)
+                self.write(".".join(dotted_name))
 
     def binop(operator):
         def visitor(self, node, frame):
@@ -748,11 +761,18 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 "JS Does not support positional or keyword arguments",
                 node.lineno, self.name, self.filename)
 
+    def addRequirement(self, requirement, frame):
+        if requirement == frame.eval_ctx.namespace:
+            return
+
+        self.requirements.add(requirement)
+
     def visit_Call(self, node, frame, forward_caller = False):
         # function symbol to call
-        self.visit(node.node, frame)
+        dotted_name = []
+        self.visit(node.node, frame, dotted_name = dotted_name)
         # function signature
-        self.write("(")
+        self.write("%s(" % ".".join(dotted_name))
         extra_kwargs = forward_caller and {"caller": "caller"} or None
         self.signature(node, frame, extra_kwargs)
         self.write(", output)")

@@ -70,15 +70,27 @@ Hello, world!
             jinja2.compiler.TemplateAssertionError,
             generateMacro, node, self.env, "var1.html", "var1.html", stream = stream)
 
-    def XXXtest_namespaced_var1(self):
+    def test_namespaced_var1(self):
         # variable is undeclared
-        node = self.get_compile_from_string("""{% macro hello() %}
+        node = self.get_compile_from_string("""{% namespace test %}
+{% macro hello() %}
 {{ goog.color.names.aqua }}
 {% endmacro %}
 """)
         stream = StringIO()
-        self.assertRaises(
-            AttributeError, generateMacro, node, self.env, "var1.html", "var1.html", stream = stream)
+        jscompiler.generate(node, self.env, "var1.html", "var1.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.provide('test');
+goog.require('soy');
+
+
+goog.require('goog.color.names');
+test.hello = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\n', goog.color.names.aqua, '\\n');
+    if (!opt_sb) return output.toString();
+}""")
 
     def test_var1(self):
         node = self.get_compile_from_string("""{% macro hello(name) %}
@@ -467,6 +479,31 @@ xxx.fortest = function(opt_data, opt_sb) {
     for (var jobIndex = 0; jobIndex < jobListLen; jobIndex++) {
         var jobData = jobList[jobIndex];
         output.append('\\n   ', jobData, '\\n');
+    }
+    output.append('\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_for11(self):
+        # test for loop not producing extra namespace requirements
+        node = self.get_compile_from_string("""{% namespace test %}{% macro forinlist(jobs) %}
+{% for job in jobs %}{{ job.name }}{% endfor %}
+{% endmacro %}""")
+
+        stream = StringIO()
+        jscompiler.generate(node, self.env, "f.html", "f.html", stream = stream)
+        source_code = stream.getvalue()
+
+        # XXX - whitespace fuck up after soy requirement
+        self.assertEqual(source_code, """goog.provide('test');
+goog.require('soy');test.forinlist = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\n');
+    var jobList = opt_data.jobs;
+    var jobListLen = jobList.length;
+    for (var jobIndex = 0; jobIndex < jobListLen; jobIndex++) {
+        var jobData = jobList[jobIndex];
+        output.append(jobData.name);
     }
     output.append('\\n');
     if (!opt_sb) return output.toString();
