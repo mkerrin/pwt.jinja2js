@@ -84,8 +84,10 @@ def generate(node, environment, name, filename, stream = None):
 
 class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
 
-    def __init__(self, identifiers, hard_scope, environment, ctx):
-        super(JSFrameIdentifierVisitor, self).__init__(identifiers, hard_scope)
+    def __init__(self, identifiers, environment, ctx):
+        # Manually setup the identifiers as older version of Jinja2 required
+        # a hard_scope argument.
+        self.identifiers = identifiers
 
         self.environment = environment
         self.ctx = ctx
@@ -166,13 +168,13 @@ class JSFrame(jinja2.compiler.Frame):
         # Track if we are escaping some output
         self.escaped = False
 
-    def inspect(self, nodes, hard_scope = False):
+    def inspect(self, nodes):
         """Walk the node and check for identifiers.  If the scope is hard (eg:
         enforce on a python level) overrides from outer scopes are tracked
         differently.
         """
         visitor = JSFrameIdentifierVisitor(
-            self.identifiers, hard_scope, self.environment, self.eval_ctx)
+            self.identifiers, self.environment, self.eval_ctx)
         for node in nodes:
             visitor.visit(node)
 
@@ -690,7 +692,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
             children = node.iter_child_nodes()
 
         func_frame = frame.inner()
-        func_frame.inspect(children, hard_scope = True)
+        func_frame.inspect(children)
 
         # variables that are undeclared (accessed before declaration) and
         # declared locally *and* part of an outside scope raise a template
