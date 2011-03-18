@@ -1,10 +1,46 @@
 About
 =====
 
-This is an extension to the Jinja2 template engine to compile Jinja2 compatible
-templates to JavaScript which can be served and used within a JavaScript heavy
-web application. The generated JavaScript can also be minimized using your
-favourite JavaScript compressor.
+pwt.jinja2js is an extension to the Jinja2 template engine that compiles
+valid Jinja2 templates containing macros to JavaScript. The JavaScript output
+can be included via script tags or can be added to the applications JavaScript.
+
+Nutshell
+--------
+
+Here a small example of a Jinja template::
+
+     {% namespace ns1 %}
+
+     {% macro printusers(users) %}
+     <ul>
+     {% for user in users %}
+         <li><a href="{{ user.url }}">{{ user.username }}</a></li>
+     {% endfor %}
+     </ul>
+     {% endmacro %}
+
+
+Which after running through the pwt.jinja2js compiler we need up the
+following JavaScript::
+
+     goog.provide('ns1');
+
+     goog.require('soy');
+
+     ns1.printusers = function(opt_data, opt_sb) {
+        var output = opt_sb || new soy.StringBuilder();
+        output.append('\n<ul>\n');
+        var userList = opt_data.users;
+        var userListLen = userList.length;
+        for (var userIndex = 0; userIndex < userListLen; userIndex++) {
+            var userData = userList[userIndex];
+            output.append('\n   <li><a href="', userData.url, '">', userData.username, '</a></li>\n');
+        }
+        output.append('\n</ul>\n');
+        if (!opt_sb) return output.toString();
+     }
+
 
 Install and test
 ================
