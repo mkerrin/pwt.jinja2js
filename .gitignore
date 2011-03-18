@@ -3,6 +3,7 @@ bin
 develop-eggs
 eggs
 parts
+docs
 
 etc/settings.ini
 src/pwt/jscompiler/media/deps.js
