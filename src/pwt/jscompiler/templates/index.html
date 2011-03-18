@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Hello</title>
+    <title>pwt.jinja2js</title>
     <script type="text/javascript">
       CLOSURE_NO_DEPS = true;
       CLOSURE_BASE_PATH = "http://localhost:8000";
@@ -8,10 +8,10 @@
     <script type="text/javascript" src="/closure/closure/goog/base.js"></script>
     <script type="text/javascript" src="/media/deps.js"></script>
 
-    <script type="text/javascript" src="/soy/hello.soy"></script>
+    <script type="text/javascript" src="/soy/documentation.soy"></script>
   </head>
   <body>
-    <h3>pwt.jscompiler</h3>
+    <h3>pwt.jinja2js</h3>
 
     <ul>
       <li><a href="/tests.html">Tests</a></li>
@@ -20,7 +20,11 @@
 
     <h4>Example</h4>
     <script type="text/javascript">
-      document.write(examples.hello({"name": "Michael"}));
+      document.write(ns1.printusers({users: [
+         {username: "michael", url: "#user/michael"},
+         {username: "johndoe", url: "#user/johndoe"}
+        ]})
+      );
     </script>
   </body>
 </html>

@@ -44,12 +44,17 @@ now by call the macro like so, we can insert the:
 
 .. sourcecode:: javascript
 
-   document.write(ns1.printusers({users: {username: "johndoe", url: "#user/johndoe"}})
+   document.write(ns1.printusers({users: [
+         {username: "michael", url: "#user/michael"},
+         {username: "johndoe", url: "#user/johndoe"}
+        ]})
+      );
 
 to produce:
 
 .. sourcecode:: html
 
    <ul>
-      <li><a href="#user/johndoe">johndoe</a></li>
+       <li><a href="#user/michael">michael</a></li>
+       <li><a href="#user/johndoe">johndoe</a></li>
    </ul>
