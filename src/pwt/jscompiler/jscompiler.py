@@ -87,7 +87,8 @@ class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
     def __init__(self, identifiers, environment, ctx):
         # Manually setup the identifiers as older version of Jinja2 required
         # a hard_scope argument. So to work with older version just set the
-        # hard_scope argument manually here compensate.
+        # hard_scope argument manually here compensate. It is not used
+        # within the JS compiler.
         self.identifiers = identifiers
         self.hard_scope = False
 
