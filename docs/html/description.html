@@ -1,0 +1,122 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>&lt;no title&gt; &mdash; pwt.jinja2js v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pwt.jinja2js v0.1 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">pwt.jinja2js v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <p>pwt.jinja2js is an extension to the Jinja2 template engine that compiles
+valid Jinja2 templates containing macros to JavaScript. The JavaScript output
+can be included via script tags or can be added to the applications JavaScript.</p>
+<p>It works by mapping each macro in a Jinja2 template to a JavaScript function
+that when called passing in all parameters to the macro as a JavaScript object
+returns a string representing output of the template. For example:</p>
+<div class="highlight-html+jinja"><div class="highlight"><pre><span class="cp">{%</span> <span class="k">namespace</span> <span class="nv">ns1</span> <span class="cp">%}</span>
+
+<span class="cp">{%</span> <span class="k">macro</span> <span class="nv">printusers</span><span class="o">(</span><span class="nv">users</span><span class="o">)</span> <span class="cp">%}</span>
+<span class="nt">&lt;ul&gt;</span>
+<span class="cp">{%</span> <span class="k">for</span> <span class="nv">user</span> <span class="k">in</span> <span class="nv">users</span> <span class="cp">%}</span>
+    <span class="nt">&lt;li&gt;&lt;a</span> <span class="na">href=</span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">user.url</span> <span class="cp">}}</span><span class="s">&quot;</span><span class="nt">&gt;</span><span class="cp">{{</span> <span class="nv">user.username</span> <span class="cp">}}</span><span class="nt">&lt;/a&gt;&lt;/li&gt;</span>
+<span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+<span class="nt">&lt;/ul&gt;</span>
+<span class="cp">{%</span> <span class="k">endmacro</span> <span class="cp">%}</span>
+</pre></div>
+</div>
+<p>produces the following JavaScript:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">goog</span><span class="p">.</span><span class="nx">provide</span><span class="p">(</span><span class="s1">&#39;ns1&#39;</span><span class="p">);</span>
+<span class="nx">goog</span><span class="p">.</span><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;soy&#39;</span><span class="p">);</span>
+
+
+<span class="nx">ns1</span><span class="p">.</span><span class="nx">printusers</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">opt_data</span><span class="p">,</span> <span class="nx">opt_sb</span><span class="p">)</span> <span class="p">{</span>
+   <span class="kd">var</span> <span class="nx">output</span> <span class="o">=</span> <span class="nx">opt_sb</span> <span class="o">||</span> <span class="k">new</span> <span class="nx">soy</span><span class="p">.</span><span class="nx">StringBuilder</span><span class="p">();</span>
+   <span class="nx">output</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s1">&#39;\n&lt;ul&gt;\n&#39;</span><span class="p">);</span>
+   <span class="kd">var</span> <span class="nx">userList</span> <span class="o">=</span> <span class="nx">opt_data</span><span class="p">.</span><span class="nx">users</span><span class="p">;</span>
+   <span class="kd">var</span> <span class="nx">userListLen</span> <span class="o">=</span> <span class="nx">userList</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+   <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">userIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">userIndex</span> <span class="o">&lt;</span> <span class="nx">userListLen</span><span class="p">;</span> <span class="nx">userIndex</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+       <span class="kd">var</span> <span class="nx">userData</span> <span class="o">=</span> <span class="nx">userList</span><span class="p">[</span><span class="nx">userIndex</span><span class="p">];</span>
+       <span class="nx">output</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s1">&#39;\n   &lt;li&gt;&lt;a href=&quot;&#39;</span><span class="p">,</span> <span class="nx">userData</span><span class="p">.</span><span class="nx">url</span><span class="p">,</span> <span class="s1">&#39;&quot;&gt;&#39;</span><span class="p">,</span> <span class="nx">userData</span><span class="p">.</span><span class="nx">username</span><span class="p">,</span> <span class="s1">&#39;&lt;/a&gt;&lt;/li&gt;\n&#39;</span><span class="p">);</span>
+   <span class="p">}</span>
+   <span class="nx">output</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s1">&#39;\n&lt;/ul&gt;\n&#39;</span><span class="p">);</span>
+   <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">opt_sb</span><span class="p">)</span> <span class="k">return</span> <span class="nx">output</span><span class="p">.</span><span class="nx">toString</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/description.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">pwt.jinja2js v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Michael Kerrin.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
