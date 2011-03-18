@@ -262,6 +262,12 @@ class BaseCodeGenerator(NodeVisitor):
             self._write_debug_info = node.lineno
             self._last_line = node.lineno
 
+    # Copied
+    def fail(self, msg, lineno):
+        """Fail with a :exc:`TemplateAssertionError`."""
+        raise jinja2.compiler.TemplateAssertionError(
+            msg, lineno, self.name, self.filename)
+
     def blockvisit(self, nodes, frame):
         """
         Visit a list of noes ad block in a frame. Some times we want to
@@ -282,9 +288,7 @@ class CodeGenerator(BaseCodeGenerator):
         """
         namespace = list(node.find_all(NamespaceNode))
         if len(namespace) != 1:
-            raise jinja2.compiler.TemplateAssertionError(
-                "You must supply one namespace for your template",
-                0, self.name, self.filename)
+            self.fail("You must supply one namespace for your template", 0)
         namespace = namespace[0].namespace
 
         have_extends = node.find(jinja2.nodes.Extends) is not None
@@ -452,7 +456,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
             FILTERS[node.name](self, node, frame, *node.args, **kwargs)
         else:
-            raise AttributeError("No filter: %s" % node.name)
+            self.fail("Filter does not exist: '%s'" % node.name, node.lineno)
 
     def visit_Const(self, node, frame):
         # XXX - need to know the JavaScript ins and out here.
@@ -517,9 +521,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
             frame.assigned_names.add(frame.identifiers.imports[name])
         else:
             if dotted_name is None:
-                raise jinja2.compiler.TemplateAssertionError(
-                    "Variable '%s' not defined" % name,
-                    node.lineno, self.name, self.filename)
+                self.fail("Variable '%s' not defined" % name, node.lineno)
             output = node.name
 
         if dotted_name is None:
@@ -622,9 +624,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
     def visit_Operand(self, node, frame):
         if node.op not in OPERATORS:
-            raise jinja2.compiler.TemplateAssertionError(
+            self.fail(
                 "Comparison operator '%s' not supported in JavaScript",
-                node.lineno, self.name, self.filename)
+                node.lineno)
         self.write(" %s " % OPERATORS[node.op])
         self.visit(node.expr, frame)
 
@@ -751,9 +753,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
     def signature(self, node, frame, extra_kwargs = {}):
         if node.args:
-            raise jinja2.compiler.TemplateAssertionError(
+            self.fail(
                 "Function call with positional arguments not allowed with JS",
-                node.lineno, self.name, self.filename)
+                node.lineno)
 
         start = True
         self.write("{")
@@ -767,9 +769,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
         self.write("}")
 
         if node.dyn_args or node.dyn_kwargs:
-            raise jinja2.compiler.TemplateAssertionError(
+            self.fail(
                 "JS Does not support positional or keyword arguments",
-                node.lineno, self.name, self.filename)
+                node.lineno)
 
     def addRequirement(self, requirement, frame):
         if requirement == frame.eval_ctx.namespace:

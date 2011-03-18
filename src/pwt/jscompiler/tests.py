@@ -880,6 +880,14 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_filters1(self):
+        # calling undefined filter
+        node = self.get_compile_from_string("""{% macro filtertest(data) %}{{ data|missing_filter }}{% endmacro %}""")
+        stream = StringIO()
+        self.assertRaises(
+            jinja2.compiler.TemplateAssertionError,
+            generateMacro, node, self.env, "filter.html", "filter.html", stream = stream)
+
     def test_filter_escape1(self):
         # escape filter
         node = self.get_compile_from_string("""{% macro filtertest(data) %}{{ data|escape }}{% endmacro %}""")
