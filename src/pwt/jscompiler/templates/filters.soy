@@ -1,0 +1,9 @@
+{% namespace tests.filters %}
+
+{% macro default1(name) -%}
+Hello, {{ name | default('World') }}
+{%- endmacro %}
+
+{% macro truncate1(s, length = 10) -%}
+{{ s|truncate(length) }}
+{%- endmacro %}

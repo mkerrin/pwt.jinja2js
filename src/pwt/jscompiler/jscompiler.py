@@ -445,6 +445,12 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 self.write(")")
             else:
                 self.visit(node.node, frame)
+        elif node.name in FILTERS:
+            kwargs = {}
+            for kwarg in node.kwargs:
+                kwargs[kwarg.key] = kwarg.value
+
+            FILTERS[node.name](self, node, frame, *node.args, **kwargs)
         else:
             raise AttributeError("No filter: %s" % node.name)
 
@@ -780,3 +786,33 @@ class MacroCodeGenerator(BaseCodeGenerator):
         extra_kwargs = forward_caller and {"caller": "caller"} or None
         self.signature(node, frame, extra_kwargs)
         self.write(", output)")
+
+
+FILTERS = {}
+
+class register_filter(object):
+
+    def __init__(self, name):
+        self.name = name
+
+    def __call__(self, func):
+        FILTERS[self.name] = func
+
+        return func
+
+
+@register_filter("default")
+def filter_default(generator, node, frame, default_value = ""):
+    generator.visit(node.node, frame)
+    generator.write(" ? ")
+    generator.visit(node.node, frame)
+    generator.write(" : ")
+    generator.visit(default_value, frame)
+
+
+@register_filter("truncate")
+def filter_truncate(generator, node, frame, length):
+    generator.visit(node.node, frame)
+    generator.write(".substring(0, ")
+    generator.visit(length, frame)
+    generator.write(")")

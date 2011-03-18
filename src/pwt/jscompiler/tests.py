@@ -921,6 +921,46 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_filter_default1(self):
+        node = self.get_compile_from_string("""{% macro hello(name) %}{{ name|default('World') }}{% endmacro %}""")
+
+        stream = StringIO()
+        generateMacro(node, self.env, "f.html", "f.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(opt_data.name ? opt_data.name : 'World');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_filter_default2(self):
+        # same as previous but test keyword arguments to filters.
+        node = self.get_compile_from_string("""{% macro hello(name) %}{{ name|default(default_value = 'World') }}{% endmacro %}""")
+
+        stream = StringIO()
+        generateMacro(node, self.env, "f.html", "f.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(opt_data.name ? opt_data.name : 'World');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_filter_truncate1(self):
+        node = self.get_compile_from_string("""{% macro trunc(s) %}{{ s|truncate(length = 280) }}{% endmacro %}""")
+
+        stream = StringIO()
+        generateMacro(node, self.env, "f.html", "f.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """test.trunc = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(opt_data.s.substring(0, 280));
+    if (!opt_sb) return output.toString();
+}""")
+
 
 class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):
 

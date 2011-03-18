@@ -6,6 +6,7 @@ goog.require("tests.fortest");
 goog.require("tests.call");
 goog.require("tests.importtest");
 goog.require("tests.autoescaped");
+goog.require("tests.filters");
 
 window.onload = function() {
     QUnit.module("variables.soy");
@@ -178,5 +179,17 @@ window.onload = function() {
 
     QUnit.test("autoescapeon", function() {
             QUnit.equal(tests.autoescaped.var1({name: "<b>Michael</b>"}), "Hello &lt;b&gt;Michael&lt;/b&gt;");
+        });
+
+    QUnit.module("filters");
+
+    QUnit.test("default1", function() {
+            QUnit.equal(tests.filters.default1({}), "Hello, World");
+            QUnit.equal(tests.filters.default1({name: "Michael"}), "Hello, Michael");
+        });
+
+    QUnit.test("truncate1", function() {
+            QUnit.equal(tests.filters.truncate1({s: "xxxxxxxxxx", length: 5}), "xxxxx");
+            QUnit.equal(tests.filters.truncate1({s: "xxxxxxxxxx", length: 20}), "xxxxxxxxxx");
         });
 };
