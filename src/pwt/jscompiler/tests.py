@@ -273,7 +273,7 @@ Hello, {{ name }}!
 }""")
 
     def test_for1(self):
-        # XXX - test recursive loop
+        # test for loop
         node = self.get_compile_from_string("""{% namespace xxx %}
 {% macro fortest(data) %}
 {% for item in data %}
@@ -918,36 +918,6 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
         self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     output.append(opt_data.data);
-    if (!opt_sb) return output.toString();
-}""")
-
-    def XXXtest_filter1(self):
-        # test filter without kwargs
-        node = self.get_compile_from_string("""{% macro filtertest(data) %}
-{{ data|title() }}
-{% endmacro %}
-""")
-        stream = StringIO()
-        generateMacro(node, self.env, "filter.html", "filter.html", stream = stream)
-        source_code = stream.getvalue()
-
-        self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb) {
-    var output = opt_sb || new soy.StringBuilder();
-    output.append('\\n', jinja2_filters.filter_title(opt_data.data), '\\n');
-    if (!opt_sb) return output.toString();
-}""")
-
-    def XXXtest_filter2(self):
-        # XXX - test filter with kwargs
-        node = self.get_compile_from_string("""{% macro filtertest(data) %}{{ data|truncate(length=280, killwords=False) }}{% endmacro %}
-""")
-        stream = StringIO()
-        generateMacro(node, self.env, "filter.html", "filter.html", stream = stream)
-        source_code = stream.getvalue()
-
-        self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb) {
-    var output = opt_sb || new soy.StringBuilder();
-    output.append(jinja2_filters.filter_truncate(opt_data.data, {length: 280, killwords: false}));
     if (!opt_sb) return output.toString();
 }""")
 

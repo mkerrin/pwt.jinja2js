@@ -343,7 +343,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
         self.requirements = set([])
 
     def visit_Output(self, node, frame):
-        # XXX - JS is only interested in macros etc, as all of JavaScript
+        # JS is only interested in macros etc, as all of JavaScript
         # is rendered into the global namespace so we need to ignore data in
         # the templates that is out side the macros.
         if frame.toplevel:
@@ -392,7 +392,6 @@ class MacroCodeGenerator(BaseCodeGenerator):
                     self.write(", ")
                 self.write(repr("".join(item)))
             else:
-                # XXX - escape / do not escape variables.
                 if isinstance(item, jinja2.nodes.Call):
                     if not start:
                         self.write(");")
