@@ -12,6 +12,7 @@ import jinja2.environment
 import jinja2.visitor
 
 import jscompiler
+import nodes
 import soy_wsgi
 
 class Source(jinja2.visitor.NodeVisitor, soy_wsgi.JinjaEnvironment):
@@ -57,7 +58,7 @@ class Source(jinja2.visitor.NodeVisitor, soy_wsgi.JinjaEnvironment):
         fromnode = self.env._parse(source, name, filename)
 
         # Need to find the namespace
-        namespace = list(fromnode.find_all(jscompiler.NamespaceNode))
+        namespace = list(fromnode.find_all(nodes.NamespaceNode))
         if len(namespace) != 1:
             raise jinja2.compiler.TemplateAssertionError(
                 "You must supply one namespace for your template",
