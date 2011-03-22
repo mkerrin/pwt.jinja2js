@@ -6,44 +6,50 @@ import jinja2
 
 import jscompiler
 
+def create_environment(packages = [], autoescape = [], extensions = []):
+    loaders = []
+    for package in packages:
+        loaders.append(jinja2.PackageLoader(*package.split(":")))
+
+    if len(loaders) == 1:
+        loader = loaders[0]
+    else:
+        loader = jinja2.ChoiceLoader(loaders)
+
+    # autoescape, turn off by default no.
+    if autoescape:
+        auto_templates = []
+        for auto in autoescape:
+            if auto.lower() == "false":
+                autoescape = False
+                break
+            if auto.lower() == "true":
+                autoescape = True
+                break
+
+            auto_templates.append(auto)
+
+        def autoescape(template_name):
+            if template_name in auto_templates:
+                return True
+
+            return False
+    else:
+        autoescape = False
+
+    extensions.append("pwt.jinja2js.jscompiler.Namespace")
+
+    return jinja2.Environment(
+        loader = loader, extensions = extensions, autoescape = autoescape)
+
+
 class JinjaEnvironment(object):
 
     def __init__(self, *args, **kwargs):
-        loaders = []
-        for package in kwargs["packages"].split():
-            loaders.append(jinja2.PackageLoader(*package.split(":")))
+        self.env = create_environment(
+            packages = kwargs.get("packages", "").split(),
+            autoescape = kwargs.get("autoescape", "").split())
 
-        if len(loaders) == 1:
-            loader = loaders[0]
-        else:
-            loader = jinja2.ChoiceLoader(loaders)
-
-        # autoescape, turn off by default no.
-        autoescape = kwargs.get("autoescape", "")
-        if autoescape:
-            auto_templates = []
-            for auto in autoescape.split():
-                if auto.lower() == "false":
-                    autoescape = False
-                    break
-                if auto.lower() == "true":
-                    autoescape = True
-                    break
-
-                auto_templates.append(auto)
-
-            def autoescape(template_name):
-                if template_name in auto_templates:
-                    return True
-
-                return False
-        else:
-            autoescape = False
-
-        self.env = jinja2.Environment(
-            loader = loader,
-            extensions = ["pwt.jinja2js.jscompiler.Namespace"],
-            autoescape = autoescape)
 
 class Resources(JinjaEnvironment):
 

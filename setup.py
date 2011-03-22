@@ -51,6 +51,9 @@ dependency = pwt.jinja2js.recipe:Deps
 
 [paste.app_factory]
 main = pwt.jinja2js.soy_wsgi:Resources
+
+[console_scripts]
+jinja2js = pwt.jinja2js.cli:main
 """,
 
     include_package_data = True,
