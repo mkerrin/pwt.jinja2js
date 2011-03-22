@@ -209,9 +209,10 @@ class BaseCodeGenerator(NodeVisitor):
         """Outdent by step."""
         self._indentation -= step
 
-    # Copied
-    def write(self, x):
+    # Modified
+    def write(self, x, node = None):
         """Write a string into the output stream."""
+        self.mark(node)
         if self._new_lines:
             if not self._first_write:
                 self.stream.write('\n' * self._new_lines)
@@ -231,13 +232,17 @@ class BaseCodeGenerator(NodeVisitor):
         self.newline(node, extra)
         self.write(x)
 
-    # Copied
-    def newline(self, node=None, extra=0):
-        """Add one or more newlines before the next write."""
-        self._new_lines = max(self._new_lines, 1 + extra)
+    def mark(self, node):
+        # Mark the current output to correspond to the node.
         if node is not None and node.lineno != self._last_line:
             self._write_debug_info = node.lineno
             self._last_line = node.lineno
+
+    # Modified
+    def newline(self, node=None, extra=0):
+        """Add one or more newlines before the next write."""
+        self._new_lines = max(self._new_lines, 1 + extra)
+        self.mark(node)
 
     # Copied
     def fail(self, msg, lineno):
@@ -290,12 +295,14 @@ class CodeGenerator(BaseCodeGenerator):
         if namespace:
             self.writeline("goog.provide(" + repr(namespace.encode(self.encoding)) + ");")
         self.writeline("goog.require('soy');")
+        self.newline()
 
         self.blockvisit(node.body, frame)
 
     def visit_Import(self, node, frame):
         namespace = frame.identifiers.imports[node.target]
-        self.writeline("goog.require('%s');" % namespace.encode("utf-8"), node)
+        self.mark(node)
+        self.write("goog.require('%s');" % namespace.encode("utf-8"))
 
     def visit_Macro(self, node, frame):
         generator = MacroCodeGenerator(
@@ -313,7 +320,10 @@ class CodeGenerator(BaseCodeGenerator):
         self.write(generator.stream.getvalue())
 
     def visit_TemplateData(self, node, frame):
-        self.writeline(node.data, node)
+        self.mark(node)
+        self.write(node.data)
+        if node.data[-1] != "\n":
+            self.newline()
 
 
 class MacroCodeGenerator(BaseCodeGenerator):

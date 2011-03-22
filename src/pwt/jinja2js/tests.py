@@ -20,10 +20,10 @@ def generateMacro(
     generator.blockvisit(node.body, jscompiler.JSFrame(environment, eval_ctx))
 
 
-class JSCompilerTemplateTestCase(unittest.TestCase):
+class JSCompilerTestCase(unittest.TestCase):
 
     def setUp(self):
-        super(JSCompilerTemplateTestCase, self).setUp()
+        super(JSCompilerTestCase, self).setUp()
 
         self.loader = jinja2.PackageLoader("pwt.jinja2js", "test_templates")
         self.env = jinja2.Environment(
@@ -37,6 +37,9 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
 
         return node
 
+
+class JSCompilerTemplateTestCase(JSCompilerTestCase):
+
     def test_missing_namespace1(self):
         node = self.get_compile_from_string("""{% macro hello() %}
 Hello, world!
@@ -45,7 +48,8 @@ Hello, world!
         jscompiler.generate(node, self.env, "v.html", "v.html", stream = stream)
         source_code = stream.getvalue()
 
-        self.assertEqual(source_code, """goog.require('soy');hello = function(opt_data, opt_sb) {
+        self.assertEqual(source_code, """goog.require('soy');
+hello = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     output.append('\\nHello, world!\\n');
     if (!opt_sb) return output.toString();
@@ -503,7 +507,8 @@ xxx.fortest = function(opt_data, opt_sb) {
 
         # XXX - whitespace fuck up after soy requirement
         self.assertEqual(source_code, """goog.provide('test');
-goog.require('soy');test.forinlist = function(opt_data, opt_sb) {
+goog.require('soy');
+test.forinlist = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     output.append('\\n');
     var jobList = opt_data.jobs;
@@ -665,7 +670,6 @@ xxx.testif = function(opt_data, opt_sb) {
     if (!opt_sb) return output.toString();
 }
 
-
 xxx.testcall = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     xxx.testif({}, output);
@@ -697,7 +701,6 @@ xxx.ns1.testif = function(opt_data, opt_sb) {
     if (!opt_sb) return output.toString();
 }
 
-
 xxx.ns1.testcall = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     xxx.ns1.testif({}, output);
@@ -728,7 +731,6 @@ xxx.ns1.testif = function(opt_data, opt_sb) {
     if (!opt_sb) return output.toString();
 }
 
-
 xxx.ns1.testcall = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     xxx.ns1.testif({option: true}, output);
@@ -758,7 +760,6 @@ xxx.ns1.testif = function(opt_data, opt_sb) {
     }
     if (!opt_sb) return output.toString();
 }
-
 
 xxx.ns1.testcall = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -821,7 +822,6 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
     if (!opt_sb) return output.toString();
 }
 
-
 xxx.ns1.testcall = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     xxx.ns1.hello({name: 'Michael'}, output);
@@ -856,7 +856,6 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
     if (!opt_sb) return output.toString();
 }
 
-
 xxx.ns1.testcall = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     xxx.ns1.hello({name: {'first': 'Michael'}}, output);
@@ -877,9 +876,7 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('soy');
 
-
 goog.require('test.ns1');
-
 
 xxx.ns1.hello = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -973,6 +970,115 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
         self.assertEqual(source_code, """test.trunc = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
     output.append(opt_data.s.substring(0, 280));
+    if (!opt_sb) return output.toString();
+}""")
+
+
+class JSCompilerTemplateTestCaseOutput(JSCompilerTestCase):
+    # Test the standard output so that if a developer needs to debug the
+    # output then we can add comments and other information, keep the ordering
+    # so that it is easier to do so.
+
+    def test_comments1(self):
+        node = self.get_compile_from_string("""/**
+* This prints out hello world!
+*/
+{% macro hello() %}
+Hello, world!
+{% endmacro %}""")
+        stream = StringIO()
+        jscompiler.generate(node, self.env, "v.html", "v.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.require('soy');
+/**
+* This prints out hello world!
+*/
+hello = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\nHello, world!\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_comments2(self):
+        node = self.get_compile_from_string("""/**
+ * This prints out hello world!
+ */
+{% macro hello(name) %}
+Hello, {{ name.firstname }}!
+{% endmacro %}""")
+        stream = StringIO()
+        jscompiler.generate(node, self.env, "v.html", "v.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.require('soy');
+/**
+ * This prints out hello world!
+ */
+hello = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\nHello, ', opt_data.name.firstname, '!\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_comments3(self):
+        node = self.get_compile_from_string("""// ok
+{% import 'test_import.soy' as forms %}
+// ok 2
+/**
+ * This prints out hello world!
+ */
+{% macro hello(name) %}
+Hello, {{ name.firstname }}!
+{% endmacro %}""")
+        stream = StringIO()
+        jscompiler.generate(node, self.env, "v.html", "v.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.require('soy');
+// ok
+goog.require('test.ns1');
+// ok 2
+/**
+ * This prints out hello world!
+ */
+hello = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\nHello, ', opt_data.name.firstname, '!\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_comments4(self):
+        # same as previous but put in new lines into templates.
+        node = self.get_compile_from_string("""// ok
+
+{% import 'test_import.soy' as forms %}
+
+// ok 2
+
+/**
+ * This prints out hello world!
+ */
+{% macro hello(name) %}
+Hello, {{ name.firstname }}!
+{% endmacro %}""")
+        stream = StringIO()
+        jscompiler.generate(node, self.env, "v.html", "v.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.require('soy');
+// ok
+
+goog.require('test.ns1');
+
+// ok 2
+
+/**
+ * This prints out hello world!
+ */
+hello = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\nHello, ', opt_data.name.firstname, '!\\n');
     if (!opt_sb) return output.toString();
 }""")
 
