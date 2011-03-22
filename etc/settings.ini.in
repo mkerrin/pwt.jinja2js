@@ -14,24 +14,24 @@ use = egg:Paste#urlmap
 /media = static
 
 [app:soy_templates]
-use = egg:pwt.jscompiler
+use = egg:pwt.jinja2js
 url = /soy/
-packages = pwt.jscompiler
+packages = pwt.jinja2js
 autoescape = autoescaped.soy
 
 [app:static]
 use = egg:Paste#static
-document_root = ${buildout:directory}/src/pwt/jscompiler/media
+document_root = ${buildout:directory}/src/pwt/jinja2js/media
 
 [app:closure]
 use = egg:Paste#static
 document_root = ${closure-library:location}/closure-library
 
 [app:home]
-paste.app_factory = pwt.jscompiler.app:main
+paste.app_factory = pwt.jinja2js.app:main
 
 # configure Jinja2 loader
-packages = pwt.jscompiler
+packages = pwt.jinja2js
 
 deps_js = /media/${deps.js:filename}
 

@@ -6,7 +6,7 @@ can be included via script tags or can be added to the applications JavaScript.
 from setuptools import find_packages, setup
 
 setup(
-    name = "pwt.jscompiler",
+    name = "pwt.jinja2js",
     author = "Michael Kerrin",
     author_email = "michael.kerrin@gmail.com",
     license = "BSD",
@@ -44,13 +44,13 @@ setup(
 
     entry_points = """
 [nose.plugins]
-test-suites = pwt.jscompiler.nose_test_suites:Suites
+test-suites = pwt.jinja2js.nose_test_suites:Suites
 
 [zc.buildout]
-dependency = pwt.jscompiler.recipe:Deps
+dependency = pwt.jinja2js.recipe:Deps
 
 [paste.app_factory]
-main = pwt.jscompiler.soy_wsgi:Resources
+main = pwt.jinja2js.soy_wsgi:Resources
 """,
 
     include_package_data = True,

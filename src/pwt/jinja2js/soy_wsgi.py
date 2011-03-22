@@ -42,7 +42,7 @@ class JinjaEnvironment(object):
 
         self.env = jinja2.Environment(
             loader = loader,
-            extensions = ["pwt.jscompiler.jscompiler.Namespace"],
+            extensions = ["pwt.jinja2js.jscompiler.Namespace"],
             autoescape = autoescape)
 
 class Resources(JinjaEnvironment):
