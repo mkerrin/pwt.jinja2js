@@ -47,8 +47,8 @@ Install and test
 
 In order to get started with this project and to see what it can do:
 
- * git clone git@github.com:mkerrin/pwt.jscompiler.git
- * cd pwt.jscompiler
+ * git clone git@github.com:mkerrin/pwt.jinja2js.git
+ * cd pwt.jinja2js
  * python bootstrap
  * ./bin/buildout
 
