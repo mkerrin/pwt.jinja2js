@@ -1,5 +1,4 @@
 import unittest
-from cStringIO import StringIO
 
 import soy_wsgi
 
@@ -12,12 +11,13 @@ import jscompiler
 
 
 def generateMacro(
-        node, environment, name, filename, stream, autoescape = False):
-    generator = jscompiler.MacroCodeGenerator(environment, None, None, stream)
+        node, environment, name, filename, autoescape = False):
+    generator = jscompiler.MacroCodeGenerator(environment, None, None)
     eval_ctx = jinja2.nodes.EvalContext(environment, name)
     eval_ctx.namespace = "test"
     eval_ctx.autoescape = autoescape
     generator.blockvisit(node.body, jscompiler.JSFrame(environment, eval_ctx))
+    return generator.stream.getvalue()
 
 
 class JSCompilerTestCase(unittest.TestCase):
@@ -44,9 +44,7 @@ class JSCompilerTemplateTestCase(JSCompilerTestCase):
         node = self.get_compile_from_string("""{% macro hello() %}
 Hello, world!
 {% endmacro %}""")
-        stream = StringIO()
-        jscompiler.generate(node, self.env, "v.html", "v.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.require('soy');
 hello = function(opt_data, opt_sb) {
@@ -59,10 +57,7 @@ hello = function(opt_data, opt_sb) {
         node = self.get_compile_from_string("""{% macro hello() %}
 Hello, world!
 {% endmacro %}""")
-        stream = StringIO()
-        generateMacro(
-            node, self.env, "const.html", "const.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "const.html", "const.html")
 
         self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -76,10 +71,9 @@ Hello, world!
 {{ name }}
 {% endmacro %}
 """)
-        stream = StringIO()
         self.assertRaises(
             jinja2.compiler.TemplateAssertionError,
-            generateMacro, node, self.env, "var1.html", "var1.html", stream = stream)
+            generateMacro, node, self.env, "var1.html", "var1.html")
 
     def test_namespaced_var1(self):
         # variable is undeclared
@@ -88,9 +82,7 @@ Hello, world!
 {{ goog.color.names.aqua }}
 {% endmacro %}
 """)
-        stream = StringIO()
-        jscompiler.generate(node, self.env, "v.html", "v.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.provide('test');
 goog.require('soy');
@@ -108,9 +100,7 @@ test.hello = function(opt_data, opt_sb) {
 {{ name }}
 {% endmacro %}
 """)
-        stream = StringIO()
-        generateMacro(node, self.env, "var1.html", "var1.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "var1.html", "var1.html")
 
         self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -123,9 +113,7 @@ test.hello = function(opt_data, opt_sb) {
 Hello, {{ name }}!
 {% endmacro %}
 """)
-        stream = StringIO()
-        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "var2.html", "var2.html")
 
         self.assertEqual(source_code, """test.helloName = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -139,9 +127,7 @@ Hello, {{ name }}!
 {{ num + 200 }}
 {% endmacro %}
 """)
-        stream = StringIO()
-        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "var2.html", "var2.html")
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -155,9 +141,7 @@ Hello, {{ name }}!
 {{ num + step }}
 {% endmacro %}
 """)
-        stream = StringIO()
-        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "var2.html", "var2.html")
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -171,9 +155,7 @@ Hello, {{ name }}!
 {{ (num - step) ** 2 }}
 {% endmacro %}
 """)
-        stream = StringIO()
-        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "var2.html", "var2.html")
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -187,9 +169,7 @@ Hello, {{ name }}!
 {{ Math.floor(n1 / n2) }}
 {% endmacro %}
 """)
-        stream = StringIO()
-        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "var2.html", "var2.html")
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -203,9 +183,7 @@ Hello, {{ name }}!
 {{ num - (step ** 2) }}
 {% endmacro %}
 """)
-        stream = StringIO()
-        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "var2.html", "var2.html")
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -217,9 +195,7 @@ Hello, {{ name }}!
         # variables + with autoescape on
         node = self.get_compile_from_string("""{% macro add(num, step) %}{{ num - (step ** 2) }}{% endmacro %}
 """)
-        stream = StringIO()
-        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream, autoescape = True)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "var2.html", "var2.html", autoescape = True)
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -231,9 +207,7 @@ Hello, {{ name }}!
         # variables + with autoescape and the escape filter
         node = self.get_compile_from_string("""{% macro add(num, step) %}{{ (num - (step ** 2)) | escape }}{% endmacro %}
 """)
-        stream = StringIO()
-        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream, autoescape = True)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "var2.html", "var2.html", autoescape = True)
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -245,9 +219,7 @@ Hello, {{ name }}!
         # variables -
         node = self.get_compile_from_string("""{% macro add(num) %}{{ -num + 20 }}{% endmacro %}
 """)
-        stream = StringIO()
-        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream, autoescape = True)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "var2.html", "var2.html", autoescape = True)
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -259,9 +231,7 @@ Hello, {{ name }}!
         # variables +
         node = self.get_compile_from_string("""{% macro add(num) %}{{ +num + 20 }}{% endmacro %}
 """)
-        stream = StringIO()
-        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream, autoescape = True)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "var2.html", "var2.html", autoescape = True)
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -273,9 +243,7 @@ Hello, {{ name }}!
         # variables not
         node = self.get_compile_from_string("""{% macro add(bool) %}{{ not bool }}{% endmacro %}
 """)
-        stream = StringIO()
-        generateMacro(node, self.env, "var2.html", "var2.html", stream = stream, autoescape = True)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "var2.html", "var2.html", autoescape = True)
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -294,10 +262,7 @@ Hello, {{ name }}!
 {% endfor %}
 {% endmacro %}
 """)
-        stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx');
 goog.require('soy');
@@ -322,9 +287,7 @@ xxx.fortest = function(opt_data, opt_sb) {
     def test_for2(self):
         # test loop.index0 variables
         node = self.get_compile_from_string("{% macro fortest(data) %}{% for item in data %}{{ loop.index0 }}{% endfor %}{% endmacro %}")
-        stream = StringIO()
-        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -340,9 +303,7 @@ xxx.fortest = function(opt_data, opt_sb) {
     def test_for3(self):
         # test loop.index variables
         node = self.get_compile_from_string("{% macro fortest(data) %}{% for item in data %}{{ loop.index }}{% endfor %}{% endmacro %}")
-        stream = StringIO()
-        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -358,9 +319,7 @@ xxx.fortest = function(opt_data, opt_sb) {
     def test_for4(self):
         # test loop.revindex & loop.revindex0 variables
         node = self.get_compile_from_string("{% macro fortest(data) %}{% for item in data %}{{ loop.revindex }} - {{loop.revindex0 }}{% endfor %}{% endmacro %}")
-        stream = StringIO()
-        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -376,9 +335,7 @@ xxx.fortest = function(opt_data, opt_sb) {
     def test_for5(self):
         # test loop.length & loop.first & loop.last variables
         node = self.get_compile_from_string("{% macro fortest(data) %}{% for item in data %}{{ loop.length }} - {{loop.first }} - {{ loop.last }}{% endfor %}{% endmacro %}")
-        stream = StringIO()
-        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -394,18 +351,14 @@ xxx.fortest = function(opt_data, opt_sb) {
     def test_for6(self):
         # test invalid loop access
         node = self.get_compile_from_string("{% namespace xxx %}{% macro fortest(data) %}{% for item in data %}{{ loop.missing }}{% endfor %}{% endmacro %}")
-        stream = StringIO()
         self.assertRaises(
             AttributeError,
-            jscompiler.generate,
-            node, self.env, "for.html", "for.html", stream = stream)
+            jscompiler.generate, node, self.env, "for.html", "for.html")
 
     def test_for7(self):
         # test loop.index with other variable.
         node = self.get_compile_from_string("{% macro fortest(data, name) %}{% for item in data %}{{ loop.index }} - {{ name }}{% endfor %}{% endmacro %}")
-        stream = StringIO()
-        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -421,9 +374,7 @@ xxx.fortest = function(opt_data, opt_sb) {
     def test_for8(self):
         # test loop.index with other variable, with attribute
         node = self.get_compile_from_string("{% macro fortest(data, param) %}{% for item in data %}{{ loop.index }} - {{ param.name }}{% endfor %}{% endmacro %}")
-        stream = StringIO()
-        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -446,9 +397,7 @@ xxx.fortest = function(opt_data, opt_sb) {
 {% endfor %}
 {% endmacro %}""")
 
-        stream = StringIO()
-        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -478,9 +427,7 @@ xxx.fortest = function(opt_data, opt_sb) {
 {% endfor %}
 {% endmacro %}""")
 
-        stream = StringIO()
-        generateMacro(node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.forinlist = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -501,9 +448,7 @@ xxx.fortest = function(opt_data, opt_sb) {
 {% for job in jobs %}{{ job.name }}{% endfor %}
 {% endmacro %}""")
 
-        stream = StringIO()
-        jscompiler.generate(node, self.env, "f.html", "f.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         # XXX - whitespace fuck up after soy requirement
         self.assertEqual(source_code, """goog.provide('test');
@@ -525,9 +470,7 @@ test.forinlist = function(opt_data, opt_sb) {
         # test if
         node = self.get_compile_from_string("""{% macro testif(option) %}{% if option %}{{ option }}{% endif %}{% endmacro %}""")
 
-        stream = StringIO()
-        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "if.html", "if.html")
 
         self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -548,9 +491,7 @@ No option.
 {% endmacro %}
 """)
 
-        stream = StringIO()
-        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "if.html", "if.html")
 
         self.assertEqual(source_code, """test.iftest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -568,9 +509,7 @@ No option.
         # test if ==
         node = self.get_compile_from_string("""{% macro testif(num) %}{% if num == 0 %}{{ num }}{% endif %}{% endmacro %}""")
 
-        stream = StringIO()
-        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "if.html", "if.html")
 
         self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -584,9 +523,7 @@ No option.
         # test if == and !=
         node = self.get_compile_from_string("""{% macro testif(num) %}{% if num != 0 and num == 2 %}{{ num }}{% endif %}{% endmacro %}""")
 
-        stream = StringIO()
-        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "if.html", "if.html")
 
         self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -600,9 +537,7 @@ No option.
         # test if > and >= and < and <=
         node = self.get_compile_from_string("""{% macro testif(num) %}{% if num > 0 and num >= 1 and num < 2 and num <= 3 %}{{ num }}{% endif %}{% endmacro %}""")
 
-        stream = StringIO()
-        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "if.html", "if.html")
 
         self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -616,27 +551,23 @@ No option.
         # test if in
         node = self.get_compile_from_string("""{% macro testif(num) %}{% if num in [1, 2, 3] %}{{ num }}{% endif %}{% endmacro %}""")
 
-        stream = StringIO()
         self.assertRaises(
             jinja2.compiler.TemplateAssertionError,
-            generateMacro, node, self.env, "if.html", "if.html", stream = stream)
+            generateMacro, node, self.env, "if.html", "if.html")
 
     def test_if7(self):
         # test if in
         node = self.get_compile_from_string("""{% macro testif(num) %}{% if num not in [1, 2, 3] %}{{ num }}{% endif %}{% endmacro %}""")
 
-        stream = StringIO()
         self.assertRaises(
             jinja2.compiler.TemplateAssertionError,
-            generateMacro, node, self.env, "if.html", "if.html", stream = stream)
+            generateMacro, node, self.env, "if.html", "if.html")
 
     def test_if8(self):
         # test if > and >= and < and <=
         node = self.get_compile_from_string("""{% macro testif(num) %}{% if num + 1 == 2 %}{{ num }}{% endif %}{% endmacro %}""")
 
-        stream = StringIO()
-        generateMacro(node, self.env, "if.html", "if.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "if.html", "if.html")
 
         self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -654,10 +585,7 @@ No option.
 
 {% macro testcall() %}{{ xxx.testif() }}{% endmacro %}""")
 
-        stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx');
 goog.require('soy');
@@ -685,10 +613,7 @@ xxx.testcall = function(opt_data, opt_sb) {
 
 {% macro testcall() %}{{ xxx.ns1.testif() }}{% endmacro %}""")
 
-        stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('soy');
@@ -715,10 +640,7 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
 
 {% macro testcall() %}{{ xxx.ns1.testif(option = true) }}{% endmacro %}""")
 
-        stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('soy');
@@ -745,10 +667,7 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
 
 {% macro testcall() %}Hello, {{ xxx.ns1.testif(option = true) }}!{% endmacro %}""")
 
-        stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = jscompiler.generate(node, self.env, ".html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('soy');
@@ -776,10 +695,9 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
 {% if option %}{{ option }}{% endif %}{% endmacro %}
 {% macro testcall() %}Hello, {{ xxx.ns1.testif(true) }}!{% endmacro %}""")
 
-        stream = StringIO()
         self.assertRaises(
             jinja2.compiler.TemplateAssertionError,
-            jscompiler.generate, node, self.env, "", "", stream = stream)
+            jscompiler.generate, node, self.env, "", "")
 
     def test_call_macro6(self):
         # call macro with dynamic keywrod arguments
@@ -789,10 +707,9 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
 
 {% macro testcall() %}Hello, {{ xxx.ns1.testif(**{option: true}) }}!{% endmacro %}""")
 
-        stream = StringIO()
         self.assertRaises(
             jinja2.compiler.TemplateAssertionError,
-            jscompiler.generate, node, self.env, "", "", stream = stream)
+            jscompiler.generate, node, self.env, "", "")
 
     def test_call_macro7(self):
         # call macro with string keyword
@@ -802,10 +719,8 @@ Hello, {% if name %}{{ name }}{% else %}world{% endif %}!{% endmacro %}
 
 {% macro testcall() %}{{ xxx.ns1.hello(name = "Michael") }}{% endmacro %}""")
 
-        stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = jscompiler.generate(
+            node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('soy');
@@ -836,10 +751,7 @@ Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
 
 {% macro testcall() %}{{ xxx.ns1.hello(name = {"first": "Michael"}) }}{% endmacro %}""")
 
-        stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('soy');
@@ -868,10 +780,7 @@ xxx.ns1.testcall = function(opt_data, opt_sb) {
 
 {% macro hello(name) %}{{ forms.input(name = 'test') }}{% endmacro %}""")
 
-        stream = StringIO()
-        jscompiler.generate(
-            node, self.env, "for.html", "for.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('soy');
@@ -887,17 +796,14 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
     def test_filters1(self):
         # calling undefined filter
         node = self.get_compile_from_string("""{% macro filtertest(data) %}{{ data|missing_filter }}{% endmacro %}""")
-        stream = StringIO()
         self.assertRaises(
             jinja2.compiler.TemplateAssertionError,
-            generateMacro, node, self.env, "filter.html", "filter.html", stream = stream)
+            generateMacro, node, self.env, "filter.html", "filter.html")
 
     def test_filter_escape1(self):
         # escape filter
         node = self.get_compile_from_string("""{% macro filtertest(data) %}{{ data|escape }}{% endmacro %}""")
-        stream = StringIO()
-        generateMacro(node, self.env, "filter.html", "filter.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "filter.html", "filter.html")
 
         self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -909,9 +815,7 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
         # autoescape filter
         node = self.get_compile_from_string("""{% macro filtertest(data) %}{{ data }}{% endmacro %}""")
 
-        stream = StringIO()
-        generateMacro(node, self.env, "filter.html", "filter.html", stream = stream, autoescape = True)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "filter.html", "filter.html", autoescape = True)
 
         self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -923,9 +827,7 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
         # autoescape with safe filter
         node = self.get_compile_from_string("""{% macro filtertest(data) %}{{ data|safe }}{% endmacro %}""")
 
-        stream = StringIO()
-        generateMacro(node, self.env, "filter.html", "filter.html", stream = stream, autoescape = True)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "filter.html", "filter.html", autoescape = True)
 
         self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -936,9 +838,7 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
     def test_filter_default1(self):
         node = self.get_compile_from_string("""{% macro hello(name) %}{{ name|default('World') }}{% endmacro %}""")
 
-        stream = StringIO()
-        generateMacro(node, self.env, "f.html", "f.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -950,9 +850,7 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
         # same as previous but test keyword arguments to filters.
         node = self.get_compile_from_string("""{% macro hello(name) %}{{ name|default(default_value = 'World') }}{% endmacro %}""")
 
-        stream = StringIO()
-        generateMacro(node, self.env, "f.html", "f.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -963,9 +861,7 @@ xxx.ns1.hello = function(opt_data, opt_sb) {
     def test_filter_truncate1(self):
         node = self.get_compile_from_string("""{% macro trunc(s) %}{{ s|truncate(length = 280) }}{% endmacro %}""")
 
-        stream = StringIO()
-        generateMacro(node, self.env, "f.html", "f.html", stream = stream)
-        source_code = stream.getvalue()
+        source_code = generateMacro(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """test.trunc = function(opt_data, opt_sb) {
     var output = opt_sb || new soy.StringBuilder();
@@ -986,9 +882,8 @@ class JSCompilerTemplateTestCaseOutput(JSCompilerTestCase):
 {% macro hello() %}
 Hello, world!
 {% endmacro %}""")
-        stream = StringIO()
-        jscompiler.generate(node, self.env, "v.html", "v.html", stream = stream)
-        source_code = stream.getvalue()
+
+        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.require('soy');
 /**
@@ -1007,9 +902,8 @@ hello = function(opt_data, opt_sb) {
 {% macro hello(name) %}
 Hello, {{ name.firstname }}!
 {% endmacro %}""")
-        stream = StringIO()
-        jscompiler.generate(node, self.env, "v.html", "v.html", stream = stream)
-        source_code = stream.getvalue()
+
+        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.require('soy');
 /**
@@ -1031,9 +925,8 @@ hello = function(opt_data, opt_sb) {
 {% macro hello(name) %}
 Hello, {{ name.firstname }}!
 {% endmacro %}""")
-        stream = StringIO()
-        jscompiler.generate(node, self.env, "v.html", "v.html", stream = stream)
-        source_code = stream.getvalue()
+
+        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.require('soy');
 // ok
@@ -1062,9 +955,8 @@ hello = function(opt_data, opt_sb) {
 {% macro hello(name) %}
 Hello, {{ name.firstname }}!
 {% endmacro %}""")
-        stream = StringIO()
-        jscompiler.generate(node, self.env, "v.html", "v.html", stream = stream)
-        source_code = stream.getvalue()
+
+        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.require('soy');
 // ok
