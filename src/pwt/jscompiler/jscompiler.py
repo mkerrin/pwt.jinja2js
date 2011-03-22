@@ -6,30 +6,7 @@ import jinja2.compiler
 import jinja2.ext
 from jinja2.utils import Markup, concat, escape, is_python_keyword, next
 
-# Copied from jinja2.nodes.NodeType.__new__ so that we can create node types
-def __new__(cls, name, bases, d):
-    for attr in 'fields', 'attributes':
-        storage = []
-        storage.extend(getattr(bases[0], attr, ()))
-        storage.extend(d.get(attr, ()))
-        assert len(bases) == 1, 'multiple inheritance not allowed'
-        assert len(storage) == len(set(storage)), 'layout conflict'
-        d[attr] = tuple(storage)
-    d.setdefault('abstract', False)
-    return type.__new__(cls, name, bases, d)
-
-# This is the old failing_new test so that jinja2 can catch protential errors.
-_failing_new = jinja2.nodes.NodeType.__new__
-
-jinja2.nodes.NodeType.__new__ = staticmethod(__new__)
-
-class NamespaceNode(jinja2.nodes.Stmt):
-    fields = ("namespace",)
-
-# Re-install the failing_new method
-jinja2.nodes.NodeType.__new__ = _failing_new
-del __new__
-
+import nodes
 
 class Namespace(jinja2.ext.Extension):
     """
@@ -43,7 +20,7 @@ class Namespace(jinja2.ext.Extension):
     tags = set(["namespace"])
 
     def parse(self, parser):
-        node = NamespaceNode(lineno = next(parser.stream).lineno)
+        node = nodes.NamespaceNode(lineno = next(parser.stream).lineno)
         namespace = []
         while not parser.is_tuple_end():
             namespace.append(parser.stream.next().value)
@@ -70,16 +47,6 @@ OPERATORS = {
     ## "in":    "in",
     ## "notin": "not in"
     }
-
-
-def generate(node, environment, name, filename, stream = None):
-    """Generate the python source for a node tree."""
-    if not isinstance(node, jinja2.nodes.Template):
-        raise TypeError("Can't compile non template nodes")
-    generator = CodeGenerator(environment, name, filename, stream)
-    generator.visit(node)
-    if stream is None:
-        return generator.stream.getvalue()
 
 
 class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
@@ -120,7 +87,7 @@ class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
         fromnode = self.environment._parse(source, name, filename)
 
         # Need to find the namespace
-        namespace = list(fromnode.find_all(NamespaceNode))
+        namespace = list(fromnode.find_all(nodes.NamespaceNode))
         if len(namespace) != 1:
             raise jinja2.compiler.TemplateAssertionError(
                 "You must supply one namespace for your template",
@@ -286,7 +253,7 @@ class CodeGenerator(BaseCodeGenerator):
 
         Includes imports, macro definitions, etc.
         """
-        namespace = list(node.find_all(NamespaceNode))
+        namespace = list(node.find_all(nodes.NamespaceNode))
         if len(namespace) != 1:
             self.fail("You must supply one namespace for your template", 0)
         namespace = namespace[0].namespace
@@ -802,49 +769,14 @@ class register_filter(object):
 
         return func
 
-
-@register_filter("default")
-def filter_default(generator, node, frame, default_value = ""):
-    generator.visit(node.node, frame)
-    generator.write(" ? ")
-    generator.visit(node.node, frame)
-    generator.write(" : ")
-    generator.visit(default_value, frame)
+import filters
 
 
-@register_filter("truncate")
-def filter_truncate(generator, node, frame, length):
-    generator.visit(node.node, frame)
-    generator.write(".substring(0, ")
-    generator.visit(length, frame)
-    generator.write(")")
-
-
-@register_filter("capitalize")
-def filter_capitalize(generator, node, frame):
-    generator.visit(node.node, frame)
-    generator.write(".substring(0, 1).toUpperCase(), ")
-    generator.visit(node.node, frame)
-    generator.write(".substring(1)")
-
-
-@register_filter("last")
-def filter_last(generator, node, frame):
-    generator.visit(node.node, frame)
-    generator.write(".pop()")
-
-
-@register_filter("length")
-def filter_length(generator, node, frame):
-    generator.visit(node.node, frame)
-    generator.write(".length")
-
-
-@register_filter("replace")
-def filter_replace(generator, node, frame, old, new): #, count = None)
-    generator.visit(node.node, frame)
-    generator.write(".replace(")
-    generator.visit(old, frame)
-    generator.write(", ")
-    generator.visit(new, frame)
-    generator.write(")")
+def generate(node, environment, name, filename, stream = None):
+    """Generate the python source for a node tree."""
+    if not isinstance(node, jinja2.nodes.Template):
+        raise TypeError("Can't compile non template nodes")
+    generator = CodeGenerator(environment, name, filename, stream)
+    generator.visit(node)
+    if stream is None:
+        return generator.stream.getvalue()
