@@ -192,4 +192,22 @@ window.onload = function() {
             QUnit.equal(tests.filters.truncate1({s: "xxxxxxxxxx", length: 5}), "xxxxx");
             QUnit.equal(tests.filters.truncate1({s: "xxxxxxxxxx", length: 20}), "xxxxxxxxxx");
         });
+
+    QUnit.test("capitalize", function() {
+            QUnit.equal(tests.filters.capitalize({s: "hello"}), "Hello");
+            QUnit.equal(tests.filters.capitalize({s: "Hello"}), "Hello");
+            QUnit.equal(tests.filters.capitalize({s: "HELLO"}), "HELLO");
+        });
+
+    QUnit.test("last", function() {
+            QUnit.equal(tests.filters.last({}), "3");
+        });
+
+    QUnit.test("length", function() {
+            QUnit.equal(tests.filters.len({}), "4");
+        });
+
+    QUnit.test("replace1", function() {
+            QUnit.equal(tests.filters.replace1({}), "Goodbye World");
+        });
 };
