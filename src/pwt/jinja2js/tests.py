@@ -42,7 +42,14 @@ class JSCompilerTemplateTestCase(unittest.TestCase):
 Hello, world!
 {% endmacro %}""")
         stream = StringIO()
-        self.assertRaises(jinja2.compiler.TemplateAssertionError, jscompiler.generate, node, self.env, "", "", stream = stream)
+        jscompiler.generate(node, self.env, "v.html", "v.html", stream = stream)
+        source_code = stream.getvalue()
+
+        self.assertEqual(source_code, """goog.require('soy');hello = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\nHello, world!\\n');
+    if (!opt_sb) return output.toString();
+}""")
 
     def test_const1(self):
         node = self.get_compile_from_string("""{% macro hello() %}
@@ -78,7 +85,7 @@ Hello, world!
 {% endmacro %}
 """)
         stream = StringIO()
-        jscompiler.generate(node, self.env, "var1.html", "var1.html", stream = stream)
+        jscompiler.generate(node, self.env, "v.html", "v.html", stream = stream)
         source_code = stream.getvalue()
 
         self.assertEqual(source_code, """goog.provide('test');

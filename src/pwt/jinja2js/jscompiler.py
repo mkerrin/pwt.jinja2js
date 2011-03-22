@@ -264,9 +264,12 @@ class CodeGenerator(BaseCodeGenerator):
         Includes imports, macro definitions, etc.
         """
         namespace = list(node.find_all(nodes.NamespaceNode))
-        if len(namespace) != 1:
-            self.fail("You must supply one namespace for your template", 0)
-        namespace = namespace[0].namespace
+        if len(namespace) > 1:
+            self.fail("You can only supply one namespace per template", 0)
+        if namespace:
+            namespace = namespace[0].namespace
+        else:
+            namespace = ""
 
         have_extends = node.find(jinja2.nodes.Extends) is not None
         if have_extends:
@@ -284,7 +287,8 @@ class CodeGenerator(BaseCodeGenerator):
         frame.inspect(node.body)
         frame.toplevel = frame.rootlevel = True
 
-        self.writeline("goog.provide(" + repr(namespace.encode(self.encoding)) + ");")
+        if namespace:
+            self.writeline("goog.provide(" + repr(namespace.encode(self.encoding)) + ");")
         self.writeline("goog.require('soy');")
 
         self.blockvisit(node.body, frame)
@@ -715,8 +719,11 @@ class MacroCodeGenerator(BaseCodeGenerator):
         # macros are delayed, they never require output checks
         frame.require_output_check = False
 
-        self.writeline("%s.%s = function(opt_data, opt_sb) {" %(
-            frame.eval_ctx.namespace, node.name))
+        if frame.eval_ctx.namespace:
+            self.writeline("%s.%s" %(frame.eval_ctx.namespace, node.name))
+        else:
+            self.writeline("%s" % node.name)
+        self.write(" = function(opt_data, opt_sb) {")
         self.indent()
         self.writeline("var output = opt_sb || new soy.StringBuilder();")
         self.blockvisit(node.body, frame)
