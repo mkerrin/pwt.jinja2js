@@ -26,13 +26,13 @@ def main(args = None, output = None):
     parser = optparse.OptionParser()
     # closure template options that we support
     parser.add_option("--outputPathFormat", dest = "output_format",
-                      help = "A format string that specifies how to build the path to each output file.",
+                      help = "A format string that specifies how to build the path to each output file. You can include literal characters as well as the following $variables: ${INPUT_FILE_NAME}, ${INPUT_FILE_NAME_NO_EXT}, and ${INPUT_DIRECTORY}.",
                       metavar = "OUTPUT_FORMAT")
 
     # jinja2js specific options
     parser.add_option("--packages", dest = "packages",
                       default = [], action = "append",
-                      help = "List of packages to look for template files",
+                      help = "List of packages to look for template files.",
                       metavar = "PACKAGE")
 
     options, files = parser.parse_args(args)

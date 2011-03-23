@@ -56,7 +56,37 @@ development where we can refresh the page to pull in any made to the template.</
 </div>
 <div class="section" id="command-line-interface">
 <h2>Command line interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
-<p>TODO and implement</p>
+<p>A console script, called <tt class="docutils literal"><span class="pre">jinja2js</span></tt> is distributed with the package. This is
+a command line interface to the tool. It takes a list of filenames which it
+compiles to JavaScript saving the output of it file to the filename generated
+by the <tt class="docutils literal"><span class="pre">--outputPathFormat</span></tt> template.</p>
+<p>The script is invoked like so:</p>
+<div class="highlight-python"><pre>jinja2js [options] --outputPathFormat format &lt;file1&gt; &lt;file2&gt; ...</pre>
+</div>
+<p>The list of arguments to the script are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="72%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Argument</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>&#8211;outputPathFormat</td>
+<td>A format string that specifies how to build the
+path to each output file. You can include literal
+characters as well as the following $variables:
+${INPUT_FILE_NAME}, ${INPUT_FILE_NAME_NO_EXT}, and
+${INPUT_DIRECTORY}.</td>
+</tr>
+<tr><td>&#8211;packages</td>
+<td>List of packages to look for template files.</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="pwt-recipe-closurebuilder">
 <h2>pwt.recipe.closurebuilder<a class="headerlink" href="#pwt-recipe-closurebuilder" title="Permalink to this headline">¶</a></h2>
