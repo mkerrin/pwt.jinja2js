@@ -6,6 +6,19 @@ import sys
 import soy_wsgi
 import jscompiler
 
+def get_output_filename(output_format, filename):
+    filename_template = string.Template(output_format)
+
+    output_filename = filename_template.substitute({
+        "INPUT_FILE_NAME": os.path.basename(filename),
+        "INPUT_FILE_NAME_NO_EXT": os.path.splitext(os.path.basename(filename))[0],
+        "INPUT_DIRECTORY": os.path.dirname(filename),
+        # "INPUT_PREFIX": 
+        })
+
+    return output_filename
+
+
 def main(args = None, output = None):
     if output is None:
         output = sys.stdout
@@ -31,20 +44,13 @@ def main(args = None, output = None):
 
     env = soy_wsgi.create_environment(options.packages)
 
-    filename_template = string.Template(options.output_format)
-
     for filename in files:
         name = os.path.basename(filename)
         node = env._parse(open(filename).read(), name, filename)
 
         output = jscompiler.generate(node, env, name, filename)
 
-        output_filename = filename_template.substitute({
-            "INPUT_FILE_NAME": os.path.basename(filename),
-            "INPUT_FILE_NAME_NO_EXT": os.path.splitext(os.path.basename(filename))[0],
-            "INPUT_DIRECTORY": os.path.dirname(filename),
-            # "INPUT_PREFIX": 
-            })
+        output_filename = get_output_filename(options.output_format, filename)
         open(output_filename, "w").write(output)
 
     return 0

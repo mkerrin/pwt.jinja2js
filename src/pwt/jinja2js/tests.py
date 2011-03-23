@@ -1049,3 +1049,40 @@ example.hello = function(opt_data, opt_sb) {
     output.append('\\nHello, ', opt_data.name, '!\\n');
     if (!opt_sb) return output.toString();
 }""")
+
+    # test the generation of different filenames
+
+    def test_output1(self):
+        self.assertEqual(
+            cli.get_output_filename(
+                "/tmp/${INPUT_FILE_NAME_NO_EXT}.js",
+                "test.soy"),
+            "/tmp/test.js")
+
+    def test_output2(self):
+        self.assertEqual(
+            cli.get_output_filename(
+                "/builddir/${INPUT_DIRECTORY}/${INPUT_FILE_NAME_NO_EXT}.js",
+                "test.soy"),
+            "/builddir//test.js")
+
+    def test_output3(self):
+        self.assertEqual(
+            cli.get_output_filename(
+                "/builddir/${INPUT_DIRECTORY}/${INPUT_FILE_NAME_NO_EXT}.js",
+                "src/test.soy"),
+            "/builddir/src/test.js")
+
+    def test_output4(self):
+        self.assertEqual(
+            cli.get_output_filename(
+                "/builddir/${INPUT_FILE_NAME_NO_EXT}.js",
+                "src/test.soy"),
+            "/builddir/test.js")
+
+    def test_output5(self):
+        self.assertEqual(
+            cli.get_output_filename(
+                "/builddir/${INPUT_FILE_NAME}.js",
+                "src/test.soy"),
+            "/builddir/test.soy.js")
