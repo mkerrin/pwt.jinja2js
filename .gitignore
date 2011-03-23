@@ -5,4 +5,4 @@ eggs
 parts
 
 etc/settings.ini
-src/pwt/jinja2/media/deps.js
+src/pwt/jinja2js/media/deps.js
