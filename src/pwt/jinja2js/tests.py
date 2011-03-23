@@ -1,4 +1,9 @@
+from cStringIO import StringIO
+import os
+import shutil
+import tempfile
 import unittest
+import webtest
 
 import soy_wsgi
 
@@ -8,6 +13,7 @@ import jinja2.optimizer
 import jinja2.runtime
 
 import jscompiler
+import cli
 
 
 def generateMacro(
@@ -984,8 +990,6 @@ class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):
         return node
 
 
-import webtest
-
 class SoyServer(unittest.TestCase):
 
     def get_app(self):
@@ -1000,3 +1004,48 @@ class SoyServer(unittest.TestCase):
     def test_soy2(self):
         app = self.get_app()
         res = app.get("/soy/example.soy")
+
+
+class CLInterfaceTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.tempdir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tempdir)
+
+    def test_cli1(self):
+        output = StringIO()
+        result = cli.main([], output)
+        self.assertEqual(result, 1)
+
+        self.assertEqual(os.listdir(self.tempdir), [])
+
+    def test_cli2(self):
+        output = StringIO()
+        result = cli.main(["--outputPathFormat", "${INPUT_FILE_NAME_NO_EXT}.js"], output)
+        self.assertEqual(result, 0)
+
+        self.assertEqual(os.listdir(self.tempdir), [])
+
+    def test_cli3(self):
+        output = StringIO()
+        result = cli.main([
+            "--outputPathFormat", "%s/${INPUT_FILE_NAME_NO_EXT}.js" % self.tempdir,
+            "%s/test_templates/example.soy" % os.path.dirname(jscompiler.__file__)
+            ], output)
+        self.assertEqual(result, 0)
+
+        self.assertEqual(os.listdir(self.tempdir), ["example.js"])
+
+        self.assertEqual(
+            open(os.path.join(self.tempdir, "example.js")).read(),
+            """goog.provide('example');
+goog.require('soy');
+
+
+example.hello = function(opt_data, opt_sb) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\nHello, ', opt_data.name, '!\\n');
+    if (!opt_sb) return output.toString();
+}""")

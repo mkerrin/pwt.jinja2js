@@ -6,9 +6,10 @@ import sys
 import soy_wsgi
 import jscompiler
 
-def main(args = None):
-    import pdb
-    pdb.set_trace()
+def main(args = None, output = None):
+    if output is None:
+        output = sys.stdout
+
     parser = optparse.OptionParser()
     # closure template options that we support
     parser.add_option("--outputPathFormat", dest = "output_format",
@@ -21,16 +22,16 @@ def main(args = None):
                       help = "List of packages to look for template files",
                       metavar = "PACKAGE")
 
-    options, files = parser.parse_args()
+    options, files = parser.parse_args(args)
 
     outputPathFormat = options.output_format
     if not outputPathFormat:
-        parser.print_help()
-        sys.exit(0)
+        parser.print_help(output)
+        return 1
 
     env = soy_wsgi.create_environment(options.packages)
 
-    o_template = string.Template(options.output_format)
+    filename_template = string.Template(options.output_format)
 
     for filename in files:
         name = os.path.basename(filename)
@@ -38,14 +39,16 @@ def main(args = None):
 
         output = jscompiler.generate(node, env, name, filename)
 
-        output_filename = o_template.substitute({
-            "INPUT_FILE_NAME": filename,
-            "INPUT_FILE_NAME_NO_EXT": os.path.splitext(filename)[0],
+        output_filename = filename_template.substitute({
+            "INPUT_FILE_NAME": os.path.basename(filename),
+            "INPUT_FILE_NAME_NO_EXT": os.path.splitext(os.path.basename(filename))[0],
             "INPUT_DIRECTORY": os.path.dirname(filename),
             # "INPUT_PREFIX": 
             })
         open(output_filename, "w").write(output)
 
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
