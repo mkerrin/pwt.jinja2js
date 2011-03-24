@@ -2,9 +2,9 @@ import webob
 import webob.dec
 
 import jinja2
-import soy_wsgi
+import wsgi
 
-class main(soy_wsgi.JinjaEnvironment):
+class main(wsgi.JinjaEnvironment):
 
     def __init__(self, *args, **config):
         super(main, self).__init__(*args, **config)
