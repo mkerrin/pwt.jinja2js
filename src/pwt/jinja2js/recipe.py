@@ -13,12 +13,12 @@ import jinja2.visitor
 
 import jscompiler
 import nodes
-import soy_wsgi
+import environment
 
-class Source(jinja2.visitor.NodeVisitor, soy_wsgi.JinjaEnvironment):
+class Source(jinja2.visitor.NodeVisitor):
 
     def __init__(self, path, packages = ""):
-        soy_wsgi.JinjaEnvironment.__init__(self, packages = packages)
+        self.env = environment.create_environment(packages = packages.split())
 
         self.source = source.GetFileContents(path)
         self.node = self.env._parse(self.source, os.path.basename(path), path)
