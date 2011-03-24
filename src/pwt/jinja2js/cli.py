@@ -3,7 +3,7 @@ import os.path
 import string
 import sys
 
-import soy_wsgi
+import environment
 import jscompiler
 
 def get_output_filename(output_format, filename):
@@ -42,7 +42,7 @@ def main(args = None, output = None):
         parser.print_help(output)
         return 1
 
-    env = soy_wsgi.create_environment(options.packages)
+    env = environment.create_environment(options.packages)
 
     for filename in files:
         name = os.path.basename(filename)
