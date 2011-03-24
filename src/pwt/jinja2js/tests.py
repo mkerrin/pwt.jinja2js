@@ -5,7 +5,7 @@ import tempfile
 import unittest
 import webtest
 
-import soy_wsgi
+import wsgi
 
 import jinja2.compiler
 import jinja2.nodes
@@ -992,9 +992,8 @@ class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):
 class SoyServer(unittest.TestCase):
 
     def get_app(self):
-        return webtest.TestApp(
-            soy_wsgi.Resources(
-                url = "/soy/", packages = "pwt.jinja2js:test_templates"))
+        return webtest.TestApp(wsgi.Resources(
+            url = "/soy/", packages = "pwt.jinja2js:test_templates"))
 
     def test_soy1(self):
         app = self.get_app()
