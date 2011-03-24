@@ -456,7 +456,6 @@ xxx.fortest = function(opt_data, opt_sb) {
 
         source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
-        # XXX - whitespace fuck up after soy requirement
         self.assertEqual(source_code, """goog.provide('test');
 goog.require('soy');
 test.forinlist = function(opt_data, opt_sb) {
