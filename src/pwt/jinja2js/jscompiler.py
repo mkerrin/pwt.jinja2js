@@ -605,7 +605,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
     visit_And = binop("and")
     visit_Or = binop("or")
 
-    del binop
+    del binop, uaop
 
     def visit_Compare(self, node, frame):
         self.visit(node.expr, frame)
