@@ -197,8 +197,6 @@ class BaseCodeGenerator(NodeVisitor):
         # the current indentation
         self._indentation = 0
 
-        self.encoding = "utf-8"
-
     # Copied
     def indent(self):
         """Indent by one."""
@@ -286,6 +284,7 @@ class CodeGenerator(BaseCodeGenerator):
 
         eval_ctx = jinja2.nodes.EvalContext(self.environment, self.name)
         eval_ctx.namespace = namespace
+        eval_ctx.encoding = "utf-8"
 
         # process the root
         frame = JSFrame(self.environment, eval_ctx)
@@ -293,7 +292,7 @@ class CodeGenerator(BaseCodeGenerator):
         frame.toplevel = frame.rootlevel = True
 
         if namespace:
-            self.writeline("goog.provide(" + repr(namespace.encode(self.encoding)) + ");")
+            self.writeline("goog.provide(" + repr(namespace.encode(eval_ctx.encoding)) + ");")
         self.writeline("goog.require('soy');")
         self.newline()
 
@@ -302,7 +301,8 @@ class CodeGenerator(BaseCodeGenerator):
     def visit_Import(self, node, frame):
         namespace = frame.identifiers.imports[node.target]
         self.mark(node)
-        self.write("goog.require('%s');" % namespace.encode("utf-8"))
+        self.write(
+            "goog.require('%s');" % namespace.encode(frame.eval_ctx.encoding))
 
     def visit_Macro(self, node, frame):
         generator = MacroCodeGenerator(
