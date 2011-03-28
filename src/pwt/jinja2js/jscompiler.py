@@ -72,6 +72,10 @@ class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
         self.environment = environment
         self.ctx = ctx
 
+    def blockvisit(self, nodes):
+        for node in nodes:
+            self.visit(node)
+
     # def visit_Name
 
     def visit_If(self, node):
@@ -119,6 +123,9 @@ class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
         self.visit(node.iter)
         # declare the target variable
         self.visit(node.target)
+        # declare anything in the for loops body. that might need to be
+        # managed, like caller functions.
+        self.blockvisit(node.body)
 
     # def visit_Callblock
 
@@ -147,6 +154,9 @@ class JSFrame(jinja2.compiler.Frame):
 
         # Track if we are escaping some output
         self.escaped = False
+
+        # Name of variable prefix containing the variables.
+        self.parameter_prefix = "opt"
 
     def inspect(self, nodes):
         """Walk the node and check for identifiers.  If the scope is hard (eg:
@@ -342,6 +352,12 @@ class MacroCodeGenerator(BaseCodeGenerator):
         # collect all the namespaced requirements
         self.requirements = set([])
 
+    def addRequirement(self, requirement, frame):
+        if requirement == frame.eval_ctx.namespace:
+            return
+
+        self.requirements.add(requirement)
+
     def visit_Output(self, node, frame):
         # JS is only interested in macros etc, as all of JavaScript
         # is rendered into the global namespace so we need to ignore data in
@@ -491,9 +507,20 @@ class MacroCodeGenerator(BaseCodeGenerator):
         isparam = False
 
         if name in frame.identifiers.declared_parameter:
-            output = "opt_data." + name
+            output = frame.parameter_prefix + "_data." + name
 
-            frame.assigned_names.add("opt_data." + name) # neccessary?
+            # neccessary?
+            frame.assigned_names.add(frame.parameter_prefix + "_data." + name)
+            isparam = True
+        elif frame.parent is not None and \
+               name in frame.parent.identifiers.declared_parameter:
+            # Once we have tried any local variables we need to check
+            # the parent if we have a declared parameter from there
+            output = frame.parent.parameter_prefix + "_data." + name
+
+            frame.assigned_names.add(
+                frame.parent.parameter_prefix + "_data." + name)
+
             isparam = True
         elif name in frame.reassigned_names:
             output = frame.reassigned_names[name]
@@ -688,12 +715,12 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.outdent()
             self.writeline("}")
 
-    def function_scoping(
-            self, node, frame, children = None, find_special = True):
+    def function_scoping(self, node, frame, parameter_prefix, children = None):
         if children is None:
             children = node.iter_child_nodes()
 
         func_frame = frame.inner()
+        func_frame.parameter_prefix = parameter_prefix
         func_frame.inspect(children)
 
         # variables that are undeclared (accessed before declaration) and
@@ -721,38 +748,49 @@ class MacroCodeGenerator(BaseCodeGenerator):
         )
 
         # XXX - varargs is what??
-        ## undeclared = jinja2.compiler.find_undeclared(children, ("caller", "kwargs", "kargs", "varargs"))
+        undeclared = jinja2.compiler.find_undeclared(children, ("caller", "kwargs", "kargs", "varargs"))
 
         if "caller" in func_frame.identifiers.undeclared:
             func_frame.identifiers.undeclared.discard("caller")
             func_frame.reassigned_names["caller"] = "opt_caller"
 
         # XXX - catch any undeclared variables.
-        ## if func_frame.identifiers.undeclared:
-        ##     self.fail("Need to declare the identifies in your marcos. The following are undeclared: %s" % ", ".join(undeclared))
 
         return func_frame
 
-    def macro_body(self, node, frame, children = None):
-        frame = self.function_scoping(node, frame, children = children)
+    def macro_body(self, name, node, frame, children = None, parameter_prefix = "opt"):
+        frame = self.function_scoping(node, frame, children = children, parameter_prefix = parameter_prefix)
         # macros are delayed, they never require output checks
         frame.require_output_check = False
 
-        if frame.eval_ctx.namespace:
-            self.writeline("%s.%s" %(frame.eval_ctx.namespace, node.name))
-        else:
-            self.writeline("%s" % node.name)
-        self.write(" = function(opt_data, opt_sb, opt_caller) {")
+        self.writeline("%s" % name)
+        self.write(" = function(%s_data, %s_sb, %s_caller) {" %(
+            frame.parameter_prefix, frame.parameter_prefix, frame.parameter_prefix))
         self.indent()
-        self.writeline("var output = opt_sb || new soy.StringBuilder();")
+        self.writeline("var output = %s_sb || new soy.StringBuilder();" % frame.parameter_prefix)
         self.blockvisit(node.body, frame)
-        self.writeline("if (!opt_sb) return output.toString();")
+        self.writeline("if (!%s_sb) return output.toString();" % frame.parameter_prefix)
         self.outdent()
         self.writeline("}")
 
     def visit_Macro(self, node, frame):
-        body = self.macro_body(node, frame)
+        name = node.name
+        if frame.eval_ctx.namespace:
+            name = frame.eval_ctx.namespace + "." + name
+        body = self.macro_body(name, node, frame)
         frame.assigned_names.add("%s.%s" %(frame.eval_ctx.namespace, node.name))
+
+    def visit_CallBlock(self, node, frame):
+        # node.call
+        # node.body
+        # Add the caller function to the macro.
+        # XXX - Make sure we don't have a namespace cnoflict here.
+        children = node.iter_child_nodes(exclude = ("call",))
+        self.macro_body("func_caller", node, frame, children = children, parameter_prefix = "func")
+
+        # call the macro passing in the caller method
+        self.newline(node)
+        self.visit_Call(node.call, frame, forward_caller = "func_caller")
 
     def signature(self, node, frame):
         if node.args:
@@ -775,29 +813,6 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.write(": ")
             self.visit(kwarg.value, frame)
         self.write("}")
-
-    def addRequirement(self, requirement, frame):
-        if requirement == frame.eval_ctx.namespace:
-            return
-
-        self.requirements.add(requirement)
-
-    def visit_CallBlock(self, node, frame):
-        # node.call
-        # node.body
-        # Add the caller function to the macro.
-        # XXX - Make sure we don't have a namespace cnoflict here.
-        self.writeline("func_caller = function(opt_data, opt_sb) {")
-        self.indent()
-        self.writeline("var output = opt_sb || new soy.StringBuilder();")
-        self.blockvisit(node.body, frame)
-        self.writeline("if (!opt_sb) return output.toString();")
-        self.outdent()
-        self.writeline("};")
-
-        # call the macro passing in the caller method
-        self.newline(node)
-        self.visit_Call(node.call, frame, forward_caller = "func_caller")
 
     def visit_Call(self, node, frame, forward_caller = None):
         # function symbol to call

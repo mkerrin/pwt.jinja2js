@@ -780,12 +780,13 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
 }""")
 
     def test_callblock1(self):
-        node = self.get_compile_from_string("""{% macro render_dialog(type) -%}
+        node = self.get_compile_from_string("""{% namespace tests %}
+{% macro render_dialog(type) -%}
 <div class="type">{{ caller() }}</div>
 {%- endmacro %}
 
 {% macro render(name) -%}
-{% call render_dialog(type = 'box') -%}
+{% call tests.render_dialog(type = 'box') -%}
 Hello {{ name }}!
 {%- endcall %}
 {%- endmacro %}
@@ -793,8 +794,10 @@ Hello {{ name }}!
 
         source_code = jscompiler.generate(node, self.env, "cb.html", "cb.html")
 
-        self.assertEqual(source_code, """goog.require('soy');
-render_dialog = function(opt_data, opt_sb, opt_caller) {
+        self.assertEqual(source_code, """goog.provide('tests');
+goog.require('soy');
+
+tests.render_dialog = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new soy.StringBuilder();
     output.append('<div class="type">');
     opt_caller({}, output);
@@ -802,14 +805,59 @@ render_dialog = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 }
 
-render = function(opt_data, opt_sb, opt_caller) {
+tests.render = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new soy.StringBuilder();
-    func_caller = function(opt_data, opt_sb) {
-        var output = opt_sb || new soy.StringBuilder();
+    func_caller = function(func_data, func_sb, func_caller) {
+        var output = func_sb || new soy.StringBuilder();
         output.append('Hello ', opt_data.name, '!');
-        if (!opt_sb) return output.toString();
-    };
-    render_dialog({type: 'box'}, output, func_caller)
+        if (!func_sb) return output.toString();
+    }
+    tests.render_dialog({type: 'box'}, output, func_caller)
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_callblock2(self):
+        node = self.get_compile_from_string("""{% macro list_users(users) -%}
+<ul>
+{% for user in users %}
+<li>{{ caller(user = user) }}</li>
+{% endfor %}
+</ul>
+{%- endmacro %}
+
+{% macro users(users) -%}
+{% call(user) list_users(users = users) -%}
+Hello, {{ user }}!
+{%- endcall %}
+{%- endmacro %}
+""")
+
+        source_code = jscompiler.generate(node, self.env, "cb.html", "cb.html")
+
+        self.assertEqual(source_code, """goog.require('soy');
+list_users = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('<ul>\\n');
+    var userList = opt_data.users;
+    var userListLen = userList.length;
+    for (var userIndex = 0; userIndex < userListLen; userIndex++) {
+        var userData = userList[userIndex];
+        output.append('\\n<li>');
+        opt_caller({user: userData}, output);
+        output.append('</li>\\n');
+    }
+    output.append('\\n</ul>');
+    if (!opt_sb) return output.toString();
+}
+
+users = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new soy.StringBuilder();
+    func_caller = function(func_data, func_sb, func_caller) {
+        var output = func_sb || new soy.StringBuilder();
+        output.append('Hello, ', func_data.user, '!');
+        if (!func_sb) return output.toString();
+    }
+    list_users({users: opt_data.users}, output, func_caller)
     if (!opt_sb) return output.toString();
 }""")
 

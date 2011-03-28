@@ -22,3 +22,19 @@
 Hello, World!
 {%- endcall %}
 {%- endmacro %}
+
+// callblock2
+
+{% macro list_users(users) -%}
+<ul>
+{%- for user in users -%}
+<li>{{ caller(user = user) }}</li>
+{%- endfor -%}
+</ul>
+{%- endmacro %}
+
+{% macro users(users) -%}
+{% call(user) tests.call.list_users(users = users) -%}
+Hello, {{ user }}!
+{%- endcall %}
+{%- endmacro %}

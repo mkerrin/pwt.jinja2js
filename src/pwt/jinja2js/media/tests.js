@@ -169,6 +169,10 @@ window.onload = function() {
             QUnit.equal(tests.call.render_dialog({}), '<div class="box">Hello, World!</div>');
         });
 
+    QUnit.test("callblock2", function() {
+            QUnit.equal(tests.call.users({users: ["User1", "User2"]}), "<ul><li>Hello, User1!</li><li>Hello, User2!</li></ul>");
+        });
+
     QUnit.module("import macros");
 
     QUnit.test("import1", function() {
