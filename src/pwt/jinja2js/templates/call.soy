@@ -9,3 +9,16 @@
 {% macro dictcall(name) %}{{ name.first }} {{ name.second }}{% endmacro %}
 
 {% macro call3() %}{{ tests.call.dictcall(name = {'first': 'Michael', 'second': 'Kerrin'}) }}{% endmacro %}
+
+/**
+ * Test call blocks
+ */
+{% macro render_dialog_box(type) -%}
+<div class="{{ type }}">{{ caller() }}</div>
+{%- endmacro %}
+
+{% macro render_dialog() -%}
+{% call tests.call.render_dialog_box(type = "box") -%}
+Hello, World!
+{%- endcall %}
+{%- endmacro %}

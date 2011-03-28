@@ -720,7 +720,16 @@ class MacroCodeGenerator(BaseCodeGenerator):
             func_frame.identifiers.declared
         )
 
-        undeclared = jinja2.compiler.find_undeclared(children, ("caller", "kwargs", "varargs"))
+        # XXX - varargs is what??
+        ## undeclared = jinja2.compiler.find_undeclared(children, ("caller", "kwargs", "kargs", "varargs"))
+
+        if "caller" in func_frame.identifiers.undeclared:
+            func_frame.identifiers.undeclared.discard("caller")
+            func_frame.reassigned_names["caller"] = "opt_caller"
+
+        # XXX - catch any undeclared variables.
+        ## if func_frame.identifiers.undeclared:
+        ##     self.fail("Need to declare the identifies in your marcos. The following are undeclared: %s" % ", ".join(undeclared))
 
         return func_frame
 
@@ -733,7 +742,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.writeline("%s.%s" %(frame.eval_ctx.namespace, node.name))
         else:
             self.writeline("%s" % node.name)
-        self.write(" = function(opt_data, opt_sb) {")
+        self.write(" = function(opt_data, opt_sb, opt_caller) {")
         self.indent()
         self.writeline("var output = opt_sb || new soy.StringBuilder();")
         self.blockvisit(node.body, frame)
@@ -745,10 +754,15 @@ class MacroCodeGenerator(BaseCodeGenerator):
         body = self.macro_body(node, frame)
         frame.assigned_names.add("%s.%s" %(frame.eval_ctx.namespace, node.name))
 
-    def signature(self, node, frame, extra_kwargs = {}):
+    def signature(self, node, frame):
         if node.args:
             self.fail(
                 "Function call with positional arguments not allowed with JS",
+                node.lineno)
+
+        if node.dyn_args or node.dyn_kwargs:
+            self.fail(
+                "JS Does not support positional or keyword arguments",
                 node.lineno)
 
         start = True
@@ -762,26 +776,41 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.visit(kwarg.value, frame)
         self.write("}")
 
-        if node.dyn_args or node.dyn_kwargs:
-            self.fail(
-                "JS Does not support positional or keyword arguments",
-                node.lineno)
-
     def addRequirement(self, requirement, frame):
         if requirement == frame.eval_ctx.namespace:
             return
 
         self.requirements.add(requirement)
 
-    def visit_Call(self, node, frame, forward_caller = False):
+    def visit_CallBlock(self, node, frame):
+        # node.call
+        # node.body
+        # Add the caller function to the macro.
+        # XXX - Make sure we don't have a namespace cnoflict here.
+        self.writeline("func_caller = function(opt_data, opt_sb) {")
+        self.indent()
+        self.writeline("var output = opt_sb || new soy.StringBuilder();")
+        self.blockvisit(node.body, frame)
+        self.writeline("if (!opt_sb) return output.toString();")
+        self.outdent()
+        self.writeline("};")
+
+        # call the macro passing in the caller method
+        self.newline(node)
+        self.visit_Call(node.call, frame, forward_caller = "func_caller")
+
+    def visit_Call(self, node, frame, forward_caller = None):
         # function symbol to call
         dotted_name = []
         self.visit(node.node, frame, dotted_name = dotted_name)
         # function signature
         self.write("%s(" % ".".join(dotted_name))
-        extra_kwargs = forward_caller and {"caller": "caller"} or None
-        self.signature(node, frame, extra_kwargs)
-        self.write(", output)")
+        self.signature(node, frame)
+        self.write(", output")
+        if forward_caller is not None:
+            self.write(", ")
+            self.write(forward_caller)
+        self.write(")")
 
 
 FILTERS = {}

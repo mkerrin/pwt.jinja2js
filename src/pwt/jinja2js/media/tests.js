@@ -165,6 +165,10 @@ window.onload = function() {
             QUnit.equal(tests.call.call3({}), "Michael Kerrin");
         });
 
+    QUnit.test("callblock1", function() {
+            QUnit.equal(tests.call.render_dialog({}), '<div class="box">Hello, World!</div>');
+        });
+
     QUnit.module("import macros");
 
     QUnit.test("import1", function() {
