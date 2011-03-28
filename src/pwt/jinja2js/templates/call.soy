@@ -13,6 +13,9 @@
 /**
  * Test call blocks
  */
+
+// callblock1
+
 {% macro render_dialog_box(type) -%}
 <div class="{{ type }}">{{ caller() }}</div>
 {%- endmacro %}
@@ -36,5 +39,17 @@ Hello, World!
 {% macro users(users) -%}
 {% call(user) tests.call.list_users(users = users) -%}
 Hello, {{ user }}!
+{%- endcall %}
+{%- endmacro %}
+
+// callblock3
+
+{% macro print_user(user) -%}
+Goodbye, {{ user }}!
+{%- endmacro %}
+
+{% macro users2(users) -%}
+{% call(user) tests.call.list_users(users = users) -%}
+{{ tests.call.print_user(user = user) }}
 {%- endcall %}
 {%- endmacro %}

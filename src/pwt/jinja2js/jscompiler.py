@@ -777,6 +777,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
         name = node.name
         if frame.eval_ctx.namespace:
             name = frame.eval_ctx.namespace + "." + name
+
         body = self.macro_body(name, node, frame)
         frame.assigned_names.add("%s.%s" %(frame.eval_ctx.namespace, node.name))
 
