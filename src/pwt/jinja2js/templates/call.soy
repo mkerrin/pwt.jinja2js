@@ -53,3 +53,14 @@ Goodbye, {{ user }}!
 {{ tests.call.print_user(user = user) }}
 {%- endcall %}
 {%- endmacro %}
+
+// callblock4
+
+{% macro users3(name, users, users_old) -%}
+{% call(user) tests.call.list_users(users = users) -%}
+Hello {{ user }}!
+{%- endcall %}
+{%- call(user) tests.call.list_users(users = users_old) -%}
+Goodbye {{ user }} from {{ name }}!
+{%- endcall %}
+{%- endmacro %}

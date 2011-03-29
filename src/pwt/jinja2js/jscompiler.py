@@ -787,11 +787,13 @@ class MacroCodeGenerator(BaseCodeGenerator):
         # Add the caller function to the macro.
         # XXX - Make sure we don't have a namespace cnoflict here.
         children = node.iter_child_nodes(exclude = ("call",))
-        self.macro_body("func_caller", node, frame, children = children, parameter_prefix = "func")
+        self.macro_body(
+            "func_caller", node, frame, children = children, parameter_prefix = "func")
 
         # call the macro passing in the caller method
         self.newline(node)
         self.visit_Call(node.call, frame, forward_caller = "func_caller")
+        self.write(";")
 
     def signature(self, node, frame):
         if node.args:

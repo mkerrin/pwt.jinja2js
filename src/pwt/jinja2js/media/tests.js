@@ -177,6 +177,10 @@ window.onload = function() {
             QUnit.equal(tests.call.users2({users: ["User1", "User2"]}), "<ul><li>Goodbye, User1!</li><li>Goodbye, User2!</li></ul>");
         });
 
+    QUnit.test("callblock4", function() {
+            QUnit.equal(tests.call.users3({name: "Me", users: ["User1"], users_old: ["Joe"]}), "<ul><li>Hello User1!</li></ul><ul><li>Goodbye Joe from Me!</li></ul>");
+        });
+
     QUnit.module("import macros");
 
     QUnit.test("import1", function() {

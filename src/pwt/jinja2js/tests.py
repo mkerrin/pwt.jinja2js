@@ -812,7 +812,7 @@ tests.render = function(opt_data, opt_sb, opt_caller) {
         output.append('Hello ', opt_data.name, '!');
         if (!func_sb) return output.toString();
     }
-    tests.render_dialog({type: 'box'}, output, func_caller)
+    tests.render_dialog({type: 'box'}, output, func_caller);
     if (!opt_sb) return output.toString();
 }""")
 
@@ -857,7 +857,62 @@ users = function(opt_data, opt_sb, opt_caller) {
         output.append('Hello, ', func_data.user, '!');
         if (!func_sb) return output.toString();
     }
-    list_users({users: opt_data.users}, output, func_caller)
+    list_users({users: opt_data.users}, output, func_caller);
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_callblock3(self):
+        node = self.get_compile_from_string("""{% macro list_users(users) -%}
+<ul>
+{% for user in users %}
+<li>{{ caller(user = user) }}</li>
+{% endfor %}
+</ul>
+{%- endmacro %}
+
+{% macro users(name, users, users2) -%}
+{% call(user) list_users(users = users) -%}
+Hello, {{ user }}!
+{%- endcall %}
+{% call(user) list_users(users = users2) -%}
+Goodbye, {{ user }} from {{ name }}!
+{%- endcall %}
+{%- endmacro %}
+""")
+
+        source_code = jscompiler.generate(node, self.env, "cb.html", "cb.html")
+
+        self.assertEqual(source_code, """goog.require('soy');
+list_users = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('<ul>\\n');
+    var userList = opt_data.users;
+    var userListLen = userList.length;
+    for (var userIndex = 0; userIndex < userListLen; userIndex++) {
+        var userData = userList[userIndex];
+        output.append('\\n<li>');
+        opt_caller({user: userData}, output);
+        output.append('</li>\\n');
+    }
+    output.append('\\n</ul>');
+    if (!opt_sb) return output.toString();
+}
+
+users = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new soy.StringBuilder();
+    func_caller = function(func_data, func_sb, func_caller) {
+        var output = func_sb || new soy.StringBuilder();
+        output.append('Hello, ', func_data.user, '!');
+        if (!func_sb) return output.toString();
+    }
+    list_users({users: opt_data.users}, output, func_caller);
+    output.append('\\n');
+    func_caller = function(func_data, func_sb, func_caller) {
+        var output = func_sb || new soy.StringBuilder();
+        output.append('Goodbye, ', func_data.user, ' from ', opt_data.name, '!');
+        if (!func_sb) return output.toString();
+    }
+    list_users({users: opt_data.users2}, output, func_caller);
     if (!opt_sb) return output.toString();
 }""")
 
