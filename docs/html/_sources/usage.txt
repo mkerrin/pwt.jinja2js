@@ -1,7 +1,7 @@
 Usage
 +++++
 
-There are X different ways of including 
+There are 3 different ways of including 
 
 
 WSGI
@@ -11,6 +11,11 @@ pwt.jinja2js contains a WSGI middleware layer in
 ``pwt.jinja2js.wsgi.Resources`` that produces the output that can be used
 to dynamically convert the templates to JavaScript. This is handy for
 development where we can refresh the page to pull in any made to the template.
+
+It can be referenced through any any `Paste Deployment`_ configuration via the
+`egg:pwt.jinja2js`. paste.app_factory.
+
+.. _Paste Deployment: http://pythonpaste.org/deploy/
 
 
 Command line interface
@@ -43,4 +48,11 @@ The list of arguments to the script are:
 pwt.recipe.closurebuilder
 =========================
 
-TODO
+If you use `pwt.recipe.closurebuilder`_ then there is a extension to this
+in `pwt.jinja2js.recipe` that will automatically compile your templates into
+a temporary file, and then include this files as part of your applications
+Java Script dependency and then to compile the Java Script down into a small
+Java Script file.
+
+.. _pwt.recipe.closurebuilder: http://pypi.python.org/pypi/pwt.recipe.closurebuilder/
+.. _closurebuilder: http://code.google.com/closure/library/docs/closurebuilder.html

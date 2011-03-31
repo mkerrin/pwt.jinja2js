@@ -46,13 +46,15 @@
             
   <div class="section" id="usage">
 <h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
-<p>There are X different ways of including</p>
+<p>There are 3 different ways of including</p>
 <div class="section" id="wsgi">
 <h2>WSGI<a class="headerlink" href="#wsgi" title="Permalink to this headline">¶</a></h2>
 <p>pwt.jinja2js contains a WSGI middleware layer in
 <tt class="docutils literal"><span class="pre">pwt.jinja2js.wsgi.Resources</span></tt> that produces the output that can be used
 to dynamically convert the templates to JavaScript. This is handy for
 development where we can refresh the page to pull in any made to the template.</p>
+<p>It can be referenced through any any <a class="reference external" href="http://pythonpaste.org/deploy/">Paste Deployment</a> configuration via the
+<cite>egg:pwt.jinja2js</cite>. paste.app_factory.</p>
 </div>
 <div class="section" id="command-line-interface">
 <h2>Command line interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
@@ -90,7 +92,11 @@ ${INPUT_DIRECTORY}.</td>
 </div>
 <div class="section" id="pwt-recipe-closurebuilder">
 <h2>pwt.recipe.closurebuilder<a class="headerlink" href="#pwt-recipe-closurebuilder" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>If you use <a class="reference external" href="http://pypi.python.org/pypi/pwt.recipe.closurebuilder/">pwt.recipe.closurebuilder</a> then there is a extension to this
+in <cite>pwt.jinja2js.recipe</cite> that will automatically compile your templates into
+a temporary file, and then include this files as part of your applications
+Java Script dependency and then to compile the Java Script down into a small
+Java Script file.</p>
 </div>
 </div>
 
