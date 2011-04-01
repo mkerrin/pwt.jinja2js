@@ -42,5 +42,3 @@ paste.app_factory = pwt.jinja2js.app:main
 packages = pwt.jinja2js
 
 deps_js = /media/${deps.js:filename}
-
-compiled_tests_js = /media/${compiled_tests.js:filename}
