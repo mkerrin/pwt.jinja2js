@@ -80,8 +80,6 @@ To run a basic server in order to run the JavaScript tests.
 
  * ./bin/serve --reload
 
-To run the JavaScript tests open a browser and load the urls
+To run the JavaScript tests open a browser and load the url::
 
- * http://localhost:8000/tests.html
-
- * http://localhost:8000/tests_compiled.html
+  http://localhost:8000/
