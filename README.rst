@@ -83,3 +83,5 @@ To run a basic server in order to run the JavaScript tests.
 To run the JavaScript tests open a browser and load the url::
 
   http://localhost:8000/
+
+There is links to two test suites from there.
