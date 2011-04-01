@@ -64,7 +64,7 @@ tool we can convert the following template:</p>
 <span class="cp">{%</span> <span class="k">endmacro</span> <span class="cp">%}</span>
 </pre></div>
 </div>
-<p>to produce the following JavaScript to be included in your application:</p>
+<p>to produce the following JavaScript to be included in your application, which uses <a class="reference external" href="http://code.google.com/closure/library/">Closure Library</a>.</p>
 <div class="highlight-javascript"><div class="highlight"><pre><span class="nx">goog</span><span class="p">.</span><span class="nx">provide</span><span class="p">(</span><span class="s1">&#39;ns1&#39;</span><span class="p">);</span>
 
 <span class="nx">goog</span><span class="p">.</span><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;soy&#39;</span><span class="p">);</span>
@@ -83,7 +83,25 @@ tool we can convert the following template:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>now by call the macro like so, we can insert the:</p>
+<p>By slipping a switch we can produce a concat mode, which will produce the
+following code:</p>
+<div class="highlight-javascript"><div class="highlight"><pre> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">ns1</span> <span class="o">==</span> <span class="s1">&#39;undefined&#39;</span><span class="p">)</span> <span class="p">{</span> <span class="kd">var</span> <span class="nx">ns1</span> <span class="o">=</span> <span class="p">{};</span> <span class="p">}</span>
+
+ <span class="nx">ns1</span><span class="p">.</span><span class="nx">printusers</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">opt_data</span><span class="p">,</span> <span class="nx">opt_sb</span><span class="p">,</span> <span class="nx">opt_caller</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">output</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+    <span class="nx">output</span> <span class="o">+=</span> <span class="s1">&#39;\n&lt;ul&gt;\n&#39;</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">userList</span> <span class="o">=</span> <span class="nx">opt_data</span><span class="p">.</span><span class="nx">users</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">userListLen</span> <span class="o">=</span> <span class="nx">userList</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">userIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">userIndex</span> <span class="o">&lt;</span> <span class="nx">userListLen</span><span class="p">;</span> <span class="nx">userIndex</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">userData</span> <span class="o">=</span> <span class="nx">userList</span><span class="p">[</span><span class="nx">userIndex</span><span class="p">];</span>
+        <span class="nx">output</span> <span class="o">+=</span> <span class="s1">&#39;\n   &lt;li&gt;&lt;a href=&quot;&#39;</span> <span class="o">+</span> <span class="nx">userData</span><span class="p">.</span><span class="nx">url</span> <span class="o">+</span> <span class="s1">&#39;&quot;&gt;&#39;</span> <span class="o">+</span> <span class="nx">userData</span><span class="p">.</span><span class="nx">username</span> <span class="o">+</span> <span class="s1">&#39;&lt;/a&gt;&lt;/li&gt;\n&#39;</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nx">output</span> <span class="o">+=</span> <span class="s1">&#39;\n&lt;/ul&gt;\n&#39;</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nx">output</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Now we can call the macro like so:</p>
 <div class="highlight-javascript"><div class="highlight"><pre><span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">ns1</span><span class="p">.</span><span class="nx">printusers</span><span class="p">({</span><span class="nx">users</span><span class="o">:</span> <span class="p">[</span>
       <span class="p">{</span><span class="nx">username</span><span class="o">:</span> <span class="s2">&quot;michael&quot;</span><span class="p">,</span> <span class="nx">url</span><span class="o">:</span> <span class="s2">&quot;#user/michael&quot;</span><span class="p">},</span>
       <span class="p">{</span><span class="nx">username</span><span class="o">:</span> <span class="s2">&quot;johndoe&quot;</span><span class="p">,</span> <span class="nx">url</span><span class="o">:</span> <span class="s2">&quot;#user/johndoe&quot;</span><span class="p">}</span>

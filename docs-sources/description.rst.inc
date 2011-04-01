@@ -19,7 +19,7 @@ tool we can convert the following template:
    </ul>
    {% endmacro %}
 
-to produce the following JavaScript to be included in your application:
+to produce the following JavaScript to be included in your application, which uses `Closure Library`_.
 
 .. sourcecode:: javascript
    
@@ -40,7 +40,27 @@ to produce the following JavaScript to be included in your application:
       if (!opt_sb) return output.toString();
    }
 
-now by call the macro like so, we can insert the:
+By slipping a switch we can produce a concat mode, which will produce the
+following code:
+
+.. sourcecode:: javascript
+
+   if (typeof ns1 == 'undefined') { var ns1 = {}; }
+
+   ns1.printusers = function(opt_data, opt_sb, opt_caller) {
+      var output = '';
+      output += '\n<ul>\n';
+      var userList = opt_data.users;
+      var userListLen = userList.length;
+      for (var userIndex = 0; userIndex < userListLen; userIndex++) {
+          var userData = userList[userIndex];
+          output += '\n   <li><a href="' + userData.url + '">' + userData.username + '</a></li>\n';
+      }
+      output += '\n</ul>\n';
+      return output;
+  }
+
+Now we can call the macro like so:
 
 .. sourcecode:: javascript
 
@@ -58,3 +78,5 @@ to produce:
        <li><a href="#user/michael">michael</a></li>
        <li><a href="#user/johndoe">johndoe</a></li>
    </ul>
+
+.. _Closure Library: http://code.google.com/closure/library/

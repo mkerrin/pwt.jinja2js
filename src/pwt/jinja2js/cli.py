@@ -46,7 +46,7 @@ def main(args = None, output = None):
     parser.add_option(
         "--codeStyle", choices = ["stringbuilder", "concat"],
         dest = "codeStyle", default = "stringbuilder", type = "choice",
-        help = "The code style to use when generating JS code")
+        help = "The code style to use when generating JS code. Either `stringbuilder` or `concat` styles.")
 
     options, files = parser.parse_args(args)
 

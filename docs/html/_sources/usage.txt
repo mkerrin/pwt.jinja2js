@@ -41,6 +41,9 @@ The list of arguments to the script are:
 |                    | ${INPUT_FILE_NAME}, ${INPUT_FILE_NAME_NO_EXT}, and |
 |                    | ${INPUT_DIRECTORY}.                                |
 +--------------------+----------------------------------------------------+
+| --codeStyle        | The code style ot use when generating JS code.     |
+|                    | Either `stringbuilder` or `concat` styles.         |
++--------------------+----------------------------------------------------+
 | --packages         | List of packages to look for template files.       |
 +--------------------+----------------------------------------------------+
 
