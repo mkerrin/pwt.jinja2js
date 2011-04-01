@@ -35,6 +35,7 @@ class JSCompilerTestCase(unittest.TestCase):
         self.env = environment.create_environment(
             packages = ["pwt.jinja2js:test_templates"],
             extensions = ["pwt.jinja2js.jscompiler.Namespace"],
+            writer = "pwt.jinja2js.jscompiler.StringBuilder",
             )
 
     def get_compile_from_string(self, source, name = None, filename = None):
@@ -1326,14 +1327,13 @@ class CLInterfaceTestCase(unittest.TestCase):
 
         self.assertEqual(
             open(os.path.join(self.tempdir, "example.js")).read(),
-            """goog.provide('example');
-goog.require('soy');
+            """if (typeof example == 'undefined') { var example = {}; }
 
 
 example.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
-    output.append('\\nHello, ', opt_data.name, '!\\n');
-    if (!opt_sb) return output.toString();
+    var output = '';
+    output += '\\nHello, ' + opt_data.name + '!\\n';
+    return output;
 }""")
 
     def test_cli4(self):
@@ -1341,7 +1341,7 @@ example.hello = function(opt_data, opt_sb, opt_caller) {
         output = StringIO()
         result = cli.main([
             "--outputPathFormat", "%s/${INPUT_FILE_NAME_NO_EXT}.js" % self.tempdir,
-            "--codeStyle", "concat",
+            "--codeStyle", "stringbuilder",
             "%s/test_templates/example.soy" % os.path.dirname(jscompiler.__file__)
             ], output)
         self.assertEqual(result, 0)
@@ -1350,13 +1350,14 @@ example.hello = function(opt_data, opt_sb, opt_caller) {
 
         self.assertEqual(
             open(os.path.join(self.tempdir, "example.js")).read(),
-            """if (typeof example == 'undefined') { var example = {}; }
+            """goog.provide('example');
+goog.require('soy');
 
 
 example.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = '';
-    output += '\\nHello, ' + opt_data.name + '!\\n';
-    return output;
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('\\nHello, ', opt_data.name, '!\\n');
+    if (!opt_sb) return output.toString();
 }""")
 
     # test the generation of different filenames

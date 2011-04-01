@@ -5,13 +5,13 @@ import jinja2.utils
 class Environment(jinja2.Environment):
 
     def __init__(self, *args, **kwargs):
-        writer = kwargs.pop("writer", "pwt.jinja2js.jscompiler.StringBuilder")
+        writer = kwargs.pop("writer", "pwt.jinja2js.jscompiler.Concat")
         self.writer = jinja2.utils.import_string(writer)
 
         super(Environment, self).__init__(*args, **kwargs)
 
 
-def create_environment(packages = [], autoescape = [], extensions = [], writer = "pwt.jinja2js.jscompiler.StringBuilder"):
+def create_environment(packages = [], autoescape = [], extensions = [], writer = "pwt.jinja2js.jscompiler.Concat"):
     loaders = []
     for package in packages:
         loaders.append(jinja2.PackageLoader(*package.split(":")))

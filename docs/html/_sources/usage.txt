@@ -15,6 +15,14 @@ development where we can refresh the page to pull in any made to the template.
 It can be referenced through any any `Paste Deployment`_ configuration via the
 `egg:pwt.jinja2js`. paste.app_factory.
 
+This WSGI application can take the following arguments:
+
+ * `packages` - list of Python packages to find templates.
+
+ * `autoescape` - (Default: False) boolean indicating whether to autoescape all variables in your templates.
+
+ * `writer` - full Python class path to the class that writes the Java Script.
+
 .. _Paste Deployment: http://pythonpaste.org/deploy/
 
 

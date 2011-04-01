@@ -24,6 +24,24 @@ Here a small example of a Jinja template::
 Which after running through the pwt.jinja2js compiler we need up the
 following JavaScript::
 
+     if (typeof ns1 == 'undefined') { var ns1 = {}; }
+
+     ns1.printusers = function(opt_data, opt_sb, opt_caller) {
+        var output = '';
+        output += '\n<ul>\n';
+        var userList = opt_data.users;
+        var userListLen = userList.length;
+        for (var userIndex = 0; userIndex < userListLen; userIndex++) {
+            var userData = userList[userIndex];
+            output += '\n   <li><a href="' + userData.url + '">' + userData.username + '</a></li>\n';
+        }
+        output += '\n</ul>\n';
+        return output;
+     }
+
+By slipping a switch we can produce Java Script that takes advantage of
+`Closure Library'_
+
      goog.provide('ns1');
 
      goog.require('soy');
@@ -41,23 +59,6 @@ following JavaScript::
         if (!opt_sb) return output.toString();
      }
 
-By slipping a switch we can produce a concat mode, which will produce the
-following code::
-
-     if (typeof ns1 == 'undefined') { var ns1 = {}; }
-
-     ns1.printusers = function(opt_data, opt_sb, opt_caller) {
-        var output = '';
-        output += '\n<ul>\n';
-        var userList = opt_data.users;
-        var userListLen = userList.length;
-        for (var userIndex = 0; userIndex < userListLen; userIndex++) {
-            var userData = userList[userIndex];
-            output += '\n   <li><a href="' + userData.url + '">' + userData.username + '</a></li>\n';
-        }
-        output += '\n</ul>\n';
-        return output;
-     }
 
 Install and test
 ================

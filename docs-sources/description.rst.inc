@@ -1,9 +1,9 @@
 pwt.jinja2js is an extension to the Jinja2 template engine that compiles
-valid Jinja2 templates containing macros to JavaScript. The JavaScript output
-can be included via script tags or can be added to the applications JavaScript.
+valid Jinja2 templates containing macros to Java Script. The Java Script output
+can be included via script tags or can be added to the applications Java Script.
 
-It works by mapping each macro in a Jinja2 template to a JavaScript function
-that when called passing in all parameters to the macro as a JavaScript object
+It works by mapping each macro in a Jinja2 template to a Java Script function
+that when called passing in all parameters to the macro as a Java Script object
 returns a string representing output of the template. For example using the
 tool we can convert the following template:
 
@@ -19,7 +19,27 @@ tool we can convert the following template:
    </ul>
    {% endmacro %}
 
-to produce the following JavaScript to be included in your application, which uses `Closure Library`_.
+to produce the following Java Script to be included in your application:
+
+.. sourcecode:: javascript
+
+   if (typeof ns1 == 'undefined') { var ns1 = {}; }
+
+   ns1.printusers = function(opt_data, opt_sb, opt_caller) {
+      var output = '';
+      output += '\n<ul>\n';
+      var userList = opt_data.users;
+      var userListLen = userList.length;
+      for (var userIndex = 0; userIndex < userListLen; userIndex++) {
+          var userData = userList[userIndex];
+          output += '\n   <li><a href="' + userData.url + '">' + userData.username + '</a></li>\n';
+      }
+      output += '\n</ul>\n';
+      return output;
+  }
+
+By slipping a switch we can produce Java Script that takes advantage of
+`Closure Library`_ and produces the following:
 
 .. sourcecode:: javascript
    
@@ -39,26 +59,6 @@ to produce the following JavaScript to be included in your application, which us
       output.append('\n</ul>\n');
       if (!opt_sb) return output.toString();
    }
-
-By slipping a switch we can produce a concat mode, which will produce the
-following code:
-
-.. sourcecode:: javascript
-
-   if (typeof ns1 == 'undefined') { var ns1 = {}; }
-
-   ns1.printusers = function(opt_data, opt_sb, opt_caller) {
-      var output = '';
-      output += '\n<ul>\n';
-      var userList = opt_data.users;
-      var userListLen = userList.length;
-      for (var userIndex = 0; userIndex < userListLen; userIndex++) {
-          var userData = userList[userIndex];
-          output += '\n   <li><a href="' + userData.url + '">' + userData.username + '</a></li>\n';
-      }
-      output += '\n</ul>\n';
-      return output;
-  }
 
 Now we can call the macro like so:
 

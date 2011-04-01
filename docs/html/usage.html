@@ -59,6 +59,14 @@ to dynamically convert the templates to JavaScript. This is handy for
 development where we can refresh the page to pull in any made to the template.</p>
 <p>It can be referenced through any any <a class="reference external" href="http://pythonpaste.org/deploy/">Paste Deployment</a> configuration via the
 <cite>egg:pwt.jinja2js</cite>. paste.app_factory.</p>
+<p>This WSGI application can take the following arguments:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>packages</cite> - list of Python packages to find templates.</li>
+<li><cite>autoescape</cite> - (Default: False) boolean indicating whether to autoescape all variables in your templates.</li>
+<li><cite>writer</cite> - full Python class path to the class that writes the Java Script.</li>
+</ul>
+</div></blockquote>
 </div>
 <div class="section" id="command-line-interface">
 <h2>Command line interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
