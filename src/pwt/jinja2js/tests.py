@@ -984,7 +984,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
 
         self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new soy.StringBuilder();
-    output.append(opt_data.name ? opt_data.name : 'World');
+    output.append((opt_data.name ? opt_data.name : 'World'));
     if (!opt_sb) return output.toString();
 }""")
 
@@ -996,7 +996,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
 
         self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new soy.StringBuilder();
-    output.append(opt_data.name ? opt_data.name : 'World');
+    output.append((opt_data.name ? opt_data.name : 'World'));
     if (!opt_sb) return output.toString();
 }""")
 

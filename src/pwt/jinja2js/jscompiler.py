@@ -922,11 +922,13 @@ class register_filter(object):
 
 @register_filter("default")
 def filter_default(generator, node, frame, default_value = ""):
+    generator.writer.write("(")
     generator.visit(node.node, frame)
     generator.writer.write(" ? ")
     generator.visit(node.node, frame)
     generator.writer.write(" : ")
     generator.visit(default_value, frame)
+    generator.writer.write(")")
 
 
 @register_filter("truncate")
