@@ -9,6 +9,7 @@ use = egg:Paste#urlmap
 /favicon.ico = static
 
 /soy = soy_templates
+/concat_soy = concatsoy_templates
 
 /closure = closure
 /media = static
@@ -18,6 +19,13 @@ use = egg:pwt.jinja2js
 url = /soy/
 packages = pwt.jinja2js
 autoescape = autoescaped.soy
+
+[app:concatsoy_templates]
+use = egg:pwt.jinja2js
+url = /concat_soy/
+packages = pwt.jinja2js
+autoescape = autoescaped.soy
+writer = pwt.jinja2js.jscompiler.Concat
 
 [app:static]
 use = egg:Paste#static
@@ -34,5 +42,7 @@ paste.app_factory = pwt.jinja2js.app:main
 packages = pwt.jinja2js
 
 deps_js = /media/${deps.js:filename}
+
+concat_deps_js = /media/${concat_deps.js:filename}
 
 compiled_tests_js = /media/${compiled_tests.js:filename}

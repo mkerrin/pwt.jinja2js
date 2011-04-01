@@ -17,8 +17,13 @@ import environment
 
 class Source(jinja2.visitor.NodeVisitor):
 
-    def __init__(self, path, packages = ""):
-        self.env = environment.create_environment(packages = packages.split())
+    def __init__(self, path, packages = "", autoescape = "", extensions = "", writer = "pwt.jinja2js.jscompiler.StringBuilder"):
+        self.env = environment.create_environment(
+            packages = packages.split(),
+            autoescape = autoescape.split(),
+            extensions = extensions.split(),
+            writer = writer,
+            )
 
         self.source = source.GetFileContents(path)
         self.node = self.env._parse(self.source, os.path.basename(path), path)

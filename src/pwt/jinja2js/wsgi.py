@@ -12,7 +12,8 @@ class JinjaEnvironment(object):
     def __init__(self, *args, **kwargs):
         self.env = environment.create_environment(
             packages = kwargs.get("packages", "").split(),
-            autoescape = kwargs.get("autoescape", "").split())
+            autoescape = kwargs.get("autoescape", "").split(),
+            writer = kwargs.get("writer", "pwt.jinja2js.jscompiler.StringBuilder"))
 
 
 class Resources(JinjaEnvironment):
