@@ -478,6 +478,8 @@ class MacroCodeGenerator(BaseCodeGenerator):
                     self.writer.write_outputadd(node, frame)
                 self.writer.write(repr("".join(item)))
             else:
+                # If we are using the string builder then we generate slightly
+                # different code then concat.
                 if self.writer.__class__.__name__ == STRINGBUILDER:
                     if isinstance(item, jinja2.nodes.Call):
                         if not start:
@@ -895,6 +897,8 @@ class MacroCodeGenerator(BaseCodeGenerator):
         # function signature
         self.writer.write("%s(" % ".".join(dotted_name))
         self.signature(node, frame)
+        # If we are using the string builder then we generate slightly
+        # different code.
         if self.writer.__class__.__name__ == STRINGBUILDER:
             self.writer.write(", output")
         if forward_caller is not None:
