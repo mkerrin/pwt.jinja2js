@@ -1012,6 +1012,21 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
 }""")
 
 
+class JSSimpleCompilerTemplateTestCase(JSCompilerTestCase):
+
+    def test_const1(self):
+        node = self.get_compile_from_string("""{% macro hello() -%}
+Hello, world!
+{%- endmacro %}""")
+        source_code = generateMacro(node, self.env, "const.html", "const.html")
+
+        self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('Hello, world!');
+    if (!opt_sb) return output.toString();
+}""")
+
+
 class JSCompilerTemplateTestCaseOutput(JSCompilerTestCase):
     # Test the standard output so that if a developer needs to debug the
     # output then we can add comments and other information, keep the ordering

@@ -267,6 +267,18 @@ class BaseCodeGenerator(NodeVisitor):
         for node in nodes:
             self.visit(node, frame)
 
+    # special methods that we can override to comform to different code styles
+
+    def writeline_provides(self, node, frame, namespace):
+        self.writeline("goog.provide('" + namespace.encode(frame.eval_ctx.encoding) + "');")
+
+    def writeline_require(self, node, frame, namespace):
+        self.newline(node)
+        self.write_require(node, frame, namespace)
+
+    def write_require(self, node, frame, namespace):
+        self.write("goog.require('%s');" % namespace.encode(frame.eval_ctx.encoding))
+
 
 class CodeGenerator(BaseCodeGenerator):
 
@@ -302,8 +314,8 @@ class CodeGenerator(BaseCodeGenerator):
         frame.toplevel = frame.rootlevel = True
 
         if namespace:
-            self.writeline("goog.provide(" + repr(namespace.encode(eval_ctx.encoding)) + ");")
-        self.writeline("goog.require('soy');")
+            self.writeline_provides(node, frame, namespace)
+        self.writeline_require(node, frame, "soy")
         self.newline()
 
         self.blockvisit(node.body, frame)
@@ -311,8 +323,7 @@ class CodeGenerator(BaseCodeGenerator):
     def visit_Import(self, node, frame):
         namespace = frame.identifiers.imports[node.target]
         self.mark(node)
-        self.write(
-            "goog.require('%s');" % namespace.encode(frame.eval_ctx.encoding))
+        self.write_require(node, frame, namespace)
 
     def visit_Macro(self, node, frame):
         generator = MacroCodeGenerator(
@@ -323,9 +334,9 @@ class CodeGenerator(BaseCodeGenerator):
         generator.visit(node, frame)
 
         for requirement in generator.requirements:
-            self.writeline("goog.require('%s');" % requirement)
+            self.writeline_require(node, frame, requirement)
         if generator.requirements:
-            self.writeline("") # keep whitespace ok
+            self.newline(node) # keep whitespace ok
 
         self.write(generator.stream.getvalue())
 
@@ -357,6 +368,25 @@ class MacroCodeGenerator(BaseCodeGenerator):
             return
 
         self.requirements.add(requirement)
+
+    # output formating
+
+    def writeline_startoutput(self, node, frame):
+        self.writeline("var output = %s_sb || new soy.StringBuilder();" % frame.parameter_prefix)
+
+    def writeline_endoutput(self, node, frame):
+        self.writeline("if (!%s_sb) return output.toString();" % frame.parameter_prefix)
+
+    def writeline_outputappend(self, node, frame):
+        self.writeline("output.append(", node)
+
+    def write_outputadd(self, node, frame):
+        self.write(", ")
+
+    def write_outputappend_end(self, node, frame):
+        self.write(");")
+
+    # walk the ast tree
 
     def visit_Output(self, node, frame):
         # JS is only interested in macros etc, as all of JavaScript
@@ -402,26 +432,26 @@ class MacroCodeGenerator(BaseCodeGenerator):
         for item in body:
             if isinstance(item, list):
                 if start:
-                    self.writeline("output.append(", node)
+                    self.writeline_outputappend(node, frame)
                     start = False
                 else:
-                    self.write(", ")
+                    self.write_outputadd(node, frame)
                 self.write(repr("".join(item)))
             else:
                 if isinstance(item, jinja2.nodes.Call):
                     if not start:
-                        self.write(");")
+                        self.write_outputappend_end(item, frame)
                         start = True
-                    self.writeline("")
+                    self.newline(item)
                     self.visit(item, frame)
                     self.write(";")
                     continue
 
                 if start:
-                    self.writeline("output.append(", item)
+                    self.writeline_outputappend(item, frame)
                     start = False
                 else:
-                    self.write(", ")
+                    self.write_outputadd(item, frame)
 
                 # autoescape, safe
                 if isinstance(item, jinja2.nodes.Filter):
@@ -440,7 +470,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 else:
                     self.visit(item, frame)
         if not start:
-            self.write(");")
+            self.write_outputappend_end(node, frame)
 
     def visit_Filter(self, node, frame):
         # safe attribute with autoesacape is handled in visit_Output
@@ -767,9 +797,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
         self.write(" = function(%s_data, %s_sb, %s_caller) {" %(
             frame.parameter_prefix, frame.parameter_prefix, frame.parameter_prefix))
         self.indent()
-        self.writeline("var output = %s_sb || new soy.StringBuilder();" % frame.parameter_prefix)
+        self.writeline_startoutput(node, frame)
         self.blockvisit(node.body, frame)
-        self.writeline("if (!%s_sb) return output.toString();" % frame.parameter_prefix)
+        self.writeline_endoutput(node, frame)
         self.outdent()
         self.writeline("}")
 
