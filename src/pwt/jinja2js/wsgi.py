@@ -33,8 +33,7 @@ class Resources(JinjaEnvironment):
 
         node = self.env._parse(source, path, filename)
 
-        stream = StringIO()
-        jscompiler.generate(node, self.env, path, filename, stream)
+        output = jscompiler.generate(node, self.env, path, filename)
 
         return webob.Response(
-            body = stream.getvalue(), content_type = "application/javascript")
+            body = output, content_type = "application/javascript")

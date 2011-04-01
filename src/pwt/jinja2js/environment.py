@@ -1,6 +1,17 @@
 import jinja2
+import jinja2.environment
+import jinja2.utils
 
-def create_environment(packages = [], autoescape = [], extensions = []):
+class Environment(jinja2.Environment):
+
+    def __init__(self, *args, **kwargs):
+        writer = kwargs.pop("writer", "pwt.jinja2js.jscompiler.StringBuilder")
+        self.writer = jinja2.utils.import_string(writer)
+
+        super(Environment, self).__init__(*args, **kwargs)
+
+
+def create_environment(packages = [], autoescape = [], extensions = [], writer = "pwt.jinja2js.jscompiler.StringBuilder"):
     loaders = []
     for package in packages:
         loaders.append(jinja2.PackageLoader(*package.split(":")))
@@ -33,5 +44,6 @@ def create_environment(packages = [], autoescape = [], extensions = []):
 
     extensions.append("pwt.jinja2js.jscompiler.Namespace")
 
-    return jinja2.Environment(
-        loader = loader, extensions = extensions, autoescape = autoescape)
+    return Environment(
+        loader = loader, extensions = extensions, autoescape = autoescape,
+        writer = writer)

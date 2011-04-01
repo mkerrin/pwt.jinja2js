@@ -14,6 +14,7 @@ import jinja2.runtime
 
 import jscompiler
 import cli
+import environment
 
 
 def generateMacro(
@@ -23,7 +24,7 @@ def generateMacro(
     eval_ctx.namespace = "test"
     eval_ctx.autoescape = autoescape
     generator.blockvisit(node.body, jscompiler.JSFrame(environment, eval_ctx))
-    return generator.stream.getvalue()
+    return generator.writer.stream.getvalue()
 
 
 class JSCompilerTestCase(unittest.TestCase):
@@ -31,9 +32,8 @@ class JSCompilerTestCase(unittest.TestCase):
     def setUp(self):
         super(JSCompilerTestCase, self).setUp()
 
-        self.loader = jinja2.PackageLoader("pwt.jinja2js", "test_templates")
-        self.env = jinja2.Environment(
-            loader = self.loader,
+        self.env = environment.create_environment(
+            packages = ["pwt.jinja2js:test_templates"],
             extensions = ["pwt.jinja2js.jscompiler.Namespace"],
             )
 
@@ -1012,18 +1012,43 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
 }""")
 
 
-class JSSimpleCompilerTemplateTestCase(JSCompilerTestCase):
+class JSConcatCompilerTemplateTestCase(JSCompilerTestCase):
+
+    def setUp(self):
+        super(JSConcatCompilerTemplateTestCase, self).setUp()
+
+        self.env = environment.create_environment(
+            packages = ["pwt.jinja2js:test_templates"],
+            extensions = ["pwt.jinja2js.jscompiler.Namespace"],
+            writer = "pwt.jinja2js.jscompiler.Concat",
+            )
 
     def test_const1(self):
-        node = self.get_compile_from_string("""{% macro hello() -%}
+        node = self.get_compile_from_string("""{% namespace testns.consts %}
+{% macro hello() -%}
 Hello, world!
 {%- endmacro %}""")
-        source_code = generateMacro(node, self.env, "const.html", "const.html")
+        source_code = jscompiler.generate(node, self.env, "const.html", "const.html")
+
+        self.assertEqual(source_code, """if (typeof testns == 'undefined') { var testns = {}; }\nif (typeof testns.consts == 'undefined') { var testns.consts = {}; }
+
+testns.consts.hello = function(opt_data, opt_sb, opt_caller) {
+    var output = '';
+    output += 'Hello, world!';
+    return output;
+}""")
+
+    def test_var1(self):
+        node = self.get_compile_from_string("""{% macro hello(name) %}
+{{ name }}
+{% endmacro %}
+""")
+        source_code = generateMacro(node, self.env, "var1.html", "var1.html")
 
         self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
-    output.append('Hello, world!');
-    if (!opt_sb) return output.toString();
+    var output = '';
+    output += '\\n' + opt_data.name + '\\n';
+    return output;
 }""")
 
 
@@ -1198,6 +1223,29 @@ example.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new soy.StringBuilder();
     output.append('\\nHello, ', opt_data.name, '!\\n');
     if (!opt_sb) return output.toString();
+}""")
+
+    def test_cli4(self):
+        # test using a different code style
+        output = StringIO()
+        result = cli.main([
+            "--outputPathFormat", "%s/${INPUT_FILE_NAME_NO_EXT}.js" % self.tempdir,
+            "--codeStyle", "concat",
+            "%s/test_templates/example.soy" % os.path.dirname(jscompiler.__file__)
+            ], output)
+        self.assertEqual(result, 0)
+
+        self.assertEqual(os.listdir(self.tempdir), ["example.js"])
+
+        self.assertEqual(
+            open(os.path.join(self.tempdir, "example.js")).read(),
+            """if (typeof example == 'undefined') { var example = {}; }
+
+
+example.hello = function(opt_data, opt_sb, opt_caller) {
+    var output = '';
+    output += '\\nHello, ' + opt_data.name + '!\\n';
+    return output;
 }""")
 
     # test the generation of different filenames

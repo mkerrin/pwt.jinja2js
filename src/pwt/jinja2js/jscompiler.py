@@ -49,14 +49,13 @@ OPERATORS = {
     }
 
 
-def generate(node, environment, name, filename, stream = None):
+def generate(node, environment, name, filename):
     """Generate the python source for a node tree."""
     if not isinstance(node, jinja2.nodes.Template):
         raise TypeError("Can't compile non template nodes")
-    generator = CodeGenerator(environment, name, filename, stream)
+    generator = CodeGenerator(environment, name, filename)
     generator.visit(node)
-    if stream is None:
-        return generator.stream.getvalue()
+    return generator.writer.stream.getvalue()
 
 
 class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
@@ -174,19 +173,10 @@ class JSFrame(jinja2.compiler.Frame):
         return frame
 
 
-class BaseCodeGenerator(NodeVisitor):
+class StringBuilder(object):
 
-    def __init__(self, environment, name, filename, stream = None):
-        super(BaseCodeGenerator, self).__init__()
-
-        self.environment = environment
-        self.name = name
-        self.filename = filename
-
-        if stream is None:
-            stream = StringIO()
-
-        self.stream = stream
+    def __init__(self):
+        self.stream = StringIO()
 
         # the current line number
         self.code_lineno = 1
@@ -252,6 +242,85 @@ class BaseCodeGenerator(NodeVisitor):
         self._new_lines = max(self._new_lines, 1 + extra)
         self.mark(node)
 
+    # special methods that we can override to comform to different code styles
+
+    def writeline_provides(self, node, frame, namespace):
+        self.writeline("goog.provide('" + namespace.encode(frame.eval_ctx.encoding) + "');")
+
+    def writeline_require(self, node, frame, namespace):
+        self.newline(node)
+        self.write_require(node, frame, namespace)
+
+    def write_require(self, node, frame, namespace):
+        self.write("goog.require('%s');" % namespace.encode(frame.eval_ctx.encoding))
+
+    # output formating
+
+    def writeline_startoutput(self, node, frame):
+        self.writeline("var output = %s_sb || new soy.StringBuilder();" % frame.parameter_prefix)
+
+    def writeline_endoutput(self, node, frame):
+        self.writeline("if (!%s_sb) return output.toString();" % frame.parameter_prefix)
+
+    def writeline_outputappend(self, node, frame):
+        self.writeline("output.append(", node)
+
+    def write_outputadd(self, node, frame):
+        self.write(", ")
+
+    def write_outputappend_end(self, node, frame):
+        self.write(");")
+
+
+class Concat(StringBuilder):
+
+    def __init__(self):
+        super(Concat, self).__init__()
+
+    def writeline_provides(self, node, frame, namespace):
+        parts = namespace.encode(frame.eval_ctx.encoding).split(".")
+        for idx, part in enumerate(parts):
+            ns = ".".join(parts[:idx + 1])
+            self.writeline("if (typeof %s == 'undefined') { var %s = {}; }" %(
+                ns, ns), node)
+
+    def writeline_require(self, node, frame, namespace):
+        self.newline(node)
+        self.write_require(node, frame, namespace)
+
+    def write_require(self, node, frame, namespace):
+        # Users need to manage there own dependency here
+        pass
+
+    # output formating
+
+    def writeline_startoutput(self, node, frame):
+        self.writeline("var output = '';", node)
+
+    def writeline_endoutput(self, node, frame):
+        self.writeline("return output;", node)
+
+    def writeline_outputappend(self, node, frame):
+        self.writeline("output += ", node)
+
+    def write_outputadd(self, node, frame):
+        self.write(" + ")
+
+    def write_outputappend_end(self, node, frame):
+        self.write(";")
+
+
+class BaseCodeGenerator(NodeVisitor):
+
+    def __init__(self, environment, name, filename):
+        super(BaseCodeGenerator, self).__init__()
+
+        self.environment = environment
+        self.name = name
+        self.filename = filename
+
+        self.writer = environment.writer()
+
     # Copied
     def fail(self, msg, lineno):
         """Fail with a :exc:`TemplateAssertionError`."""
@@ -266,18 +335,6 @@ class BaseCodeGenerator(NodeVisitor):
         # if frame.buffer
         for node in nodes:
             self.visit(node, frame)
-
-    # special methods that we can override to comform to different code styles
-
-    def writeline_provides(self, node, frame, namespace):
-        self.writeline("goog.provide('" + namespace.encode(frame.eval_ctx.encoding) + "');")
-
-    def writeline_require(self, node, frame, namespace):
-        self.newline(node)
-        self.write_require(node, frame, namespace)
-
-    def write_require(self, node, frame, namespace):
-        self.write("goog.require('%s');" % namespace.encode(frame.eval_ctx.encoding))
 
 
 class CodeGenerator(BaseCodeGenerator):
@@ -314,37 +371,36 @@ class CodeGenerator(BaseCodeGenerator):
         frame.toplevel = frame.rootlevel = True
 
         if namespace:
-            self.writeline_provides(node, frame, namespace)
-        self.writeline_require(node, frame, "soy")
-        self.newline()
+            self.writer.writeline_provides(node, frame, namespace)
+        self.writer.writeline_require(node, frame, "soy")
+        self.writer.newline()
 
         self.blockvisit(node.body, frame)
 
     def visit_Import(self, node, frame):
         namespace = frame.identifiers.imports[node.target]
-        self.mark(node)
-        self.write_require(node, frame, namespace)
+        self.writer.mark(node)
+        self.writer.write_require(node, frame, namespace)
 
     def visit_Macro(self, node, frame):
         generator = MacroCodeGenerator(
             self.environment,
             self.name,
-            self.filename,
-            StringIO())
+            self.filename)
         generator.visit(node, frame)
 
         for requirement in generator.requirements:
-            self.writeline_require(node, frame, requirement)
+            self.writer.writeline_require(node, frame, requirement)
         if generator.requirements:
-            self.newline(node) # keep whitespace ok
+            self.writer.newline(node) # keep whitespace ok
 
-        self.write(generator.stream.getvalue())
+        self.writer.write(generator.writer.stream.getvalue())
 
     def visit_TemplateData(self, node, frame):
-        self.mark(node)
-        self.write(node.data)
+        self.writer.mark(node)
+        self.writer.write(node.data)
         if node.data[-1] != "\n":
-            self.newline()
+            self.writer.newline()
 
 
 class MacroCodeGenerator(BaseCodeGenerator):
@@ -356,9 +412,8 @@ class MacroCodeGenerator(BaseCodeGenerator):
     # comments should be displayed in the JS file. We need them for any closure
     # compiler hints we may want to put in.
 
-    def __init__(self, environment, name, filename, stream = None):
-        super(MacroCodeGenerator, self).__init__(
-            environment, name, filename, stream)
+    def __init__(self, environment, name, filename):
+        super(MacroCodeGenerator, self).__init__(environment, name, filename)
 
         # collect all the namespaced requirements
         self.requirements = set([])
@@ -368,25 +423,6 @@ class MacroCodeGenerator(BaseCodeGenerator):
             return
 
         self.requirements.add(requirement)
-
-    # output formating
-
-    def writeline_startoutput(self, node, frame):
-        self.writeline("var output = %s_sb || new soy.StringBuilder();" % frame.parameter_prefix)
-
-    def writeline_endoutput(self, node, frame):
-        self.writeline("if (!%s_sb) return output.toString();" % frame.parameter_prefix)
-
-    def writeline_outputappend(self, node, frame):
-        self.writeline("output.append(", node)
-
-    def write_outputadd(self, node, frame):
-        self.write(", ")
-
-    def write_outputappend_end(self, node, frame):
-        self.write(");")
-
-    # walk the ast tree
 
     def visit_Output(self, node, frame):
         # JS is only interested in macros etc, as all of JavaScript
@@ -432,26 +468,26 @@ class MacroCodeGenerator(BaseCodeGenerator):
         for item in body:
             if isinstance(item, list):
                 if start:
-                    self.writeline_outputappend(node, frame)
+                    self.writer.writeline_outputappend(node, frame)
                     start = False
                 else:
-                    self.write_outputadd(node, frame)
-                self.write(repr("".join(item)))
+                    self.writer.write_outputadd(node, frame)
+                self.writer.write(repr("".join(item)))
             else:
                 if isinstance(item, jinja2.nodes.Call):
                     if not start:
-                        self.write_outputappend_end(item, frame)
+                        self.writer.write_outputappend_end(item, frame)
                         start = True
-                    self.newline(item)
+                    self.writer.newline(item)
                     self.visit(item, frame)
-                    self.write(";")
+                    self.writer.write(";")
                     continue
 
                 if start:
-                    self.writeline_outputappend(item, frame)
+                    self.writer.writeline_outputappend(item, frame)
                     start = False
                 else:
-                    self.write_outputadd(item, frame)
+                    self.writer.write_outputadd(item, frame)
 
                 # autoescape, safe
                 if isinstance(item, jinja2.nodes.Filter):
@@ -460,17 +496,17 @@ class MacroCodeGenerator(BaseCodeGenerator):
                         continue
 
                 if frame.eval_ctx.autoescape:
-                    self.write("soy.$$escapeHtml(")
+                    self.writer.write("soy.$$escapeHtml(")
                     escaped_frame = frame.soft()
                     escaped_frame.escaped = True
 
                     self.visit(item, escaped_frame)
 
-                    self.write(")")
+                    self.writer.write(")")
                 else:
                     self.visit(item, frame)
         if not start:
-            self.write_outputappend_end(node, frame)
+            self.writer.write_outputappend_end(node, frame)
 
     def visit_Filter(self, node, frame):
         # safe attribute with autoesacape is handled in visit_Output
@@ -479,11 +515,11 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 raise Exception("No kwargs")
 
             if not frame.escaped:
-                self.write("soy.$$escapeHtml(")
+                self.writer.write("soy.$$escapeHtml(")
                 frame = frame.soft()
                 frame.escaped = True
                 self.visit(node.node, frame)
-                self.write(")")
+                self.writer.write(")")
             else:
                 self.visit(node.node, frame)
         elif node.name in FILTERS:
@@ -499,33 +535,33 @@ class MacroCodeGenerator(BaseCodeGenerator):
         # XXX - need to know the JavaScript ins and out here.
         val = node.value
         if val is None:
-            self.write("null")
+            self.writer.write("null")
         elif val is True:
-            self.write("true")
+            self.writer.write("true")
         elif val is False:
-            self.write("false")
+            self.writer.write("false")
         else:
-            self.write(repr(val))
+            self.writer.write(repr(val))
 
     def visit_List(self, node, frame):
-        self.write("[")
+        self.writer.write("[")
         for idx, item in enumerate(node.items):
             if idx:
-                self.write(", ")
+                self.writer.write(", ")
             self.visit(item, frame)
-        self.write("]")
+        self.writer.write("]")
 
     def visit_Dict(self, node, frame):
-        self.write("{")
+        self.writer.write("{")
         for idx, item in enumerate(node.items):
             if idx:
-                self.write(", ")
+                self.writer.write(", ")
 
             self.visit(item.key, frame)
-            self.write(": ")
+            self.writer.write(": ")
             self.visit(item.value, frame)
 
-        self.write("}")
+        self.writer.write("}")
 
     def visit_Name(self, node, frame, dotted_name = None):
         # declared_parameter
@@ -573,7 +609,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
             output = node.name
 
         if dotted_name is None:
-            self.write(output)
+            self.writer.write(output)
         else:
             dotted_name.append(output)
 
@@ -582,22 +618,22 @@ class MacroCodeGenerator(BaseCodeGenerator):
     def visit_Getattr(self, node, frame, dotted_name = None):
         if frame.forloop_buffer and node.node.name == "loop":
             if node.attr == "index0":
-                self.write("%sIndex" % frame.forloop_buffer)
+                self.writer.write("%sIndex" % frame.forloop_buffer)
             elif node.attr == "index":
-                self.write("%sIndex + 1" % frame.forloop_buffer)
+                self.writer.write("%sIndex + 1" % frame.forloop_buffer)
             elif node.attr == "revindex0":
-                self.write("%sListLen - %sIndex" %(frame.forloop_buffer,
+                self.writer.write("%sListLen - %sIndex" %(frame.forloop_buffer,
                                                    frame.forloop_buffer))
             elif node.attr == "revindex":
-                self.write("%sListLen - %sIndex - 1" %(frame.forloop_buffer,
+                self.writer.write("%sListLen - %sIndex - 1" %(frame.forloop_buffer,
                                                        frame.forloop_buffer))
             elif node.attr == "first":
-                self.write("%sIndex == 0" % frame.forloop_buffer)
+                self.writer.write("%sIndex == 0" % frame.forloop_buffer)
             elif node.attr == "last":
-                self.write("%sIndex == (%sListLen - 1)" %(frame.forloop_buffer,
+                self.writer.write("%sIndex == (%sListLen - 1)" %(frame.forloop_buffer,
                                                           frame.forloop_buffer))
             elif node.attr == "length":
-                self.write("%sListLen" % frame.forloop_buffer)
+                self.writer.write("%sListLen" % frame.forloop_buffer)
             else:
                 raise AttributeError("loop.%s not defined" % node.attr)
         else:
@@ -613,15 +649,15 @@ class MacroCodeGenerator(BaseCodeGenerator):
             if write_variable:
                 if not param:
                     self.addRequirement(".".join(dotted_name[:-1]), frame)
-                self.write(".".join(dotted_name))
+                self.writer.write(".".join(dotted_name))
 
     def binop(operator):
         def visitor(self, node, frame):
-            self.write("(")
+            self.writer.write("(")
             self.visit(node.left, frame)
-            self.write(" %s " % BINOPERATORS.get(operator, operator))
+            self.writer.write(" %s " % BINOPERATORS.get(operator, operator))
             self.visit(node.right, frame)
-            self.write(")")
+            self.writer.write(")")
         return visitor
 
     # Math operators
@@ -631,18 +667,18 @@ class MacroCodeGenerator(BaseCodeGenerator):
     visit_Div = binop("/")
 
     def visit_FloorDiv(self, node, frame):
-        self.write("Math.floor(")
+        self.writer.write("Math.floor(")
         self.visit(node.left, frame)
-        self.write(" / ")
+        self.writer.write(" / ")
         self.visit(node.right, frame)
-        self.write(")")
+        self.writer.write(")")
 
     def visit_Pow(self, node, frame):
-        self.write("Math.pow(")
+        self.writer.write("Math.pow(")
         self.visit(node.left, frame)
-        self.write(", ")
+        self.writer.write(", ")
         self.visit(node.right, frame)
-        self.write(")")
+        self.writer.write(")")
 
     visit_Mod = binop("%")
     visit_And = binop("and")
@@ -650,9 +686,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
     def uaop(operator):
         def visitor(self, node, frame):
-            self.write("(" + UNARYOP.get(operator, operator))
+            self.writer.write("(" + UNARYOP.get(operator, operator))
             self.visit(node.node, frame)
-            self.write(")")
+            self.writer.write(")")
         return visitor
 
     visit_Pos = uaop("+")
@@ -675,26 +711,26 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.fail(
                 "Comparison operator '%s' not supported in JavaScript",
                 node.lineno)
-        self.write(" %s " % OPERATORS[node.op])
+        self.writer.write(" %s " % OPERATORS[node.op])
         self.visit(node.expr, frame)
 
     def visit_If(self, node, frame):
         if_frame = frame.soft()
-        self.writeline("if (", node)
+        self.writer.writeline("if (", node)
         self.visit(node.test, if_frame)
-        self.write(") {")
+        self.writer.write(") {")
 
-        self.indent()
+        self.writer.indent()
         self.blockvisit(node.body, if_frame)
-        self.outdent()
+        self.writer.outdent()
 
         if node.else_:
-            self.writeline("} else {")
-            self.indent()
+            self.writer.writeline("} else {")
+            self.writer.indent()
             self.blockvisit(node.else_, if_frame)
-            self.outdent()
+            self.writer.outdent()
 
-        self.writeline("}")
+        self.writer.writeline("}")
 
     def visit_For(self, node, frame):
         children = node.iter_child_nodes(exclude = ("iter",))
@@ -719,31 +755,31 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 self.fail("Can't assign to special loop variable "
                           "in for-loop target", name.lineno)
 
-        self.writeline("var %sList = " % node.target.name)
+        self.writer.writeline("var %sList = " % node.target.name)
         self.visit(node.iter, loop_frame)
-        self.write(";")
+        self.writer.write(";")
 
-        self.writeline("var %(name)sListLen = %(name)sList.length;" %{"name": node.target.name})
+        self.writer.writeline("var %(name)sListLen = %(name)sList.length;" %{"name": node.target.name})
         if node.else_:
-            self.writeline("if (%sListLen > 0) {" % node.target.name)
-            self.indent()
+            self.writer.writeline("if (%sListLen > 0) {" % node.target.name)
+            self.writer.indent()
 
-        self.writeline("for (var %(name)sIndex = 0; %(name)sIndex < %(name)sListLen; %(name)sIndex++) {" %{"name": node.target.name})
-        self.indent()
+        self.writer.writeline("for (var %(name)sIndex = 0; %(name)sIndex < %(name)sListLen; %(name)sIndex++) {" %{"name": node.target.name})
+        self.writer.indent()
 
-        self.writeline("var %(name)sData = %(name)sList[%(name)sIndex];" %{"name": node.target.name})
+        self.writer.writeline("var %(name)sData = %(name)sList[%(name)sIndex];" %{"name": node.target.name})
         loop_frame.reassigned_names[node.target.name] = "%sData" % node.target.name
         self.blockvisit(node.body, loop_frame)
-        self.outdent()
-        self.writeline("}")
+        self.writer.outdent()
+        self.writer.writeline("}")
 
         if node.else_:
-            self.outdent()
-            self.writeline("} else {")
-            self.indent()
+            self.writer.outdent()
+            self.writer.writeline("} else {")
+            self.writer.indent()
             self.blockvisit(node.else_, frame)
-            self.outdent()
-            self.writeline("}")
+            self.writer.outdent()
+            self.writer.writeline("}")
 
     def function_scoping(self, node, frame, parameter_prefix, children = None):
         if children is None:
@@ -793,15 +829,15 @@ class MacroCodeGenerator(BaseCodeGenerator):
         # macros are delayed, they never require output checks
         frame.require_output_check = False
 
-        self.writeline("%s" % name)
-        self.write(" = function(%s_data, %s_sb, %s_caller) {" %(
+        self.writer.writeline("%s" % name)
+        self.writer.write(" = function(%s_data, %s_sb, %s_caller) {" %(
             frame.parameter_prefix, frame.parameter_prefix, frame.parameter_prefix))
-        self.indent()
-        self.writeline_startoutput(node, frame)
+        self.writer.indent()
+        self.writer.writeline_startoutput(node, frame)
         self.blockvisit(node.body, frame)
-        self.writeline_endoutput(node, frame)
-        self.outdent()
-        self.writeline("}")
+        self.writer.writeline_endoutput(node, frame)
+        self.writer.outdent()
+        self.writer.writeline("}")
 
     def visit_Macro(self, node, frame):
         name = node.name
@@ -821,9 +857,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
             "func_caller", node, frame, children = children, parameter_prefix = "func")
 
         # call the macro passing in the caller method
-        self.newline(node)
+        self.writer.newline(node)
         self.visit_Call(node.call, frame, forward_caller = "func_caller")
-        self.write(";")
+        self.writer.write(";")
 
     def signature(self, node, frame):
         if node.args:
@@ -837,28 +873,28 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 node.lineno)
 
         start = True
-        self.write("{")
+        self.writer.write("{")
         for kwarg in node.kwargs:
             if not start:
-                self.write(", ")
+                self.writer.write(", ")
                 start = False
-            self.write(kwarg.key)
-            self.write(": ")
+            self.writer.write(kwarg.key)
+            self.writer.write(": ")
             self.visit(kwarg.value, frame)
-        self.write("}")
+        self.writer.write("}")
 
     def visit_Call(self, node, frame, forward_caller = None):
         # function symbol to call
         dotted_name = []
         self.visit(node.node, frame, dotted_name = dotted_name)
         # function signature
-        self.write("%s(" % ".".join(dotted_name))
+        self.writer.write("%s(" % ".".join(dotted_name))
         self.signature(node, frame)
-        self.write(", output")
+        self.writer.write(", output")
         if forward_caller is not None:
-            self.write(", ")
-            self.write(forward_caller)
-        self.write(")")
+            self.writer.write(", ")
+            self.writer.write(forward_caller)
+        self.writer.write(")")
 
 
 FILTERS = {}
@@ -877,45 +913,45 @@ class register_filter(object):
 @register_filter("default")
 def filter_default(generator, node, frame, default_value = ""):
     generator.visit(node.node, frame)
-    generator.write(" ? ")
+    generator.writer.write(" ? ")
     generator.visit(node.node, frame)
-    generator.write(" : ")
+    generator.writer.write(" : ")
     generator.visit(default_value, frame)
 
 
 @register_filter("truncate")
 def filter_truncate(generator, node, frame, length):
     generator.visit(node.node, frame)
-    generator.write(".substring(0, ")
+    generator.writer.write(".substring(0, ")
     generator.visit(length, frame)
-    generator.write(")")
+    generator.writer.write(")")
 
 
 @register_filter("capitalize")
 def filter_capitalize(generator, node, frame):
     generator.visit(node.node, frame)
-    generator.write(".substring(0, 1).toUpperCase(), ")
+    generator.writer.write(".substring(0, 1).toUpperCase(), ")
     generator.visit(node.node, frame)
-    generator.write(".substring(1)")
+    generator.writer.write(".substring(1)")
 
 
 @register_filter("last")
 def filter_last(generator, node, frame):
     generator.visit(node.node, frame)
-    generator.write(".pop()")
+    generator.writer.write(".pop()")
 
 
 @register_filter("length")
 def filter_length(generator, node, frame):
     generator.visit(node.node, frame)
-    generator.write(".length")
+    generator.writer.write(".length")
 
 
 @register_filter("replace")
 def filter_replace(generator, node, frame, old, new): #, count = None)
     generator.visit(node.node, frame)
-    generator.write(".replace(")
+    generator.writer.write(".replace(")
     generator.visit(old, frame)
-    generator.write(", ")
+    generator.writer.write(", ")
     generator.visit(new, frame)
-    generator.write(")")
+    generator.writer.write(")")

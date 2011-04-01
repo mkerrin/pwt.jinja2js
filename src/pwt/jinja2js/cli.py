@@ -19,21 +19,34 @@ def get_output_filename(output_format, filename):
     return output_filename
 
 
+writerclasses = {
+    "stringbuilder": "pwt.jinja2js.jscompiler.StringBuilder",
+    "concat": "pwt.jinja2js.jscompiler.Concat",
+    }
+
+
 def main(args = None, output = None):
     if output is None:
         output = sys.stdout
 
     parser = optparse.OptionParser()
     # closure template options that we support
-    parser.add_option("--outputPathFormat", dest = "output_format",
-                      help = "A format string that specifies how to build the path to each output file. You can include literal characters as well as the following $variables: ${INPUT_FILE_NAME}, ${INPUT_FILE_NAME_NO_EXT}, and ${INPUT_DIRECTORY}.",
-                      metavar = "OUTPUT_FORMAT")
+    parser.add_option(
+        "--outputPathFormat", dest = "output_format",
+        help = "A format string that specifies how to build the path to each output file. You can include literal characters as well as the following $variables: ${INPUT_FILE_NAME}, ${INPUT_FILE_NAME_NO_EXT}, and ${INPUT_DIRECTORY}.",
+        metavar = "OUTPUT_FORMAT")
 
     # jinja2js specific options
-    parser.add_option("--packages", dest = "packages",
-                      default = [], action = "append",
-                      help = "List of packages to look for template files.",
-                      metavar = "PACKAGE")
+    parser.add_option(
+        "--packages", dest = "packages",
+        default = [], action = "append",
+        help = "List of packages to look for template files.",
+        metavar = "PACKAGE")
+
+    parser.add_option(
+        "--codeStyle", choices = ["stringbuilder", "concat"],
+        dest = "codeStyle", default = "stringbuilder", type = "choice",
+        help = "The code style to use when generating JS code")
 
     options, files = parser.parse_args(args)
 
@@ -42,7 +55,9 @@ def main(args = None, output = None):
         parser.print_help(output)
         return 1
 
-    env = environment.create_environment(options.packages)
+    env = environment.create_environment(
+        options.packages,
+        writer = writerclasses[options.codeStyle])
 
     for filename in files:
         name = os.path.basename(filename)
