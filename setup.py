@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 setup(
     name = "pwt.jinja2js",
-    version = "0.1",
+    version = "0.5",
 
     author = "Michael Kerrin",
     author_email = "michael.kerrin@gmail.com",
