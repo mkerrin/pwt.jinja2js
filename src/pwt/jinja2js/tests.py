@@ -1051,6 +1051,59 @@ testns.consts.hello = function(opt_data, opt_sb, opt_caller) {
     return output;
 }""")
 
+    def test_call_macro1(self):
+        # call macro in same template, without arguments.
+        node = self.get_compile_from_string("""{% namespace xxx %}
+{% macro testif(option) -%}
+{% if option %}{{ option }}{% endif %}{% endmacro %}
+
+{% macro testcall() %}{{ xxx.testif() }}{% endmacro %}""")
+
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+
+        self.assertEqual(source_code, """if (typeof xxx == 'undefined') { var xxx = {}; }
+
+xxx.testif = function(opt_data, opt_sb, opt_caller) {
+    var output = '';
+    if (opt_data.option) {
+        output += opt_data.option;
+    }
+    return output;
+}
+
+xxx.testcall = function(opt_data, opt_sb, opt_caller) {
+    var output = '';
+    output += xxx.testif({});
+    return output;
+}""")
+
+    def test_call_macro3(self): # Copied from above and modified
+        # call macro passing in a argument
+        node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
+{% macro testif(option) -%}
+{% if option %}{{ option }}{% endif %}{% endmacro %}
+
+{% macro testcall() %}{{ xxx.ns1.testif(option = true) }}{% endmacro %}""")
+
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+
+        self.assertEqual(source_code, """if (typeof xxx == 'undefined') { var xxx = {}; }
+if (typeof xxx.ns1 == 'undefined') { var xxx.ns1 = {}; }
+
+xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
+    var output = '';
+    if (opt_data.option) {
+        output += opt_data.option;
+    }
+    return output;
+}
+
+xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
+    var output = '';
+    output += xxx.ns1.testif({option: true});
+    return output;
+}""")
+
 
 class JSCompilerTemplateTestCaseOutput(JSCompilerTestCase):
     # Test the standard output so that if a developer needs to debug the

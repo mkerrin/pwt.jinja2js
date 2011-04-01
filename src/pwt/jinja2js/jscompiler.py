@@ -403,6 +403,10 @@ class CodeGenerator(BaseCodeGenerator):
             self.writer.newline()
 
 
+STRINGBUILDER = "StringBuilder"
+CONCAT = "Concat"
+
+
 class MacroCodeGenerator(BaseCodeGenerator):
     # split out the macro code generator. This generate the guts of the
     # JavaScript we need to render the templates. Note that we do this
@@ -474,14 +478,15 @@ class MacroCodeGenerator(BaseCodeGenerator):
                     self.writer.write_outputadd(node, frame)
                 self.writer.write(repr("".join(item)))
             else:
-                if isinstance(item, jinja2.nodes.Call):
-                    if not start:
-                        self.writer.write_outputappend_end(item, frame)
-                        start = True
-                    self.writer.newline(item)
-                    self.visit(item, frame)
-                    self.writer.write(";")
-                    continue
+                if self.writer.__class__.__name__ == STRINGBUILDER:
+                    if isinstance(item, jinja2.nodes.Call):
+                        if not start:
+                            self.writer.write_outputappend_end(item, frame)
+                            start = True
+                        self.writer.newline(item)
+                        self.visit(item, frame)
+                        self.writer.write(";")
+                        continue
 
                 if start:
                     self.writer.writeline_outputappend(item, frame)
@@ -890,7 +895,8 @@ class MacroCodeGenerator(BaseCodeGenerator):
         # function signature
         self.writer.write("%s(" % ".".join(dotted_name))
         self.signature(node, frame)
-        self.writer.write(", output")
+        if self.writer.__class__.__name__ == STRINGBUILDER:
+            self.writer.write(", output")
         if forward_caller is not None:
             self.writer.write(", ")
             self.writer.write(forward_caller)
