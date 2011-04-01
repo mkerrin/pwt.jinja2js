@@ -942,7 +942,8 @@ def filter_truncate(generator, node, frame, length):
 @register_filter("capitalize")
 def filter_capitalize(generator, node, frame):
     generator.visit(node.node, frame)
-    generator.writer.write(".substring(0, 1).toUpperCase(), ")
+    generator.writer.write(".substring(0, 1).toUpperCase()")
+    generator.writer.write_outputadd(node, frame)
     generator.visit(node.node, frame)
     generator.writer.write(".substring(1)")
 

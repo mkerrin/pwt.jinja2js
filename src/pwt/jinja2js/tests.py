@@ -1011,6 +1011,18 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_filter_capitalize(self):
+        # different in concat and stringbuilder modes
+        node = self.get_compile_from_string("""{% macro trunc(s) %}{{ s|capitalize }}{% endmacro %}""")
+
+        source_code = generateMacro(node, self.env, "f.html", "f.html")
+
+        self.assertEqual(source_code, """test.trunc = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(opt_data.s.substring(0, 1).toUpperCase(), opt_data.s.substring(1));
+    if (!opt_sb) return output.toString();
+}""")
+
 
 class JSConcatCompilerTemplateTestCase(JSCompilerTestCase):
 
@@ -1101,6 +1113,18 @@ xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = '';
     output += xxx.ns1.testif({option: true});
+    return output;
+}""")
+
+    def test_filter_capitalize(self):
+        # different in concat and stringbuilder modes
+        node = self.get_compile_from_string("""{% macro trunc(s) %}{{ s|capitalize }}{% endmacro %}""")
+
+        source_code = generateMacro(node, self.env, "f.html", "f.html")
+
+        self.assertEqual(source_code, """test.trunc = function(opt_data, opt_sb, opt_caller) {
+    var output = '';
+    output += opt_data.s.substring(0, 1).toUpperCase() + opt_data.s.substring(1);
     return output;
 }""")
 
