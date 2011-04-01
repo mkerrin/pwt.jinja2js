@@ -43,6 +43,4 @@ packages = pwt.jinja2js
 
 deps_js = /media/${deps.js:filename}
 
-concat_deps_js = /media/${concat_deps.js:filename}
-
 compiled_tests_js = /media/${compiled_tests.js:filename}
