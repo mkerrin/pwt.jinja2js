@@ -1,4 +1,4 @@
-goog.provide("tests");
+goog.provide("tests"); // for compilation with closure builder
 
 goog.require("tests.variables");
 goog.require("tests.iftest");
