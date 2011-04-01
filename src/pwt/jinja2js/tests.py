@@ -1116,6 +1116,40 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     return output;
 }""")
 
+    def test_callblock1(self):
+        node = self.get_compile_from_string("""{% namespace tests %}
+{% macro render_dialog(type) -%}
+<div class="type">{{ caller() }}</div>
+{%- endmacro %}
+
+{% macro render(name) -%}
+{% call tests.render_dialog(type = 'box') -%}
+Hello {{ name }}!
+{%- endcall %}
+{%- endmacro %}
+""")
+
+        source_code = jscompiler.generate(node, self.env, "cb.html", "cb.html")
+
+        self.assertEqual(source_code, """if (typeof tests == \'undefined\') { var tests = {}; }
+
+tests.render_dialog = function(opt_data, opt_sb, opt_caller) {
+    var output = '';
+    output += '<div class="type">' + opt_caller({}) + '</div>';
+    return output;
+}
+
+tests.render = function(opt_data, opt_sb, opt_caller) {
+    var output = '';
+    func_caller = function(func_data, func_sb, func_caller) {
+        var output = '';
+        output += 'Hello ' + opt_data.name + '!';
+        return output;
+    }
+    output += tests.render_dialog({type: 'box'}, null, func_caller);
+    return output;
+}""")
+
     def test_filter_capitalize(self):
         # different in concat and stringbuilder modes
         node = self.get_compile_from_string("""{% macro trunc(s) %}{{ s|capitalize }}{% endmacro %}""")

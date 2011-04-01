@@ -864,7 +864,14 @@ class MacroCodeGenerator(BaseCodeGenerator):
             "func_caller", node, frame, children = children, parameter_prefix = "func")
 
         # call the macro passing in the caller method
-        self.writer.newline(node)
+        if self.writer.__class__.__name__ == STRINGBUILDER:
+            self.writer.newline(node)
+        elif self.writer.__class__.__name__ == CONCAT:
+            self.writer.writeline_outputappend(node, frame)
+        else:
+            # XXX - we shouldn't get here
+            self.fail("Unknown writer class", node.lineno)
+
         self.visit_Call(node.call, frame, forward_caller = "func_caller")
         self.writer.write(";")
 
@@ -902,6 +909,10 @@ class MacroCodeGenerator(BaseCodeGenerator):
         if self.writer.__class__.__name__ == STRINGBUILDER:
             self.writer.write(", output")
         if forward_caller is not None:
+            if self.writer.__class__.__name__ == CONCAT:
+                # XXX - This is a hack to get around inconsistencies
+                # between the two different styles.
+                self.writer.write(", null")
             self.writer.write(", ")
             self.writer.write(forward_caller)
         self.writer.write(")")
