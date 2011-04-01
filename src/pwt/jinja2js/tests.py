@@ -1030,7 +1030,7 @@ Hello, world!
 {%- endmacro %}""")
         source_code = jscompiler.generate(node, self.env, "const.html", "const.html")
 
-        self.assertEqual(source_code, """if (typeof testns == 'undefined') { var testns = {}; }\nif (typeof testns.consts == 'undefined') { var testns.consts = {}; }
+        self.assertEqual(source_code, """if (typeof testns == 'undefined') { var testns = {}; }\nif (typeof testns.consts == 'undefined') { testns.consts = {}; }
 
 testns.consts.hello = function(opt_data, opt_sb, opt_caller) {
     var output = '';
@@ -1088,7 +1088,7 @@ xxx.testcall = function(opt_data, opt_sb, opt_caller) {
         source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """if (typeof xxx == 'undefined') { var xxx = {}; }
-if (typeof xxx.ns1 == 'undefined') { var xxx.ns1 = {}; }
+if (typeof xxx.ns1 == 'undefined') { xxx.ns1 = {}; }
 
 xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
     var output = '';

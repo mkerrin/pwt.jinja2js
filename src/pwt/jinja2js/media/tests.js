@@ -1,12 +1,14 @@
-goog.provide("tests"); // for compilation with closure builder
+if (typeof goog != 'undefined') {
+    goog.provide("tests"); // for compilation with closure builder
 
-goog.require("tests.variables");
-goog.require("tests.iftest");
-goog.require("tests.fortest");
-goog.require("tests.call");
-goog.require("tests.importtest");
-goog.require("tests.autoescaped");
-goog.require("tests.filters");
+    goog.require("tests.variables");
+    goog.require("tests.iftest");
+    goog.require("tests.fortest");
+    goog.require("tests.call");
+    goog.require("tests.importtest");
+    goog.require("tests.autoescaped");
+    goog.require("tests.filters");
+}
 
 window.onload = function() {
     QUnit.module("variables.soy");

@@ -9,6 +9,8 @@
     <script type="text/javascript" src="/media/deps.js"></script>
 
     <script type="text/javascript" src="/soy/documentation.soy"></script>
+    <script type="text/javascript" src="/concat_soy/documentation_concat.soy"></script>
+    <script type="text/javascript" src="/concat_soy/variables.soy"></script>
   </head>
   <body>
     <h3>pwt.jinja2js</h3>
@@ -24,6 +26,15 @@
     <h4>Example</h4>
     <script type="text/javascript">
       document.write(ns1.printusers({users: [
+         {username: "michael", url: "#user/michael"},
+         {username: "johndoe", url: "#user/johndoe"}
+        ]})
+      );
+    </script>
+
+    <h4>Example (Concat style)</h4>
+    <script type="text/javascript">
+      document.write(ns2.printusers({users: [
          {username: "michael", url: "#user/michael"},
          {username: "johndoe", url: "#user/johndoe"}
         ]})

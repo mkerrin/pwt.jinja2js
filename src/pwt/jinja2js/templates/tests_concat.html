@@ -3,13 +3,15 @@
     <link rel="stylesheet" href="/media/qunit.css" type="text/css" />
 
     <script type="text/javascript" src="/media/qunit.js"></script>
+    <script type="text/javascript" src="/media/soyutils.js"></script>
 
-    <script type="text/javascript">
-      CLOSURE_NO_DEPS = true;
-      CLOSURE_BASE_PATH = "http://localhost:8000";
-    </script>
-    <script type="text/javascript" src="/closure/closure/goog/base.js"></script>
-    <script type="text/javascript" src="{{ concat_deps_js }}"></script>
+    <script type="text/javascript" src="/concat_soy/variables.soy"></script>
+    <script type="text/javascript" src="/concat_soy/if.soy"></script>
+    <script type="text/javascript" src="/concat_soy/for.soy"></script>
+    <script type="text/javascript" src="/concat_soy/call.soy"></script>
+    <script type="text/javascript" src="/concat_soy/import.soy"></script>
+    <script type="text/javascript" src="/concat_soy/autoescaped.soy"></script>
+    <script type="text/javascript" src="/concat_soy/filters.soy"></script>
 
     <script type="text/javascript" src="/media/tests.js"></script>
   </head>

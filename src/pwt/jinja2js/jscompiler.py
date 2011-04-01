@@ -281,8 +281,8 @@ class Concat(StringBuilder):
         parts = namespace.encode(frame.eval_ctx.encoding).split(".")
         for idx, part in enumerate(parts):
             ns = ".".join(parts[:idx + 1])
-            self.writeline("if (typeof %s == 'undefined') { var %s = {}; }" %(
-                ns, ns), node)
+            self.writeline("if (typeof %s == 'undefined') { %s%s = {}; }" %(
+                ns, idx == 0 and "var " or "", ns), node)
 
     def writeline_require(self, node, frame, namespace):
         self.newline(node)
