@@ -40,7 +40,7 @@ following JavaScript::
      }
 
 By slipping a switch we can produce Java Script that takes advantage of
-`Closure Library'_
+`Closure Library`_::
 
      goog.provide('ns1');
 
@@ -59,6 +59,7 @@ By slipping a switch we can produce Java Script that takes advantage of
         if (!opt_sb) return output.toString();
      }
 
+.. _Closure Library: http://code.google.com/closure/library/
 
 Install and test
 ================
