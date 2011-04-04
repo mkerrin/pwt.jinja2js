@@ -1068,6 +1068,12 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_filter_round5(self):
+        node = self.get_compile_from_string("""{% macro round(num) %}{{ num|round(precision = 0, method = 'ceil') }}{% endmacro %}""")
+
+        self.assertRaises(
+            TypeError, generateMacro, node, self.env, "f.html", "f.html")
+
 
 class JSConcatCompilerTemplateTestCase(JSCompilerTestCase):
 

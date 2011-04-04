@@ -1001,12 +1001,7 @@ def filter_replace(generator, node, frame, old, new): #, count = None)
 
 
 @register_filter("round")
-def filter_round(generator, node, frame,
-                 precision = jinja2.nodes.Const(0),
-                 method = jinja2.nodes.Const("common")):
-    if not isinstance(method, jinja2.nodes.Const):
-        raise jinja2.compiler.TemplateAssertionError("precision and method arguments to `round` filter need to be constants")
-
+def filter_round(generator, node, frame, precision = jinja2.nodes.Const(0)):
     # get precision
     precision_value = []
     isparam = generator.visit(precision, frame, precision_value)
