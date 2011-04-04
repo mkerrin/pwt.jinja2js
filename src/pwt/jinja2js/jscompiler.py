@@ -842,8 +842,8 @@ class MacroCodeGenerator(BaseCodeGenerator):
         # macros are delayed, they never require output checks
         frame.require_output_check = False
 
-        self.writer.writeline("%s" % name)
-        self.writer.write(" = function(%s_data, %s_sb, %s_caller) {" %(
+        self.writer.writeline("%s = function(%s_data, %s_sb, %s_caller) {" %(
+            name,
             frame.parameter_prefix,
             frame.parameter_prefix,
             frame.parameter_prefix))
