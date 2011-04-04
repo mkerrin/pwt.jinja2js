@@ -820,25 +820,26 @@ class MacroCodeGenerator(BaseCodeGenerator):
             func_frame.identifiers.declared
         )
 
-        # XXX - varargs is what??
-        undeclared = jinja2.compiler.find_undeclared(children, ("caller", "kwargs", "kargs", "varargs"))
-
+        # Handle special variables.
         if "caller" in func_frame.identifiers.undeclared:
             func_frame.identifiers.undeclared.discard("caller")
             func_frame.reassigned_names["caller"] = "opt_caller"
 
-        # XXX - catch any undeclared variables.
-
         return func_frame
 
-    def macro_body(self, name, node, frame, children = None, parameter_prefix = "opt"):
-        frame = self.function_scoping(node, frame, children = children, parameter_prefix = parameter_prefix)
+    def macro_body(
+            self, name, node, frame, children = None, parameter_prefix = "opt"):
+        frame = self.function_scoping(
+            node, frame, children = children,
+            parameter_prefix = parameter_prefix)
         # macros are delayed, they never require output checks
         frame.require_output_check = False
 
         self.writer.writeline("%s" % name)
         self.writer.write(" = function(%s_data, %s_sb, %s_caller) {" %(
-            frame.parameter_prefix, frame.parameter_prefix, frame.parameter_prefix))
+            frame.parameter_prefix,
+            frame.parameter_prefix,
+            frame.parameter_prefix))
         self.writer.indent()
         self.writer.writeline_startoutput(node, frame)
         self.blockvisit(node.body, frame)
@@ -861,7 +862,8 @@ class MacroCodeGenerator(BaseCodeGenerator):
         # XXX - Make sure we don't have a namespace cnoflict here.
         children = node.iter_child_nodes(exclude = ("call",))
         self.macro_body(
-            "func_caller", node, frame, children = children, parameter_prefix = "func")
+            "func_caller", node, frame,
+            children = children, parameter_prefix = "func")
 
         # call the macro passing in the caller method
         if self.writer.__class__.__name__ == STRINGBUILDER:
@@ -904,15 +906,18 @@ class MacroCodeGenerator(BaseCodeGenerator):
         # function signature
         self.writer.write("%s(" % ".".join(dotted_name))
         self.signature(node, frame)
+
         # If we are using the string builder then we generate slightly
         # different code.
         if self.writer.__class__.__name__ == STRINGBUILDER:
             self.writer.write(", output")
+
         if forward_caller is not None:
             if self.writer.__class__.__name__ == CONCAT:
                 # XXX - This is a hack to get around inconsistencies
                 # between the two different styles.
                 self.writer.write(", null")
+
             self.writer.write(", ")
             self.writer.write(forward_caller)
         self.writer.write(")")
