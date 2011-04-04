@@ -278,6 +278,26 @@ Hello {{ name }}!
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_var13(self):
+        # variables with default values
+        node = self.get_compile_from_string("""{% macro hello(name, age = 30) -%}
+{{ name }} is {{ age }}
+{%- endmacro %}
+""")
+        source_code = generateMacro(node, self.env, "var2.html", "var2.html")
+
+        self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb, opt_caller) {
+    var defaults = {age: 30};
+    for (var key in defaults) {
+        if (!(key in opt_data)) {
+            opt_data[key] = defaults[key];
+        }
+    }
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(opt_data.name, ' is ', opt_data.age);
+    if (!opt_sb) return output.toString();
+}""")
+
     def test_for1(self):
         # test for loop
         node = self.get_compile_from_string("""{% namespace xxx %}
@@ -934,6 +954,58 @@ users = function(opt_data, opt_sb, opt_caller) {
         if (!func_sb) return output.toString();
     }
     list_users({users: opt_data.users2}, output, func_caller);
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_callblock4(self):
+        # 
+        node = self.get_compile_from_string("""{% macro list_users(users) -%}
+<ul>
+{% for user in users %}
+<li>{{ caller() }}</li>
+{% endfor %}
+</ul>
+{%- endmacro %}
+
+{% macro users(name, users, users2) -%}
+{% call(user = 'Anonymous') list_users(users = users) -%}
+Hello, {{ user }}!
+{%- endcall %}
+{%- endmacro %}
+""")
+
+        source_code = jscompiler.generate(node, self.env, "cb.html", "cb.html")
+
+        self.assertEqual(source_code, """goog.require('soy');
+list_users = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('<ul>\\n');
+    var userList = opt_data.users;
+    var userListLen = userList.length;
+    for (var userIndex = 0; userIndex < userListLen; userIndex++) {
+        var userData = userList[userIndex];
+        output.append('\\n<li>');
+        opt_caller({}, output);
+        output.append('</li>\\n');
+    }
+    output.append('\\n</ul>');
+    if (!opt_sb) return output.toString();
+}
+
+users = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new soy.StringBuilder();
+    func_caller = function(func_data, func_sb, func_caller) {
+        var defaults = {user: 'Anonymous'};
+        for (var key in defaults) {
+            if (!(key in func_data)) {
+                func_data[key] = defaults[key];
+            }
+        }
+        var output = func_sb || new soy.StringBuilder();
+        output.append('Hello, ', func_data.user, '!');
+        if (!func_sb) return output.toString();
+    }
+    list_users({users: opt_data.users}, output, func_caller);
     if (!opt_sb) return output.toString();
 }""")
 

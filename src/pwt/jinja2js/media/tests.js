@@ -194,6 +194,24 @@ window.onload = function() {
             QUnit.equal(tests.call.users3({name: "Me", users: ["User1"], users_old: ["Joe"]}), "<ul><li>Hello User1!</li></ul><ul><li>Goodbye Joe from Me!</li></ul>");
         });
 
+    // check default values
+
+    QUnit.test("callblock5", function() {
+            QUnit.equal(tests.call.users4({name: "Me", users: ["User1"]}), "<ul><li>Hi User1 from Me!</li></ul>");
+        });
+
+    QUnit.test("callblock5b", function() {
+            QUnit.equal(tests.call.users4({users: ["User1"]}), "<ul><li>Hi User1 from Michael!</li></ul>");
+        });
+
+    QUnit.test("callblock6", function() {
+            QUnit.equal(tests.call.users5({users: ["User1"]}), "<ul><li>Hi User1 from Michael!</li></ul>");
+
+            // This template skips the user Michael 
+            QUnit.equal(tests.call.users5({users: ["Michael"]}), "<ul><li>Hi Anonymous from Michael!</li></ul>");
+            QUnit.equal(tests.call.users5({users: ["Michael2"]}), "<ul><li>Hi Michael2 from Michael!</li></ul>");
+        });
+
     QUnit.module("import macros");
 
     QUnit.test("import1", function() {

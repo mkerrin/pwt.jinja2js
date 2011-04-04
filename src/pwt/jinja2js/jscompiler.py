@@ -858,7 +858,8 @@ class MacroCodeGenerator(BaseCodeGenerator):
             # and set the value in opt_data if it is not already set.
             self.writer.writeline("var defaults = {")
             start = True
-            for arg, default in zip(node.args, node.defaults):
+            for arg, default in zip(
+                    node.args[-len(node.defaults):], node.defaults):
                 # get arg value.
                 if not start:
                     self.write(", ")
@@ -869,8 +870,8 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 isparam = self.visit(default, frame)
             self.writer.write("};")
             self.writer.writeline("for (var key in defaults) {")
-            self.writer.writeline("    if (!(key in opt_data)) {")
-            self.writer.writeline("        opt_data[key] = defaults[key];")
+            self.writer.writeline("    if (!(key in %s_data)) {" % frame.parameter_prefix)
+            self.writer.writeline("        %s_data[key] = defaults[key];" % frame.parameter_prefix)
             self.writer.writeline("    }")
             self.writer.writeline("}")
         self.writer.writeline_startoutput(node, frame)
