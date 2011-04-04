@@ -34,3 +34,7 @@ Hello {{ name }}!
 {% macro defaultparam2(option = None) -%}
 {% if option == None %}Null{% else %}Not null{% endif %}
 {%- endmacro %}
+
+{% macro defaultparam3(name = 'Michael', age = 30) -%}
+Hello {{ name }} aged {{ age }}
+{%- endmacro %}

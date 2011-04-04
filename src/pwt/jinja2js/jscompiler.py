@@ -862,12 +862,13 @@ class MacroCodeGenerator(BaseCodeGenerator):
                     node.args[-len(node.defaults):], node.defaults):
                 # get arg value.
                 if not start:
-                    self.write(", ")
+                    self.writer.write(", ")
                 isparam = self.visit(arg, frame, [])
                 assert isparam == True, \
                        "dosn't make sense, having a non parameter parameter"
                 self.writer.write("%s: " % arg.name)
                 isparam = self.visit(default, frame)
+                start = False
             self.writer.write("};")
             self.writer.writeline("for (var key in defaults) {")
             self.writer.writeline("    if (!(key in %s_data)) {" % frame.parameter_prefix)

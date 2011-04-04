@@ -90,6 +90,12 @@ window.onload = function() {
             QUnit.equal(tests.variables.defaultparam2({option: null}), "Null");
         });
 
+    QUnit.test("defaultparam3", function() {
+            QUnit.equal(tests.variables.defaultparam3({}), "Hello Michael aged 30");
+            QUnit.equal(tests.variables.defaultparam3({name: "Aengus"}), "Hello Aengus aged 30");
+            QUnit.equal(tests.variables.defaultparam3({name: "Aengus", age: 25}), "Hello Aengus aged 25");
+        });
+
     QUnit.module("if.soy");
 
     // test with option
