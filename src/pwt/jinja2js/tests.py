@@ -258,6 +258,26 @@ Hello, {{ name }}!
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_var12(self):
+        # variables with default values
+        node = self.get_compile_from_string("""{% macro hello(name = 'World') -%}
+Hello {{ name }}!
+{%- endmacro %}
+""")
+        source_code = generateMacro(node, self.env, "var2.html", "var2.html")
+
+        self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb, opt_caller) {
+    var defaults = {name: 'World'};
+    for (var key in defaults) {
+        if (!(key in opt_data)) {
+            opt_data[key] = defaults[key];
+        }
+    }
+    var output = opt_sb || new soy.StringBuilder();
+    output.append('Hello ', opt_data.name, '!');
+    if (!opt_sb) return output.toString();
+}""")
+
     def test_for1(self):
         # test for loop
         node = self.get_compile_from_string("""{% namespace xxx %}

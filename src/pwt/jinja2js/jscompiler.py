@@ -855,6 +855,25 @@ class MacroCodeGenerator(BaseCodeGenerator):
             frame.parameter_prefix,
             frame.parameter_prefix))
         self.writer.indent()
+        if node.defaults:
+            # We have defaults to work with. Loop over all the default keys
+            # and set the value to in
+            self.writer.writeline("var defaults = {")
+            start = True
+            for arg, default in zip(node.args, node.defaults):
+                # get arg value.
+                if not start:
+                    self.write(", ")
+                isparam = self.visit(arg, frame, [])
+                assert isparam == True, "dosn't make sense, having a non parameter parameter"
+                self.writer.write("%s: " % arg.name)
+                isparam = self.visit(default, frame)
+            self.writer.write("};")
+            self.writer.writeline("for (var key in defaults) {")
+            self.writer.writeline("    if (!(key in opt_data)) {")
+            self.writer.writeline("        opt_data[key] = defaults[key];")
+            self.writer.writeline("    }")
+            self.writer.writeline("}")
         self.writer.writeline_startoutput(node, frame)
         self.blockvisit(node.body, frame)
         self.writer.writeline_endoutput(node, frame)

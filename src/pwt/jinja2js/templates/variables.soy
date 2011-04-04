@@ -26,3 +26,11 @@
 {% macro unaryminus1(num) %}{{ -num + 15 }}{% endmacro %}
 {% macro unaryminus2(num) %}{{ +num + 15 }}{% endmacro %}
 {% macro unarynot(bool) %}{{ not bool }}{% endmacro %}
+
+{% macro defaultparam1(name = "World") -%}
+Hello {{ name }}!
+{%- endmacro %}
+
+{% macro defaultparam2(option = None) -%}
+{% if option == None %}Null{% else %}Not null{% endif %}
+{%- endmacro %}

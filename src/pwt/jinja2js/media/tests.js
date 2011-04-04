@@ -79,6 +79,17 @@ window.onload = function() {
             QUnit.equal(tests.variables.unarynot({bool: 0}), "true");
         });
 
+    QUnit.test("defaultparam1", function() {
+            QUnit.equal(tests.variables.defaultparam1({}), "Hello World!");
+            QUnit.equal(tests.variables.defaultparam1({name: "Michael"}), "Hello Michael!");
+        });
+
+    QUnit.test("defaultparam2", function() {
+            QUnit.equal(tests.variables.defaultparam2({}), "Null");
+            QUnit.equal(tests.variables.defaultparam2({option: ""}), "Not null");
+            QUnit.equal(tests.variables.defaultparam2({option: null}), "Null");
+        });
+
     QUnit.module("if.soy");
 
     // test with option

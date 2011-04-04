@@ -4,7 +4,7 @@
 Hello, {{ name | default('World') }}
 {%- endmacro %}
 
-{% macro truncate1(s, length = 10) -%}
+{% macro truncate1(s, length) -%}
 {{ s|truncate(length) }}
 {%- endmacro %}
 
@@ -24,6 +24,6 @@ Hello, {{ name | default('World') }}
 {{ "Hello World"|replace("Hello", "Goodbye") }}
 {%- endmacro %}
 
-{% macro round1(num, precision = 0) -%}
+{% macro round1(num, precision) -%}
 {{ num|round(precision = precision) }}
 {%- endmacro %}
