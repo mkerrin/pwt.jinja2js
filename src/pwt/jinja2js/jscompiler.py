@@ -846,8 +846,6 @@ class MacroCodeGenerator(BaseCodeGenerator):
         frame = self.function_scoping(
             node, frame, children = children,
             parameter_prefix = parameter_prefix)
-        # macros are delayed, they never require output checks
-        frame.require_output_check = False
 
         self.writer.writeline("%s = function(%s_data, %s_sb, %s_caller) {" %(
             name,
