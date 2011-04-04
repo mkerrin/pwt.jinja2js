@@ -512,6 +512,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
                     self.writer.write(")")
                 else:
                     self.visit(item, frame)
+
         if not start:
             self.writer.write_outputappend_end(node, frame)
 
@@ -766,16 +767,22 @@ class MacroCodeGenerator(BaseCodeGenerator):
         self.visit(node.iter, loop_frame)
         self.writer.write(";")
 
-        self.writer.writeline("var %(name)sListLen = %(name)sList.length;" %{"name": node.target.name})
+        self.writer.writeline(
+            "var %(name)sListLen = %(name)sList.length;" %{
+                "name": node.target.name})
         if node.else_:
             self.writer.writeline("if (%sListLen > 0) {" % node.target.name)
             self.writer.indent()
 
-        self.writer.writeline("for (var %(name)sIndex = 0; %(name)sIndex < %(name)sListLen; %(name)sIndex++) {" %{"name": node.target.name})
+        self.writer.writeline(
+            "for (var %(name)sIndex = 0; %(name)sIndex < %(name)sListLen; %(name)sIndex++) {" %{"name": node.target.name})
         self.writer.indent()
 
-        self.writer.writeline("var %(name)sData = %(name)sList[%(name)sIndex];" %{"name": node.target.name})
-        loop_frame.reassigned_names[node.target.name] = "%sData" % node.target.name
+        self.writer.writeline(
+            "var %(name)sData = %(name)sList[%(name)sIndex];" %{
+                "name": node.target.name})
+        loop_frame.reassigned_names[node.target.name] = \
+                                                     "%sData" % node.target.name
         self.blockvisit(node.body, loop_frame)
         self.writer.outdent()
         self.writer.writeline("}")
