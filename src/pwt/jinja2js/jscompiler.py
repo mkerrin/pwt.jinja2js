@@ -857,7 +857,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
         self.writer.indent()
         if node.defaults:
             # We have defaults to work with. Loop over all the default keys
-            # and set the value to in
+            # and set the value in opt_data if it is not already set.
             self.writer.writeline("var defaults = {")
             start = True
             for arg, default in zip(node.args, node.defaults):
