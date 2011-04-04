@@ -265,7 +265,7 @@ class StringBuilder(object):
     def writeline_outputappend(self, node, frame):
         self.writeline("output.append(", node)
 
-    def write_outputadd(self, node, frame):
+    def write_outputappend_add(self, node, frame):
         self.write(", ")
 
     def write_outputappend_end(self, node, frame):
@@ -303,7 +303,7 @@ class Concat(StringBuilder):
     def writeline_outputappend(self, node, frame):
         self.writeline("output += ", node)
 
-    def write_outputadd(self, node, frame):
+    def write_outputappend_add(self, node, frame):
         self.write(" + ")
 
     def write_outputappend_end(self, node, frame):
@@ -475,7 +475,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
                     self.writer.writeline_outputappend(node, frame)
                     start = False
                 else:
-                    self.writer.write_outputadd(node, frame)
+                    self.writer.write_outputappend_add(node, frame)
                 self.writer.write(repr("".join(item)))
             else:
                 # If we are using the string builder then we generate slightly
@@ -494,7 +494,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
                     self.writer.writeline_outputappend(item, frame)
                     start = False
                 else:
-                    self.writer.write_outputadd(item, frame)
+                    self.writer.write_outputappend_add(item, frame)
 
                 # autoescape, safe
                 if isinstance(item, jinja2.nodes.Filter):
@@ -954,7 +954,7 @@ def filter_truncate(generator, node, frame, length):
 def filter_capitalize(generator, node, frame):
     generator.visit(node.node, frame)
     generator.writer.write(".substring(0, 1).toUpperCase()")
-    generator.writer.write_outputadd(node, frame)
+    generator.writer.write_outputappend_add(node, frame)
     generator.visit(node.node, frame)
     generator.writer.write(".substring(1)")
 
