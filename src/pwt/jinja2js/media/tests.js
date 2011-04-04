@@ -228,4 +228,14 @@ window.onload = function() {
     QUnit.test("replace1", function() {
             QUnit.equal(tests.filters.replace1({}), "Goodbye World");
         });
+
+    QUnit.test("round1", function() {
+            QUnit.equal(tests.filters.round1({num: 5.66, precision: 0}), "6");
+            QUnit.equal(tests.filters.round1({num: 5.49, precision: 0}), "5");
+        });
+
+    QUnit.test("round1 - precision", function() {
+            QUnit.equal(tests.filters.round1({num: 5.66, precision: 2}), "5.66");
+            QUnit.equal(tests.filters.round1({num: 5.49, precision: 2}), "5.49");
+        });
 };

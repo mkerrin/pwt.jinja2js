@@ -539,17 +539,24 @@ class MacroCodeGenerator(BaseCodeGenerator):
         else:
             self.fail("Filter does not exist: '%s'" % node.name, node.lineno)
 
-    def visit_Const(self, node, frame):
+    def visit_Const(self, node, frame, dotted_name = None):
         # XXX - need to know the JavaScript ins and out here.
         val = node.value
         if val is None:
-            self.writer.write("null")
+            output = "null"
         elif val is True:
-            self.writer.write("true")
+            output = "true"
         elif val is False:
-            self.writer.write("false")
+            output = "false"
         else:
-            self.writer.write(repr(val))
+            output = repr(val)
+
+        if dotted_name is None:
+            self.writer.write(output)
+        else:
+            dotted_name.append(output)
+
+        return False
 
     def visit_List(self, node, frame):
         self.writer.write("[")
@@ -991,3 +998,30 @@ def filter_replace(generator, node, frame, old, new): #, count = None)
     generator.writer.write(", ")
     generator.visit(new, frame)
     generator.writer.write(")")
+
+
+@register_filter("round")
+def filter_round(generator, node, frame,
+                 precision = jinja2.nodes.Const(0),
+                 method = jinja2.nodes.Const("common")):
+    if not isinstance(method, jinja2.nodes.Const):
+        raise jinja2.compiler.TemplateAssertionError("precision and method arguments to `round` filter need to be constants")
+
+    # get precision
+    precision_value = []
+    isparam = generator.visit(precision, frame, precision_value)
+    precision = ".".join(precision_value)
+    try:
+        precision = 10 ** int(precision)
+    except ValueError:
+        # assume we are a parameter or declared variable and raise to power
+        # of 10
+        precision = "Math.pow(10, %s)" % precision
+
+    generator.writer.write("Math.round(")
+    generator.visit(node.node, frame)
+    if precision > 1:
+        generator.writer.write(" * %s" % precision)
+    generator.writer.write(")")
+    if precision > 1:
+        generator.writer.write(" / %s" % precision)

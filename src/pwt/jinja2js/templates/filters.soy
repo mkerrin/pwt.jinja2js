@@ -23,3 +23,7 @@ Hello, {{ name | default('World') }}
 {% macro replace1() -%}
 {{ "Hello World"|replace("Hello", "Goodbye") }}
 {%- endmacro %}
+
+{% macro round1(num, precision = 0) -%}
+{{ num|round(precision = precision) }}
+{%- endmacro %}

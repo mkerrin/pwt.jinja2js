@@ -1024,6 +1024,50 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_filter_round1(self):
+        node = self.get_compile_from_string("""{% macro round(num) %}{{ num|round }}{% endmacro %}""")
+
+        source_code = generateMacro(node, self.env, "f.html", "f.html")
+
+        self.assertEqual(source_code, """test.round = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(Math.round(opt_data.num));
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_filter_round2(self):
+        node = self.get_compile_from_string("""{% macro round(num) %}{{ num|round(precision = 2) }}{% endmacro %}""")
+
+        source_code = generateMacro(node, self.env, "f.html", "f.html")
+
+        self.assertEqual(source_code, """test.round = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(Math.round(opt_data.num * 100) / 100);
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_filter_round3(self):
+        node = self.get_compile_from_string("""{% macro round(num, prec) %}{{ num|round(precision = prec) }}{% endmacro %}""")
+
+        source_code = generateMacro(node, self.env, "f.html", "f.html")
+
+        self.assertEqual(source_code, """test.round = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(Math.round(opt_data.num * Math.pow(10, opt_data.prec)) / Math.pow(10, opt_data.prec));
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_filter_round4(self):
+        node = self.get_compile_from_string("""{% macro round(num) %}{{ num|round(precision = 0) }}{% endmacro %}""")
+
+        source_code = generateMacro(node, self.env, "f.html", "f.html")
+
+        self.assertEqual(source_code, """test.round = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new soy.StringBuilder();
+    output.append(Math.round(opt_data.num));
+    if (!opt_sb) return output.toString();
+}""")
+
 
 class JSConcatCompilerTemplateTestCase(JSCompilerTestCase):
 
