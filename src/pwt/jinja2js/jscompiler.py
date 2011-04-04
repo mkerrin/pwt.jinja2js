@@ -865,7 +865,8 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 if not start:
                     self.write(", ")
                 isparam = self.visit(arg, frame, [])
-                assert isparam == True, "dosn't make sense, having a non parameter parameter"
+                assert isparam == True, \
+                       "dosn't make sense, having a non parameter parameter"
                 self.writer.write("%s: " % arg.name)
                 isparam = self.visit(default, frame)
             self.writer.write("};")
