@@ -18,6 +18,7 @@ The following filters are supported in pwt.jinja2js:
  * last
  * length
  * replace
+ * round - *method* argument is not supported.
 
 None of the other filters supported by Jinja2 are currently support but that
 might change in the future.
