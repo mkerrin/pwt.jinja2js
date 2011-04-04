@@ -872,7 +872,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
             # XXX - we shouldn't get here
             self.fail("Unknown writer class", node.lineno)
 
-        self.visit_Call(node.call, frame, forward_caller = "func_caller")
+        self.visit(node.call, frame, forward_caller = "func_caller")
         self.writer.write(";")
 
     def signature(self, node, frame):
