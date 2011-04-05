@@ -553,6 +553,31 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_for13(self):
+        # XXX - test for loop for conflicting variables. Here we have a
+        # namespaced variable that gets required but conflicts with the
+        # variable inside the loop that we created. If this is a problem
+        # I will fix it, but it probable won't
+        node = self.get_compile_from_string("""{% namespace test %}{% macro forinlist(jobs) -%}
+{% for job in jobs %}{{ job.name }} does {{ jobData.name }}{% endfor %}
+{%- endmacro %}""")
+
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+
+        self.assertEqual(source_code, """goog.provide('test');
+goog.require('soy');
+goog.require('jobData');
+test.forinlist = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new soy.StringBuilder();
+    var jobList = opt_data.jobs;
+    var jobListLen = jobList.length;
+    for (var jobIndex = 0; jobIndex < jobListLen; jobIndex++) {
+        var jobData = jobList[jobIndex];
+        output.append(jobData.name, ' does ', jobData.name);
+    }
+    if (!opt_sb) return output.toString();
+}""")
+
     def test_if1(self):
         # test if
         node = self.get_compile_from_string("""{% macro testif(option) %}{% if option %}{{ option }}{% endif %}{% endmacro %}""")
@@ -1244,6 +1269,29 @@ testns.consts.hello = function(opt_data, opt_sb, opt_caller) {
         self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb, opt_caller) {
     var output = '';
     output += '\\n' + opt_data.name + '\\n';
+    return output;
+}""")
+
+    def test_for13(self):
+        # XXX - test for loop for conflicting variables. Here we have a
+        # namespaced variable that gets required but conflicts with the
+        # variable inside the loop that we created. If this is a problem
+        # I will fix it, but it probable won't
+        node = self.get_compile_from_string("""{% namespace test %}{% macro forinlist(jobs) -%}
+{% for job in jobs %}{{ job.name }} does {{ jobData.name }}{% endfor %}
+{%- endmacro %}""")
+
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+
+        self.assertEqual(source_code, """if (typeof test == 'undefined') { var test = {}; }
+test.forinlist = function(opt_data, opt_sb, opt_caller) {
+    var output = '';
+    var jobList = opt_data.jobs;
+    var jobListLen = jobList.length;
+    for (var jobIndex = 0; jobIndex < jobListLen; jobIndex++) {
+        var jobData = jobList[jobIndex];
+        output += jobData.name + ' does ' + jobData.name;
+    }
     return output;
 }""")
 
