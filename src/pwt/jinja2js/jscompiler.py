@@ -245,22 +245,24 @@ class StringBuilder(object):
     # special methods that we can override to comform to different code styles
 
     def writeline_provides(self, node, frame, namespace):
-        self.writeline("goog.provide('" + namespace.encode(frame.eval_ctx.encoding) + "');")
+        self.writeline("goog.provide('" + namespace + "');")
 
     def writeline_require(self, node, frame, namespace):
         self.newline(node)
         self.write_require(node, frame, namespace)
 
     def write_require(self, node, frame, namespace):
-        self.write("goog.require('%s');" % namespace.encode(frame.eval_ctx.encoding))
+        self.write("goog.require('%s');" % namespace)
 
     # output formating
 
     def writeline_startoutput(self, node, frame):
-        self.writeline("var output = %s_sb || new soy.StringBuilder();" % frame.parameter_prefix)
+        self.writeline("var output = %s_sb || new soy.StringBuilder();" %(
+            frame.parameter_prefix))
 
     def writeline_endoutput(self, node, frame):
-        self.writeline("if (!%s_sb) return output.toString();" % frame.parameter_prefix)
+        self.writeline(
+            "if (!%s_sb) return output.toString();" % frame.parameter_prefix)
 
     def writeline_outputappend(self, node, frame):
         self.writeline("output.append(", node)
@@ -278,7 +280,7 @@ class Concat(StringBuilder):
         super(Concat, self).__init__()
 
     def writeline_provides(self, node, frame, namespace):
-        parts = namespace.encode(frame.eval_ctx.encoding).split(".")
+        parts = namespace.split(".")
         for idx, part in enumerate(parts):
             ns = ".".join(parts[:idx + 1])
             self.writeline("if (typeof %s == 'undefined') { %s%s = {}; }" %(
@@ -362,8 +364,8 @@ class CodeGenerator(BaseCodeGenerator):
             raise ValueError("JSCompiler doesn't support blocks")
 
         eval_ctx = jinja2.nodes.EvalContext(self.environment, self.name)
-        eval_ctx.namespace = namespace
         eval_ctx.encoding = "utf-8"
+        eval_ctx.namespace = namespace.encode(eval_ctx.encoding)
 
         # process the root
         frame = JSFrame(self.environment, eval_ctx)
@@ -390,7 +392,8 @@ class CodeGenerator(BaseCodeGenerator):
         generator.visit(node, frame)
 
         for requirement in generator.requirements:
-            self.writer.writeline_require(node, frame, requirement)
+            self.writer.writeline_require(
+                node, frame, requirement.encode(frame.eval_ctx.encoding))
         if generator.requirements:
             self.writer.newline(node) # keep whitespace ok
 
@@ -638,15 +641,17 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 self.writer.write("%sIndex + 1" % frame.forloop_buffer)
             elif node.attr == "revindex0":
                 self.writer.write("%sListLen - %sIndex" %(frame.forloop_buffer,
-                                                   frame.forloop_buffer))
+                                                          frame.forloop_buffer))
             elif node.attr == "revindex":
-                self.writer.write("%sListLen - %sIndex - 1" %(frame.forloop_buffer,
-                                                       frame.forloop_buffer))
+                self.writer.write(
+                    "%sListLen - %sIndex - 1" %(frame.forloop_buffer,
+                                                frame.forloop_buffer))
             elif node.attr == "first":
                 self.writer.write("%sIndex == 0" % frame.forloop_buffer)
             elif node.attr == "last":
-                self.writer.write("%sIndex == (%sListLen - 1)" %(frame.forloop_buffer,
-                                                          frame.forloop_buffer))
+                self.writer.write(
+                    "%sIndex == (%sListLen - 1)" %(frame.forloop_buffer,
+                                                   frame.forloop_buffer))
             elif node.attr == "length":
                 self.writer.write("%sListLen" % frame.forloop_buffer)
             else:
@@ -868,11 +873,14 @@ class MacroCodeGenerator(BaseCodeGenerator):
                        "dosn't make sense, having a non parameter parameter"
                 self.writer.write("%s: " % arg.name)
                 isparam = self.visit(default, frame)
+
                 start = False
             self.writer.write("};")
             self.writer.writeline("for (var key in defaults) {")
-            self.writer.writeline("    if (!(key in %s_data)) {" % frame.parameter_prefix)
-            self.writer.writeline("        %s_data[key] = defaults[key];" % frame.parameter_prefix)
+            self.writer.writeline(
+                "    if (!(key in %s_data)) {" % frame.parameter_prefix)
+            self.writer.writeline(
+                "        %s_data[key] = defaults[key];" % frame.parameter_prefix)
             self.writer.writeline("    }")
             self.writer.writeline("}")
         self.writer.writeline_startoutput(node, frame)
