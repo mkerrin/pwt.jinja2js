@@ -234,6 +234,10 @@ window.onload = function() {
             QUnit.equal(tests.autoescaped.var1({name: "<b>Michael</b>"}), "Hello &lt;b&gt;Michael&lt;/b&gt;");
         });
 
+    QUnit.test("autoescape safe", function() {
+            QUnit.equal(tests.autoescaped.var2({name: "<b>Michael</b>"}), "Hello <b>Michael</b>");
+        });
+
     QUnit.module("filters");
 
     QUnit.test("default1", function() {

@@ -1,3 +1,5 @@
 {% namespace tests.autoescaped %}
 
 {% macro var1(name) %}Hello {{ name }}{% endmacro %}
+
+{% macro var2(name) %}Hello {{ name|safe }}{% endmacro %}
