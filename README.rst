@@ -59,10 +59,15 @@ By slipping a switch we can produce Java Script that takes advantage of
         if (!opt_sb) return output.toString();
      }
 
-.. _Closure Library: http://code.google.com/closure/library/
+More user documentation is available on the `pwt.jinja2js PyPI package page`_.
+The `Jinja2'_ site is also available to learn more about the Jinja2 syntax.
 
-Install and test
-================
+.. _Closure Library: http://code.google.com/closure/library/
+.. _pwt.jinja2js PyPI package page: http://packages.python.org/pwt.jinja2js/
+.. _Jinja2: http://jinja.pocoo.org/docs/
+
+Devloper information
+====================
 
 In order to get started with this project and to see what it can do:
 
