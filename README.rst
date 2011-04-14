@@ -60,7 +60,7 @@ By slipping a switch we can produce Java Script that takes advantage of
      }
 
 More user documentation is available on the `pwt.jinja2js PyPI package page`_.
-The `Jinja2'_ site is also available to learn more about the Jinja2 syntax.
+The `Jinja2`_ site is also available to learn more about the Jinja2 syntax.
 
 .. _Closure Library: http://code.google.com/closure/library/
 .. _pwt.jinja2js PyPI package page: http://packages.python.org/pwt.jinja2js/
