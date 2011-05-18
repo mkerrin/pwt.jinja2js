@@ -882,7 +882,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new soy.StringBuilder();
-    xxx.ns1.hello({name: {'first': 'Michael'}}, output);
+    xxx.ns1.hello({name: {first: 'Michael'}}, output);
     if (!opt_sb) return output.toString();
 }""")
 

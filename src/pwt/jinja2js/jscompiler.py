@@ -575,7 +575,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
             if idx:
                 self.writer.write(", ")
 
-            self.visit(item.key, frame)
+            # item.key should be a constant string. Otherwise how do you
+            # get to output a dictionary with a variable key string?
+            self.writer.write(item.key.value)
             self.writer.write(": ")
             self.visit(item.value, frame)
 
