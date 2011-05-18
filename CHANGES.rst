@@ -2,6 +2,11 @@
 CHANGES
 =======
 
+0.6.1
+-----
+
+- Compile down the JavaScript to see if it works.
+
 0.6
 ---
 
