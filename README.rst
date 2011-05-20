@@ -71,7 +71,7 @@ Devloper information
 
 In order to get started with this project and to see what it can do:
 
- * git clone git@github.com:mkerrin/pwt.jinja2js.git
+ * git clone git://github.com/mkerrin/pwt.jinja2js.git
  * cd pwt.jinja2js
  * python bootstrap
  * ./bin/buildout
