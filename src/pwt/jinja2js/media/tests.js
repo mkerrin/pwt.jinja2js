@@ -1,6 +1,10 @@
-if (typeof goog != 'undefined') {
-    goog.provide("tests"); // for compilation with closure builder
+goog.provide("runtests");
 
+// We don't want to require the test templates when we are trying to test
+// the concat version. So set a flag when we manually include all the
+// test templates
+if (typeof DONT_REQUIRE_TEST_TEMPLATES != 'undefined' &&
+        DONT_REQUIRE_TEST_TEMPLATES) {
     goog.require("tests.variables");
     goog.require("tests.iftest");
     goog.require("tests.fortest");
@@ -8,10 +12,10 @@ if (typeof goog != 'undefined') {
     goog.require("tests.importtest");
     goog.require("tests.autoescaped");
     goog.require("tests.filters");
-
-    goog.require("goog.testing.TestCase");
-    goog.require("goog.testing.TestRunner");
 }
+
+goog.require("goog.testing.TestCase");
+goog.require("goog.testing.TestRunner");
 
 window.onload = function() {
     var testcase = new goog.testing.TestCase("variables.soy");

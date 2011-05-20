@@ -1,5 +1,12 @@
 <html>
   <head>
+    <script type="text/javascript">
+      CLOSURE_NO_DEPS = true;
+      CLOSURE_BASE_PATH = "http://localhost:8000";
+    </script>
+    <script type="text/javascript" src="/closure/closure/goog/base.js"></script>
+    <script type="text/javascript" src="{{ deps_js }}"></script>
+
     <script type="text/javascript" src="/media/soyutils.js"></script>
 
     <script type="text/javascript" src="/concat_soy/variables.soy"></script>
@@ -11,11 +18,8 @@
     <script type="text/javascript" src="/concat_soy/autoescaped.soy"></script>
     <script type="text/javascript" src="/concat_soy/filters.soy"></script>
 
-    <script type="text/javascript" src="/closure/closure/goog/testing/asserts.js"></script>
-    <script type="text/javascript" src="/closure/closure/goog/testing/testcase.js"></script>
-    <script type="text/javascript" src="/closure/closure/goog/testing/testrunner.js"></script>
-
     <script type="text/javascript" src="/media/tests.js"></script>
+
   </head>
   <body></body>
 </html>
