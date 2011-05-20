@@ -2,10 +2,13 @@
 CHANGES
 =======
 
-0.6.1
+0.7.0
 -----
 
-- Compile down the JavaScript to see if it works.
+- Compile the Java Script with closure compiler and get the tests to pass.
+
+- Error checks and more consistency when passing dictionaries to an other
+  Java Script template.
 
 0.6
 ---
