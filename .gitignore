@@ -4,6 +4,7 @@ develop-eggs
 eggs
 parts
 dist
+src/pwt.jinja2js.egg-info/
 
 etc/settings.ini
 src/pwt/jinja2js/media/deps.js
