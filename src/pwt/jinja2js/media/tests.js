@@ -17,6 +17,9 @@ if (typeof DONT_REQUIRE_TEST_TEMPLATES != 'undefined' &&
 goog.require("goog.testing.TestCase");
 goog.require("goog.testing.TestRunner");
 
+// Manually setup the testcase and tests so that we can compile the tests
+// with the closure compiler and test the output from the templates when we
+// are compiled to a single file.
 window.onload = function() {
     var testcase = new goog.testing.TestCase("variables.soy");
 
