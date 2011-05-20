@@ -579,6 +579,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
             # get to output a dictionary with a variable key string?
             # So it is either a `Const` or `Name` node. 
             if isinstance(item.key, jinja2.nodes.Const):
+                if "." in item.key.value:
+                    raise jinja2.compiler.TemplateAssertionError(
+                        "My templates get confused when you try and create a dictionary with a key with a dot in it.", item.key.lineno, self.name, self.filename)
                 self.writer.write(item.key.value)
             elif isinstance(item.key, jinja2.nodes.Name):
                 self.writer.write(item.key.name)

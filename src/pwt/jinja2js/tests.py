@@ -917,37 +917,17 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 }""")
 
-    def XXXtest_call_macro10(self):
+    def test_call_macro10(self):
         # call macro with parameter sub, key constains a dot.
-        # XXX - this is wrong
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
 {% macro hello(name) -%}
 Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
 
 {% macro testcall() %}{{ xxx.ns1.hello(name = {"first.name": "Michael"}) }}{% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
-
-        self.assertEqual(source_code, """goog.provide('xxx.ns1');
-goog.require('soy');
-
-xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
-    output.append('Hello, ');
-    if (opt_data.name) {
-        output.append(opt_data.name.first);
-    } else {
-        output.append('world');
-    }
-    output.append('!');
-    if (!opt_sb) return output.toString();
-}
-
-xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
-    xxx.ns1.hello({name: {first: 'Michael'}}, output);
-    if (!opt_sb) return output.toString();
-}""")
+        self.assertRaises(
+            jinja2.compiler.TemplateAssertionError,
+            jscompiler.generate, node, self.env, "f.html", "f.html")
 
     def test_call_macro11(self):
         # call macro with parameter sub, with invalid key
