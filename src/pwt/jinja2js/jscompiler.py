@@ -577,7 +577,16 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
             # item.key should be a constant string. Otherwise how do you
             # get to output a dictionary with a variable key string?
-            self.writer.write(item.key.value)
+            # So it is either a `Const` or `Name` node. 
+            if isinstance(item.key, jinja2.nodes.Const):
+                self.writer.write(item.key.value)
+            elif isinstance(item.key, jinja2.nodes.Name):
+                self.writer.write(item.key.name)
+            else:
+                raise jinja2.compiler.TemplateAssertionError(
+                    "Dictionary keys must be constant.",
+                    item.key.lineno, self.name, self.filename)
+
             self.writer.write(": ")
             self.visit(item.value, frame)
 
