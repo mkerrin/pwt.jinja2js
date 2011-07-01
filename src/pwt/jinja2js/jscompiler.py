@@ -257,7 +257,7 @@ class StringBuilder(object):
     # output formating
 
     def writeline_startoutput(self, node, frame):
-        self.writeline("var output = %s_sb || new soy.StringBuilder();" %(
+        self.writeline("var output = %s_sb || new goog.string.StringBuffer();" %(
             frame.parameter_prefix))
 
     def writeline_endoutput(self, node, frame):
@@ -506,13 +506,13 @@ class MacroCodeGenerator(BaseCodeGenerator):
                         continue
 
                 if frame.eval_ctx.autoescape:
-                    self.writer.write("soy.$$escapeHtml(")
+                    self.writer.write("goog.string.htmlEscape(String(")
                     escaped_frame = frame.soft()
                     escaped_frame.escaped = True
 
                     self.visit(item, escaped_frame)
 
-                    self.writer.write(")")
+                    self.writer.write("))")
                 else:
                     self.visit(item, frame)
 
@@ -526,11 +526,11 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 raise Exception("No kwargs")
 
             if not frame.escaped:
-                self.writer.write("soy.$$escapeHtml(")
+                self.writer.write("goog.string.htmlEscape(String(")
                 frame = frame.soft()
                 frame.escaped = True
                 self.visit(node.node, frame)
-                self.writer.write(")")
+                self.writer.write("))")
             else:
                 self.visit(node.node, frame)
         elif node.name in FILTERS:

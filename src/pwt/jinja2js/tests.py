@@ -55,7 +55,7 @@ Hello, world!
 
         self.assertEqual(source_code, """goog.require('soy');
 hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, world!\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -67,7 +67,7 @@ Hello, world!
         source_code = generateMacro(node, self.env, "const.html", "const.html")
 
         self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, world!\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -97,7 +97,7 @@ goog.require('soy');
 
 goog.require('goog.color.names');
 test.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', goog.color.names.aqua, '\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -110,7 +110,7 @@ test.hello = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "var1.html", "var1.html")
 
         self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', opt_data.name, '\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -123,7 +123,7 @@ Hello, {{ name }}!
         source_code = generateMacro(node, self.env, "var2.html", "var2.html")
 
         self.assertEqual(source_code, """test.helloName = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, ', opt_data.name, '!\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -137,7 +137,7 @@ Hello, {{ name }}!
         source_code = generateMacro(node, self.env, "var2.html", "var2.html")
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', (opt_data.num + 200), '\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -151,7 +151,7 @@ Hello, {{ name }}!
         source_code = generateMacro(node, self.env, "var2.html", "var2.html")
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', (opt_data.num + opt_data.step), '\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -165,7 +165,7 @@ Hello, {{ name }}!
         source_code = generateMacro(node, self.env, "var2.html", "var2.html")
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', Math.pow((opt_data.num - opt_data.step), 2), '\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -179,7 +179,7 @@ Hello, {{ name }}!
         source_code = generateMacro(node, self.env, "var2.html", "var2.html")
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', Math.floor((opt_data.num / opt_data.step)), '\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -193,7 +193,7 @@ Hello, {{ name }}!
         source_code = generateMacro(node, self.env, "var2.html", "var2.html")
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', (opt_data.num - Math.pow(opt_data.step, 2)), '\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -205,8 +205,8 @@ Hello, {{ name }}!
         source_code = generateMacro(node, self.env, "var2.html", "var2.html", autoescape = True)
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
-    output.append(soy.$$escapeHtml((opt_data.num - Math.pow(opt_data.step, 2))));
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append(goog.string.htmlEscape(String((opt_data.num - Math.pow(opt_data.step, 2)))));
     if (!opt_sb) return output.toString();
 }""")
 
@@ -217,8 +217,8 @@ Hello, {{ name }}!
         source_code = generateMacro(node, self.env, "var2.html", "var2.html", autoescape = True)
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
-    output.append(soy.$$escapeHtml((opt_data.num - Math.pow(opt_data.step, 2))));
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append(goog.string.htmlEscape(String((opt_data.num - Math.pow(opt_data.step, 2)))));
     if (!opt_sb) return output.toString();
 }""")
 
@@ -229,8 +229,8 @@ Hello, {{ name }}!
         source_code = generateMacro(node, self.env, "var2.html", "var2.html", autoescape = True)
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
-    output.append(soy.$$escapeHtml(((-opt_data.num) + 20)));
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append(goog.string.htmlEscape(String(((-opt_data.num) + 20))));
     if (!opt_sb) return output.toString();
 }""")
 
@@ -241,8 +241,8 @@ Hello, {{ name }}!
         source_code = generateMacro(node, self.env, "var2.html", "var2.html", autoescape = True)
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
-    output.append(soy.$$escapeHtml(((+opt_data.num) + 20)));
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append(goog.string.htmlEscape(String(((+opt_data.num) + 20))));
     if (!opt_sb) return output.toString();
 }""")
 
@@ -253,8 +253,8 @@ Hello, {{ name }}!
         source_code = generateMacro(node, self.env, "var2.html", "var2.html", autoescape = True)
 
         self.assertEqual(source_code, """test.add = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
-    output.append(soy.$$escapeHtml((!opt_data.bool)));
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append(goog.string.htmlEscape(String((!opt_data.bool))));
     if (!opt_sb) return output.toString();
 }""")
 
@@ -273,7 +273,7 @@ Hello {{ name }}!
             opt_data[key] = defaults[key];
         }
     }
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('Hello ', opt_data.name, '!');
     if (!opt_sb) return output.toString();
 }""")
@@ -293,7 +293,7 @@ Hello {{ name }}!
             opt_data[key] = defaults[key];
         }
     }
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append(opt_data.name, ' is ', opt_data.age);
     if (!opt_sb) return output.toString();
 }""")
@@ -313,7 +313,7 @@ Hello {{ name }}!
             opt_data[key] = defaults[key];
         }
     }
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append(opt_data.name, ' is ', opt_data.age);
     if (!opt_sb) return output.toString();
 }""")
@@ -335,7 +335,7 @@ Hello {{ name }}!
 goog.require('soy');
 
 xxx.fortest = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n');
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
@@ -357,7 +357,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
     for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
@@ -373,7 +373,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
     for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
@@ -389,7 +389,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
     for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
@@ -405,7 +405,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
     for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
@@ -428,7 +428,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
     for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
@@ -444,7 +444,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     var itemList = opt_data.data;
     var itemListLen = itemList.length;
     for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
@@ -467,7 +467,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n');
     var jobList = opt_data.jobs;
     var jobListLen = jobList.length;
@@ -497,7 +497,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """test.forinlist = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n');
     var jobList = [1, 2, 3];
     var jobListLen = jobList.length;
@@ -520,7 +520,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         self.assertEqual(source_code, """goog.provide('test');
 goog.require('soy');
 test.forinlist = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n');
     var jobList = opt_data.jobs;
     var jobListLen = jobList.length;
@@ -543,7 +543,7 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
         self.assertEqual(source_code, """goog.provide('test');
 goog.require('soy');
 test.forinlist = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     var jobList = opt_data.jobs;
     var jobListLen = jobList.length;
     for (var jobIndex = 0; jobIndex < jobListLen; jobIndex++) {
@@ -568,7 +568,7 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
 goog.require('soy');
 goog.require('jobData');
 test.forinlist = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     var jobList = opt_data.jobs;
     var jobListLen = jobList.length;
     for (var jobIndex = 0; jobIndex < jobListLen; jobIndex++) {
@@ -585,7 +585,7 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "if.html", "if.html")
 
         self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     if (opt_data.option) {
         output.append(opt_data.option);
     }
@@ -606,7 +606,7 @@ No option.
         source_code = generateMacro(node, self.env, "if.html", "if.html")
 
         self.assertEqual(source_code, """test.iftest = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n');
     if (opt_data.option) {
         output.append('\\nOption set.\\n');
@@ -624,7 +624,7 @@ No option.
         source_code = generateMacro(node, self.env, "if.html", "if.html")
 
         self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     if (opt_data.num == 0) {
         output.append(opt_data.num);
     }
@@ -638,7 +638,7 @@ No option.
         source_code = generateMacro(node, self.env, "if.html", "if.html")
 
         self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     if ((opt_data.num != 0 && opt_data.num == 2)) {
         output.append(opt_data.num);
     }
@@ -652,7 +652,7 @@ No option.
         source_code = generateMacro(node, self.env, "if.html", "if.html")
 
         self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     if ((((opt_data.num > 0 && opt_data.num >= 1) && opt_data.num < 2) && opt_data.num <= 3)) {
         output.append(opt_data.num);
     }
@@ -682,7 +682,7 @@ No option.
         source_code = generateMacro(node, self.env, "if.html", "if.html")
 
         self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     if ((opt_data.num + 1) == 2) {
         output.append(opt_data.num);
     }
@@ -703,7 +703,7 @@ No option.
 goog.require('soy');
 
 xxx.testif = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     if (opt_data.option) {
         output.append(opt_data.option);
     }
@@ -711,7 +711,7 @@ xxx.testif = function(opt_data, opt_sb, opt_caller) {
 }
 
 xxx.testcall = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     xxx.testif({}, output);
     if (!opt_sb) return output.toString();
 }""")
@@ -731,7 +731,7 @@ xxx.testcall = function(opt_data, opt_sb, opt_caller) {
 goog.require('soy');
 
 xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     if (opt_data.option) {
         output.append(opt_data.option);
     }
@@ -739,7 +739,7 @@ xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
 }
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     xxx.ns1.testif({}, output);
     if (!opt_sb) return output.toString();
 }""")
@@ -758,7 +758,7 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
 goog.require('soy');
 
 xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     if (opt_data.option) {
         output.append(opt_data.option);
     }
@@ -766,7 +766,7 @@ xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
 }
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     xxx.ns1.testif({option: true}, output);
     if (!opt_sb) return output.toString();
 }""")
@@ -785,7 +785,7 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
 goog.require('soy');
 
 xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     if (opt_data.option) {
         output.append(opt_data.option);
     }
@@ -793,7 +793,7 @@ xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
 }
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('Hello, ');
     xxx.ns1.testif({option: true}, output);
     output.append('!');
@@ -838,7 +838,7 @@ Hello, {% if name %}{{ name }}{% else %}world{% endif %}!{% endmacro %}
 goog.require('soy');
 
 xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('Hello, ');
     if (opt_data.name) {
         output.append(opt_data.name);
@@ -850,7 +850,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
 }
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     xxx.ns1.hello({name: 'Michael'}, output);
     if (!opt_sb) return output.toString();
 }""")
@@ -869,7 +869,7 @@ Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
 goog.require('soy');
 
 xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('Hello, ');
     if (opt_data.name) {
         output.append(opt_data.name.first);
@@ -881,7 +881,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
 }
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     xxx.ns1.hello({name: {first: 'Michael'}}, output);
     if (!opt_sb) return output.toString();
 }""")
@@ -900,7 +900,7 @@ Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
 goog.require('soy');
 
 xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('Hello, ');
     if (opt_data.name) {
         output.append(opt_data.name.first);
@@ -912,7 +912,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
 }
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     xxx.ns1.hello({name: {first: 'Michael'}}, output);
     if (!opt_sb) return output.toString();
 }""")
@@ -960,7 +960,7 @@ Hello {{ name }}!
 goog.require('soy');
 
 tests.render_dialog = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('<div class="type">');
     opt_caller({}, output);
     output.append('</div>');
@@ -968,9 +968,9 @@ tests.render_dialog = function(opt_data, opt_sb, opt_caller) {
 }
 
 tests.render = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     func_caller = function(func_data, func_sb, func_caller) {
-        var output = func_sb || new soy.StringBuilder();
+        var output = func_sb || new goog.string.StringBuffer();
         output.append('Hello ', opt_data.name, '!');
         if (!func_sb) return output.toString();
     }
@@ -998,7 +998,7 @@ Hello, {{ user }}!
 
         self.assertEqual(source_code, """goog.require('soy');
 list_users = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('<ul>\\n');
     var userList = opt_data.users;
     var userListLen = userList.length;
@@ -1013,9 +1013,9 @@ list_users = function(opt_data, opt_sb, opt_caller) {
 }
 
 users = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     func_caller = function(func_data, func_sb, func_caller) {
-        var output = func_sb || new soy.StringBuilder();
+        var output = func_sb || new goog.string.StringBuffer();
         output.append('Hello, ', func_data.user, '!');
         if (!func_sb) return output.toString();
     }
@@ -1046,7 +1046,7 @@ Goodbye, {{ user }} from {{ name }}!
 
         self.assertEqual(source_code, """goog.require('soy');
 list_users = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('<ul>\\n');
     var userList = opt_data.users;
     var userListLen = userList.length;
@@ -1061,16 +1061,16 @@ list_users = function(opt_data, opt_sb, opt_caller) {
 }
 
 users = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     func_caller = function(func_data, func_sb, func_caller) {
-        var output = func_sb || new soy.StringBuilder();
+        var output = func_sb || new goog.string.StringBuffer();
         output.append('Hello, ', func_data.user, '!');
         if (!func_sb) return output.toString();
     }
     list_users({users: opt_data.users}, output, func_caller);
     output.append('\\n');
     func_caller = function(func_data, func_sb, func_caller) {
-        var output = func_sb || new soy.StringBuilder();
+        var output = func_sb || new goog.string.StringBuffer();
         output.append('Goodbye, ', func_data.user, ' from ', opt_data.name, '!');
         if (!func_sb) return output.toString();
     }
@@ -1099,7 +1099,7 @@ Hello, {{ user }}!
 
         self.assertEqual(source_code, """goog.require('soy');
 list_users = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('<ul>\\n');
     var userList = opt_data.users;
     var userListLen = userList.length;
@@ -1114,7 +1114,7 @@ list_users = function(opt_data, opt_sb, opt_caller) {
 }
 
 users = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     func_caller = function(func_data, func_sb, func_caller) {
         var defaults = {user: 'Anonymous'};
         for (var key in defaults) {
@@ -1122,7 +1122,7 @@ users = function(opt_data, opt_sb, opt_caller) {
                 func_data[key] = defaults[key];
             }
         }
-        var output = func_sb || new soy.StringBuilder();
+        var output = func_sb || new goog.string.StringBuffer();
         output.append('Hello, ', func_data.user, '!');
         if (!func_sb) return output.toString();
     }
@@ -1144,7 +1144,7 @@ goog.require('soy');
 goog.require('test.ns1');
 
 xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     test.ns1.input({name: 'test'}, output);
     if (!opt_sb) return output.toString();
 }""")
@@ -1162,8 +1162,8 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "filter.html", "filter.html")
 
         self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
-    output.append(soy.$$escapeHtml(opt_data.data));
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append(goog.string.htmlEscape(String(opt_data.data)));
     if (!opt_sb) return output.toString();
 }""")
 
@@ -1174,8 +1174,8 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "filter.html", "filter.html", autoescape = True)
 
         self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
-    output.append(soy.$$escapeHtml(opt_data.data));
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append(goog.string.htmlEscape(String(opt_data.data)));
     if (!opt_sb) return output.toString();
 }""")
 
@@ -1186,7 +1186,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "filter.html", "filter.html", autoescape = True)
 
         self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append(opt_data.data);
     if (!opt_sb) return output.toString();
 }""")
@@ -1197,7 +1197,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append((opt_data.name ? opt_data.name : 'World'));
     if (!opt_sb) return output.toString();
 }""")
@@ -1209,7 +1209,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append((opt_data.name ? opt_data.name : 'World'));
     if (!opt_sb) return output.toString();
 }""")
@@ -1220,7 +1220,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """test.trunc = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append(opt_data.s.substring(0, 280));
     if (!opt_sb) return output.toString();
 }""")
@@ -1232,7 +1232,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """test.trunc = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append(opt_data.s.substring(0, 1).toUpperCase(), opt_data.s.substring(1));
     if (!opt_sb) return output.toString();
 }""")
@@ -1243,7 +1243,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """test.round = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append(Math.round(opt_data.num));
     if (!opt_sb) return output.toString();
 }""")
@@ -1254,7 +1254,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """test.round = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append(Math.round(opt_data.num * 100) / 100);
     if (!opt_sb) return output.toString();
 }""")
@@ -1265,7 +1265,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """test.round = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append(Math.round(opt_data.num * Math.pow(10, opt_data.prec)) / Math.pow(10, opt_data.prec));
     if (!opt_sb) return output.toString();
 }""")
@@ -1276,7 +1276,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
         source_code = generateMacro(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """test.round = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append(Math.round(opt_data.num));
     if (!opt_sb) return output.toString();
 }""")
@@ -1470,7 +1470,7 @@ Hello, world!
 * This prints out hello world!
 */
 hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, world!\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -1490,7 +1490,7 @@ Hello, {{ name.firstname }}!
  * This prints out hello world!
  */
 hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, ', opt_data.name.firstname, '!\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -1516,7 +1516,7 @@ goog.require('test.ns1');
  * This prints out hello world!
  */
 hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, ', opt_data.name.firstname, '!\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -1549,7 +1549,7 @@ goog.require('test.ns1');
  * This prints out hello world!
  */
 hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, ', opt_data.name.firstname, '!\\n');
     if (!opt_sb) return output.toString();
 }""")
@@ -1641,7 +1641,7 @@ goog.require('soy');
 
 
 example.hello = function(opt_data, opt_sb, opt_caller) {
-    var output = opt_sb || new soy.StringBuilder();
+    var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, ', opt_data.name, '!\\n');
     if (!opt_sb) return output.toString();
 }""")
