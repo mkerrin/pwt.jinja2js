@@ -53,7 +53,8 @@ Hello, world!
 {% endmacro %}""")
         source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
 
-        self.assertEqual(source_code, """goog.require('soy');
+        self.assertEqual(source_code, """goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, world!\\n');
@@ -92,7 +93,8 @@ Hello, world!
         source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.provide('test');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 
 
 goog.require('goog.color.names');
@@ -332,7 +334,8 @@ Hello {{ name }}!
         source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 
 xxx.fortest = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -518,7 +521,8 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('test');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 test.forinlist = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n');
@@ -541,7 +545,8 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
         source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('test');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 test.forinlist = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     var jobList = opt_data.jobs;
@@ -565,7 +570,8 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
         source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('test');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 goog.require('jobData');
 test.forinlist = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -700,7 +706,8 @@ No option.
         source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 
 xxx.testif = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -728,7 +735,8 @@ xxx.testcall = function(opt_data, opt_sb, opt_caller) {
         source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 
 xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -755,7 +763,8 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
         source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 
 xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -782,7 +791,8 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
         source_code = jscompiler.generate(node, self.env, ".html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 
 xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -835,7 +845,8 @@ Hello, {% if name %}{{ name }}{% else %}world{% endif %}!{% endmacro %}
             node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 
 xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -866,7 +877,8 @@ Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
         source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 
 xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -897,7 +909,8 @@ Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
         source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 
 xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -957,7 +970,8 @@ Hello {{ name }}!
         source_code = jscompiler.generate(node, self.env, "cb.html", "cb.html")
 
         self.assertEqual(source_code, """goog.provide('tests');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 
 tests.render_dialog = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -996,7 +1010,8 @@ Hello, {{ user }}!
 
         source_code = jscompiler.generate(node, self.env, "cb.html", "cb.html")
 
-        self.assertEqual(source_code, """goog.require('soy');
+        self.assertEqual(source_code, """goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 list_users = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('<ul>\\n');
@@ -1044,7 +1059,8 @@ Goodbye, {{ user }} from {{ name }}!
 
         source_code = jscompiler.generate(node, self.env, "cb.html", "cb.html")
 
-        self.assertEqual(source_code, """goog.require('soy');
+        self.assertEqual(source_code, """goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 list_users = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('<ul>\\n');
@@ -1097,7 +1113,8 @@ Hello, {{ user }}!
 
         source_code = jscompiler.generate(node, self.env, "cb.html", "cb.html")
 
-        self.assertEqual(source_code, """goog.require('soy');
+        self.assertEqual(source_code, """goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 list_users = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('<ul>\\n');
@@ -1139,7 +1156,8 @@ users = function(opt_data, opt_sb, opt_caller) {
         source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 
 goog.require('test.ns1');
 
@@ -1465,7 +1483,8 @@ Hello, world!
 
         source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
 
-        self.assertEqual(source_code, """goog.require('soy');
+        self.assertEqual(source_code, """goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 /**
 * This prints out hello world!
 */
@@ -1485,7 +1504,8 @@ Hello, {{ name.firstname }}!
 
         source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
 
-        self.assertEqual(source_code, """goog.require('soy');
+        self.assertEqual(source_code, """goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 /**
  * This prints out hello world!
  */
@@ -1508,7 +1528,8 @@ Hello, {{ name.firstname }}!
 
         source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
 
-        self.assertEqual(source_code, """goog.require('soy');
+        self.assertEqual(source_code, """goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 // ok
 goog.require('test.ns1');
 // ok 2
@@ -1538,7 +1559,8 @@ Hello, {{ name.firstname }}!
 
         source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
 
-        self.assertEqual(source_code, """goog.require('soy');
+        self.assertEqual(source_code, """goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 // ok
 
 goog.require('test.ns1');
@@ -1637,7 +1659,8 @@ example.hello = function(opt_data, opt_sb, opt_caller) {
         self.assertEqual(
             open(os.path.join(self.tempdir, "example.js")).read(),
             """goog.provide('example');
-goog.require('soy');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 
 
 example.hello = function(opt_data, opt_sb, opt_caller) {

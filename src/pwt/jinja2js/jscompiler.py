@@ -273,6 +273,12 @@ class StringBuilder(object):
     def write_outputappend_end(self, node, frame):
         self.write(");")
 
+    def write_htmlescape(self, node, frame):
+        self.write("goog.string.htmlEscape(String(")
+
+    def write_htmlescape_end(self, node, frame):
+        self.write("))")
+
 
 class Concat(StringBuilder):
 
@@ -310,6 +316,12 @@ class Concat(StringBuilder):
 
     def write_outputappend_end(self, node, frame):
         self.write(";")
+
+    def write_htmlescape(self, node, frame):
+        self.write("soy.$$escapeHtml(")
+
+    def write_htmlescape_end(self, node, frame):
+        self.write(")")
 
 
 class BaseCodeGenerator(NodeVisitor):
@@ -374,7 +386,8 @@ class CodeGenerator(BaseCodeGenerator):
 
         if namespace:
             self.writer.writeline_provides(node, frame, namespace)
-        self.writer.writeline_require(node, frame, "soy")
+        self.writer.writeline_require(node, frame, "goog.string")
+        self.writer.writeline_require(node, frame, "goog.string.StringBuffer")
         self.writer.newline()
 
         self.blockvisit(node.body, frame)
@@ -506,13 +519,13 @@ class MacroCodeGenerator(BaseCodeGenerator):
                         continue
 
                 if frame.eval_ctx.autoescape:
-                    self.writer.write("goog.string.htmlEscape(String(")
+                    self.writer.write_htmlescape(node, frame)
                     escaped_frame = frame.soft()
                     escaped_frame.escaped = True
 
                     self.visit(item, escaped_frame)
 
-                    self.writer.write("))")
+                    self.writer.write_htmlescape_end(node, frame)
                 else:
                     self.visit(item, frame)
 
@@ -526,11 +539,11 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 raise Exception("No kwargs")
 
             if not frame.escaped:
-                self.writer.write("goog.string.htmlEscape(String(")
+                self.writer.write_htmlescape(node, frame)
                 frame = frame.soft()
                 frame.escaped = True
                 self.visit(node.node, frame)
-                self.writer.write("))")
+                self.writer.write_htmlescape_end(node, frame)
             else:
                 self.visit(node.node, frame)
         elif node.name in FILTERS:
