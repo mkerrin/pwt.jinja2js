@@ -32,7 +32,7 @@ class Source(jinja2.visitor.NodeVisitor):
 
         self.provides = set([])
         # Manually added
-        self.requires = set(["soy"])
+        self.requires = set(["goog.string", "goog.string.StringBuffer"])
         self.scan()
 
         self.tmp = None
