@@ -35,7 +35,7 @@ setup(
     install_requires = ["setuptools",
                         "pwt.recipe.closurebuilder",
                         "WebOb",
-                        "MarkupSafe",
+                        # "MarkupSafe",
                         "Jinja2",
                         ],
     extras_require = {
