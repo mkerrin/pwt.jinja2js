@@ -2,6 +2,12 @@
 CHANGES
 =======
 
+0.7.1
+-----
+
+- Start to use closure library directly in the generated JS. No need for the
+  `soyutils_usegoog.js` Java Script utility file.
+
 0.7.0
 -----
 
