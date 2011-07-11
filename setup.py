@@ -31,6 +31,7 @@ setup(
 
     packages = find_packages("src"),
     package_dir = {"": "src"},
+    namespace_packages = ["pwt"],
 
     install_requires = ["setuptools",
                         "pwt.recipe.closurebuilder",
