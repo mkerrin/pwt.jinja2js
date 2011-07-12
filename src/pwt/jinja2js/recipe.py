@@ -81,10 +81,10 @@ class Source(jinja2.visitor.NodeVisitor):
 class Deps(pwt.recipe.closurebuilder.Deps):
 
     def __init__(self, buildout, name, options):
-        super(Deps, self).__init__(buildout, name, options)
-
         self.extension = options.get("extension", ".tmpl")
         self.extension_filter = re.compile(r"^.+\.%s" % self.extension)
+
+        super(Deps, self).__init__(buildout, name, options)
 
     def get_sources(self, root, prefix = ""):
         start_wd = os.getcwd()
