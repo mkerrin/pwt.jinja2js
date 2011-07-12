@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-0.7.3
+0.7.2
 -----
 
 - Changes to the pwt.recipe.closurebuilder recipe. This generates all content
