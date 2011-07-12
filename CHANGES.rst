@@ -2,6 +2,12 @@
 CHANGES
 =======
 
+0.7.2
+-----
+
+- Changes to the pwt.recipe.closurebuilder recipe. This generates all content
+  on import so that we are in a position to generate configuration information.
+
 0.7.1
 -----
 
