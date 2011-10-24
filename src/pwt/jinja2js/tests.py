@@ -1593,16 +1593,18 @@ class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):
 class SoyServer(unittest.TestCase):
 
     def get_app(self):
-        return webtest.TestApp(wsgi.Resources(
-            url = "/soy/", packages = "pwt.jinja2js:test_templates"))
+        return webtest.TestApp(
+            wsgi.Resources(
+                packages = "pwt.jinja2js:test_templates")
+            )
 
     def test_soy1(self):
         app = self.get_app()
-        self.assertRaises(webtest.AppError, app.get, "/soy/missing.soy")
+        self.assertRaises(webtest.AppError, app.get, "/missing.soy")
 
     def test_soy2(self):
         app = self.get_app()
-        res = app.get("/soy/example.soy")
+        res = app.get("/example.soy")
 
 
 class CLInterfaceTestCase(unittest.TestCase):
@@ -1732,6 +1734,8 @@ class RecipeTestCase(unittest.TestCase):
         deggs = os.path.join(sample, "develop-eggs")
         os.mkdir(deggs)
 
+        zc.buildout.testing.install_develop("setuptools", deggs)
+        zc.buildout.testing.install_develop("zc.buildout", deggs)
         zc.buildout.testing.install_develop("pwt.jinja2js", deggs)
         zc.buildout.testing.install_develop("pwt.recipe.closurebuilder", deggs)
         zc.buildout.testing.install_develop("WebOb", deggs)
@@ -1765,6 +1769,7 @@ extension = soy
             # in the eggs dir.
             ("buildout", "develop-eggs-directory", "eggs"),
             ("buildout", "offline", "true"),
+            ("buildout", "newest", "false"),
             ]
         zc.buildout.buildout.Buildout(
             "buildout.cfg", config, user_defaults=False,

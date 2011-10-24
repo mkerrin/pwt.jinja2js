@@ -18,13 +18,9 @@ class JinjaEnvironment(object):
 
 class Resources(JinjaEnvironment):
 
-    def __init__(self, *args, **kwargs):
-        super(Resources, self).__init__(*args, **kwargs)
-        self.url = kwargs["url"]
-
     @webob.dec.wsgify
     def __call__(self, request):
-        path = request.path[len(self.url):]
+        path = request.path_info
 
         try:
             source, filename, uptodate = self.env.loader.get_source(
