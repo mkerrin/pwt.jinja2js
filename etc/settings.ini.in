@@ -41,6 +41,6 @@ paste.app_factory = pwt.jinja2js.app:main
 # configure Jinja2 loader
 packages = pwt.jinja2js
 
-deps_js = /media/${deps.js:output}
+deps_js = /media/${deps.js:filename}
 
 compiled_tests_js = /media/compiled/${compiled_tests.js:filename}
