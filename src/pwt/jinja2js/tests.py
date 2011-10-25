@@ -1582,9 +1582,20 @@ hello = function(opt_data, opt_sb, opt_caller) {
 
 
 class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):
+    # Test template output after passing it through Jinja2's optimizer.
 
     def get_compile_from_string(self, source, name = None, filename = None):
         node = super(JSCompilerTemplateTestCaseOptimized, self).get_compile_from_string(source, name, filename)
+        node = jinja2.optimizer.optimize(node, self.env)
+
+        return node
+
+
+class JSConcatCompilerTemplateTestCaseOptimized(JSConcatCompilerTemplateTestCase):
+    # Test template output after passing it through Jinja2's optimizer.
+
+    def get_compile_from_string(self, source, name = None, filename = None):
+        node = super(JSConcatCompilerTemplateTestCaseOptimized, self).get_compile_from_string(source, name, filename)
         node = jinja2.optimizer.optimize(node, self.env)
 
         return node
@@ -1711,6 +1722,7 @@ example.hello = function(opt_data, opt_sb, opt_caller) {
                 "/builddir/${INPUT_FILE_NAME}.js",
                 "src/test.soy"),
             "/builddir/test.soy.js")
+
 
 class RecipeTestCase(unittest.TestCase):
 
