@@ -512,9 +512,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 else:
                     self.writer.write_outputappend_add(item, frame)
 
-                # autoescape, safe
+                # autoescape, safe, and escape
                 if isinstance(item, jinja2.nodes.Filter):
-                    if frame.eval_ctx.autoescape and item.name == "safe":
+                    if item.name == "safe":
                         self.visit(item.node, frame)
                         continue
 

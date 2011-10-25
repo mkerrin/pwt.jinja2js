@@ -1213,6 +1213,18 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_filter_escape4(self):
+        # autoescape with safe filter withg autoescape off
+        node = self.get_compile_from_string("""{% macro filtertest(data) %}{{ data|safe }}{% endmacro %}""")
+
+        source_code = generateMacro(node, self.env, "filter.html", "filter.html", autoescape = False)
+
+        self.assertEqual(source_code, """test.filtertest = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append(opt_data.data);
+    if (!opt_sb) return output.toString();
+}""")
+
     def test_filter_default1(self):
         node = self.get_compile_from_string("""{% macro hello(name) %}{{ name|default('World') }}{% endmacro %}""")
 
@@ -1616,6 +1628,23 @@ class SoyServer(unittest.TestCase):
     def test_soy2(self):
         app = self.get_app()
         res = app.get("/example.soy")
+
+
+class RealSoyServer(unittest.TestCase):
+
+    def get_app(self):
+        return webtest.TestApp(
+            wsgi.Resources(
+                packages = "pwt.jinja2js")
+            )
+
+    def test_soy1(self):
+        app = self.get_app()
+        res = app.get("/variables.soy")
+
+    def test_soy2(self):
+        app = self.get_app()
+        res = app.get("/autoescaped.soy")
 
 
 class CLInterfaceTestCase(unittest.TestCase):
