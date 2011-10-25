@@ -32,6 +32,9 @@ def create_environment(packages = [], autoescape = [], extensions = [], writer =
                 autoescape = True
                 break
 
+            if not auto.startswith("/"):
+                auto = "/" + auto
+
             auto_templates.append(auto)
 
         def autoescape(template_name):
