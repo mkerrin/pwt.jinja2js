@@ -1738,6 +1738,7 @@ class RecipeTestCase(unittest.TestCase):
         zc.buildout.testing.install_develop("zc.buildout", deggs)
         zc.buildout.testing.install_develop("pwt.jinja2js", deggs)
         zc.buildout.testing.install_develop("pwt.recipe.closurebuilder", deggs)
+        zc.buildout.testing.install_develop("Jinja2", deggs)
         zc.buildout.testing.install_develop("WebOb", deggs)
 
         os.mkdir(os.path.join(sample, "media"))
@@ -1767,9 +1768,8 @@ extension = soy
             ("buildout", "log-level", "WARNING"),
             # trick bootstrap into putting the buildout develop egg
             # in the eggs dir.
-            ("buildout", "develop-eggs-directory", "eggs"),
+            ("buildout", "develop-eggs-directory", deggs),
             ("buildout", "offline", "true"),
-            ("buildout", "newest", "false"),
             ]
         zc.buildout.buildout.Buildout(
             "buildout.cfg", config, user_defaults=False,
