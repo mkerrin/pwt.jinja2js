@@ -1756,7 +1756,7 @@ parts = deps.js
 
 [deps.js]
 recipe = pwt.jinja2js:dependency
-output = %(sample)s/media/deps.js
+output = %(sample)s/media
 root_with_prefix =
     %(sample)s/media /media
     %(sample)s/soy /soy
