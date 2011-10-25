@@ -32,13 +32,16 @@ def create_environment(packages = [], autoescape = [], extensions = [], writer =
                 autoescape = True
                 break
 
-            if not auto.startswith("/"):
-                auto = "/" + auto
-
             auto_templates.append(auto)
 
         def autoescape(template_name):
             if template_name in auto_templates:
+                return True
+
+            if template_name[0] == "/" and template_name[1:] in auto_templates:
+                return True
+            if template_name[0] != "/" \
+                   and template_name + "/" in auto_templates:
                 return True
 
             return False
