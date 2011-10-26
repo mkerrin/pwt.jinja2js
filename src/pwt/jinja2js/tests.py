@@ -1617,8 +1617,7 @@ class SoyServer(unittest.TestCase):
 
     def get_app(self):
         return webtest.TestApp(
-            wsgi.Resources(
-                packages = "pwt.jinja2js:test_templates")
+            wsgi.Resources(packages = "pwt.jinja2js:test_templates")
             )
 
     def test_soy1(self):

@@ -5,6 +5,14 @@ CHANGES
 0.7.2
 -----
 
+- Compatibility changes to the dependency and compile recipes of
+  `pwt.recipe.closurebuilder`
+
+- Fix WSGI server to work under a sub name space on a server.
+
+0.7.2
+-----
+
 - Changes to the pwt.recipe.closurebuilder recipe. This generates all content
   on import so that we are in a position to generate configuration information.
 
