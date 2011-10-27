@@ -204,7 +204,7 @@ Hello, {{ name }}!
 }""")
 
     def test_var5(self):
-        # variables minus, power of, 
+        # variables minus, power of,
         node = self.get_compile_from_string("""{% macro add(num, step) %}
 {{ (num - step) ** 2 }}
 {% endmacro %}
@@ -232,7 +232,7 @@ Hello, {{ name }}!
 }""")
 
     def test_var6(self):
-        # variables minus, power of, 
+        # variables minus, power of,
         node = self.get_compile_from_string("""{% macro add(num, step) %}
 {{ num - (step ** 2) }}
 {% endmacro %}
@@ -1264,7 +1264,7 @@ users = function(opt_data, opt_sb, opt_caller) {
 }""")
 
     def test_callblock4(self):
-        # 
+        #
         node = self.get_compile_from_string("""{% macro list_users(users) -%}
 <ul>
 {% for user in users %}

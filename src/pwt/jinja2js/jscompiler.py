@@ -584,7 +584,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
             # item.key should be a constant string. Otherwise how do you
             # get to output a dictionary with a variable key string?
-            # So it is either a `Const` or `Name` node. 
+            # So it is either a `Const` or `Name` node.
             if isinstance(item.key, jinja2.nodes.Const):
                 if "." in item.key.value:
                     raise jinja2.compiler.TemplateAssertionError(
