@@ -1018,8 +1018,18 @@ class MacroCodeGenerator(BaseCodeGenerator):
         # function symbol to call
         dotted_name = []
         self.visit(node.node, frame, dotted_name = dotted_name)
+        func_name = ".".join(dotted_name)
+
+        # Like signature(), this assumes that function calls with only
+        # positional arguments are calls to javascript functions. This
+        # allows you to call differently named functions in the client JS
+        # than when rendering a template on the server.
+        if node.args and not node.kwargs \
+        and func_name in self.environment.js_func_aliases:
+            func_name = self.environment.js_func_aliases[func_name]
+
         # function signature
-        self.writer.write("%s(" % ".".join(dotted_name))
+        self.writer.write("%s(" % func_name)
         self.signature(node, frame, forward_caller)
         self.writer.write(")")
 
