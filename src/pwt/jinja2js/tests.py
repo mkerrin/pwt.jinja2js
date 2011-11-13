@@ -14,7 +14,6 @@ import wsgi
 import jinja2.compiler
 import jinja2.nodes
 import jinja2.optimizer
-import jinja2.runtime
 
 import jscompiler
 import cli
