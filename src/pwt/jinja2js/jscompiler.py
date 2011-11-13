@@ -417,8 +417,6 @@ class CodeGenerator(BaseCodeGenerator):
     def visit_TemplateData(self, node, frame):
         self.writer.mark(node)
         self.writer.write(node.data)
-        if node.data[-1] != "\n":
-            self.writer.newline()
 
 
 STRINGBUILDER = "StringBuilder"
