@@ -7,8 +7,6 @@ from pwt.recipe.closurebuilder import depswriter
 from pwt.recipe.closurebuilder import treescan
 from pwt.recipe.closurebuilder import source
 
-import jinja2.parser
-import jinja2.environment
 import jinja2.visitor
 
 import jscompiler

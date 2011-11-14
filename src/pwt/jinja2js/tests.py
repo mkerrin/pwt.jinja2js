@@ -14,7 +14,6 @@ import wsgi
 import jinja2.compiler
 import jinja2.nodes
 import jinja2.optimizer
-import jinja2.runtime
 
 import jscompiler
 import cli
@@ -1507,6 +1506,27 @@ goog.require('goog.string.StringBuffer');
 hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, world!\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_comments_containing_variables(self):
+        # Make sure that any comments in the template get output in a
+        # consistent manner
+        node = self.get_compile_from_string("""// This prints out hello {{ name }}!
+
+{% macro hello(name) %}
+Hello, {{ name }}!
+{% endmacro %}""")
+
+        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
+
+        self.assertEqual(source_code, """goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
+// This prints out hello !
+
+hello = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append('\\nHello, ', opt_data.name, '!\\n');
     if (!opt_sb) return output.toString();
 }""")
 

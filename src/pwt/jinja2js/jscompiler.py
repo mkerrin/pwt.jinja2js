@@ -4,7 +4,7 @@ from jinja2.visitor import NodeVisitor
 import jinja2.nodes
 import jinja2.compiler
 import jinja2.ext
-from jinja2.utils import Markup, concat, escape, is_python_keyword, next
+from jinja2.utils import escape, next
 
 import nodes
 
@@ -257,8 +257,9 @@ class StringBuilder(object):
     # output formating
 
     def writeline_startoutput(self, node, frame):
-        self.writeline("var output = %s_sb || new goog.string.StringBuffer();" %(
-            frame.parameter_prefix))
+        self.writeline(
+            "var output = %s_sb || new goog.string.StringBuffer();" %(
+                frame.parameter_prefix))
 
     def writeline_endoutput(self, node, frame):
         self.writeline(
@@ -289,8 +290,9 @@ class Concat(StringBuilder):
         parts = namespace.split(".")
         for idx, part in enumerate(parts):
             ns = ".".join(parts[:idx + 1])
-            self.writeline("if (typeof %s == 'undefined') { %s%s = {}; }" %(
-                ns, idx == 0 and "var " or "", ns), node)
+            self.writeline(
+                "if (typeof %s == 'undefined') { %s%s = {}; }" %(
+                    ns, idx == 0 and "var " or "", ns), node)
 
     def writeline_require(self, node, frame, namespace):
         self.newline(node)
@@ -415,8 +417,6 @@ class CodeGenerator(BaseCodeGenerator):
     def visit_TemplateData(self, node, frame):
         self.writer.mark(node)
         self.writer.write(node.data)
-        if node.data[-1] != "\n":
-            self.writer.newline()
 
 
 STRINGBUILDER = "StringBuilder"
@@ -879,11 +879,12 @@ class MacroCodeGenerator(BaseCodeGenerator):
             node, frame, children = children,
             parameter_prefix = parameter_prefix)
 
-        self.writer.writeline("%s = function(%s_data, %s_sb, %s_caller) {" %(
-            name,
-            frame.parameter_prefix,
-            frame.parameter_prefix,
-            frame.parameter_prefix))
+        self.writer.writeline(
+            "%s = function(%s_data, %s_sb, %s_caller) {" %(
+                name,
+                frame.parameter_prefix,
+                frame.parameter_prefix,
+                frame.parameter_prefix))
         self.writer.indent()
         if node.defaults:
             # We have defaults to work with. Loop over all the default keys

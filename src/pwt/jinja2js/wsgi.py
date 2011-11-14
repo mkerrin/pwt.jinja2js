@@ -1,4 +1,3 @@
-from cStringIO import StringIO
 import webob
 import webob.dec
 
