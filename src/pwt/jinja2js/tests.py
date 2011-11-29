@@ -22,7 +22,8 @@ import environment
 
 def generateMacro(
         node, environment, name, filename, autoescape = False):
-    generator = jscompiler.MacroCodeGenerator(environment, None, None)
+    generator = jscompiler.MacroCodeGenerator(
+        environment, environment.writer(), None, None)
     eval_ctx = jinja2.nodes.EvalContext(environment, name)
     eval_ctx.namespace = "test"
     eval_ctx.autoescape = autoescape
@@ -37,7 +38,6 @@ class JSCompilerTestCase(unittest.TestCase):
 
         self.env = environment.create_environment(
             packages = ["pwt.jinja2js:test_templates"],
-            extensions = ["pwt.jinja2js.jscompiler.Namespace"],
             writer = "pwt.jinja2js.jscompiler.StringBuilder",
             )
 
@@ -1328,7 +1328,6 @@ class JSConcatCompilerTemplateTestCase(JSCompilerTestCase):
 
         self.env = environment.create_environment(
             packages = ["pwt.jinja2js:test_templates"],
-            extensions = ["pwt.jinja2js.jscompiler.Namespace"],
             writer = "pwt.jinja2js.jscompiler.Concat",
             )
 
@@ -1647,6 +1646,38 @@ class SoyServer(unittest.TestCase):
     def test_soy2(self):
         app = self.get_app()
         res = app.get("/example.soy")
+
+    def test_concat_soy1(self):
+        app = webtest.TestApp(
+            wsgi.ConcatResources(packages = "pwt.jinja2js:test_templates")
+            )
+        res = app.get("/example.soy")
+
+        self.assertEqual(res.body, """if (typeof example == 'undefined') { var example = {}; }
+
+
+example.hello = function(opt_data, opt_sb, opt_caller) {
+    var output = '';
+    output += '\\nHello, ' + opt_data.name + '!\\n';
+    return output;
+}""")
+
+    def test_closure_soy1(self):
+        app = webtest.TestApp(
+            wsgi.ClosureResources(packages = "pwt.jinja2js:test_templates")
+            )
+        res = app.get("/example.soy")
+
+        self.assertEqual(res.body, """goog.provide('example');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
+
+
+example.hello = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append('\\nHello, ', opt_data.name, '!\\n');
+    if (!opt_sb) return output.toString();
+}""")
 
 
 class RealSoyServer(unittest.TestCase):

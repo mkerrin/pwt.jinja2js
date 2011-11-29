@@ -15,13 +15,13 @@ use = egg:Paste#urlmap
 /media = static
 
 [app:soy_templates]
-use = egg:pwt.jinja2js
+use = egg:pwt.jinja2js#closure
 url = /soy/
 packages = pwt.jinja2js
 autoescape = autoescaped.soy
 
 [app:concatsoy_templates]
-use = egg:pwt.jinja2js
+use = egg:pwt.jinja2js#concat
 url = /concat_soy/
 packages = pwt.jinja2js
 autoescape = autoescaped.soy

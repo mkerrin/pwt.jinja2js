@@ -33,12 +33,13 @@ setup(
     package_dir = {"": "src"},
     namespace_packages = ["pwt"],
 
-    install_requires = ["setuptools",
-                        "pwt.recipe.closurebuilder",
-                        "WebOb",
-                        # "MarkupSafe",
-                        "Jinja2",
-                        ],
+    install_requires = [
+        "setuptools",
+        "pwt.recipe.closurebuilder",
+        "WebOb",
+        # "MarkupSafe",
+        "Jinja2",
+        ],
     extras_require = {
         "test": [
             "pwt.recipe.closurebuilder[test]",
@@ -55,6 +56,9 @@ dependency = pwt.jinja2js.recipe:Deps
 
 [paste.app_factory]
 main = pwt.jinja2js.wsgi:Resources
+
+closure = pwt.jinja2js.wsgi:ClosureResources
+concat = pwt.jinja2js.wsgi:ConcatResources
 
 [console_scripts]
 jinja2js = pwt.jinja2js.cli:main

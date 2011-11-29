@@ -53,10 +53,30 @@ def generate(node, environment, name, filename):
     """Generate the python source for a node tree."""
     if not isinstance(node, jinja2.nodes.Template):
         raise TypeError("Can't compile non template nodes")
+
     generator = CodeGenerator(environment, name, filename)
+    generator.writer = environment.writer()
     generator.visit(node)
     return generator.writer.stream.getvalue()
 
+
+def generateClosure(node, environment, name, filename):
+    if not isinstance(node, jinja2.nodes.Template):
+        raise TypeError("Can't compile non template nodes")
+
+    generator = ClosureCodeGenerator(environment, name, filename)
+    generator.visit(node)
+    return generator.writer.stream.getvalue()
+
+
+def generateConcat(node, environment, name, filename):
+    if not isinstance(node, jinja2.nodes.Template):
+        raise TypeError("Can't compile non template nodes")
+
+    generator = ConcatCodeGenerator(environment, name, filename)
+    generator.visit(node)
+    return generator.writer.stream.getvalue()
+    
 
 class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
 
@@ -335,8 +355,6 @@ class BaseCodeGenerator(NodeVisitor):
         self.name = name
         self.filename = filename
 
-        self.writer = environment.writer()
-
     # Copied
     def fail(self, msg, lineno):
         """Fail with a :exc:`TemplateAssertionError`."""
@@ -402,6 +420,7 @@ class CodeGenerator(BaseCodeGenerator):
     def visit_Macro(self, node, frame):
         generator = MacroCodeGenerator(
             self.environment,
+            self.writer.__class__(),
             self.name,
             self.filename)
         generator.visit(node, frame)
@@ -419,6 +438,22 @@ class CodeGenerator(BaseCodeGenerator):
         self.writer.write(node.data)
 
 
+class ClosureCodeGenerator(CodeGenerator):
+
+    def __init__(self, environment, name, filename):
+        super(ClosureCodeGenerator, self).__init__(environment, name, filename)
+
+        self.writer = StringBuilder()
+
+
+class ConcatCodeGenerator(CodeGenerator):
+
+    def __init__(self, environment, name, filename):
+        super(ConcatCodeGenerator, self).__init__(environment, name, filename)
+
+        self.writer = Concat()
+
+
 STRINGBUILDER = "StringBuilder"
 CONCAT = "Concat"
 
@@ -432,11 +467,13 @@ class MacroCodeGenerator(BaseCodeGenerator):
     # comments should be displayed in the JS file. We need them for any closure
     # compiler hints we may want to put in.
 
-    def __init__(self, environment, name, filename):
+    def __init__(self, environment, writer, name, filename):
         super(MacroCodeGenerator, self).__init__(environment, name, filename)
 
         # collect all the namespaced requirements
         self.requirements = set([])
+
+        self.writer = writer
 
     def addRequirement(self, requirement, frame):
         if requirement == frame.eval_ctx.namespace:

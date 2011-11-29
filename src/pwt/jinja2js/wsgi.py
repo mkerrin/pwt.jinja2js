@@ -8,6 +8,9 @@ import environment
 
 class JinjaEnvironment(object):
 
+    def compiler(self, node, env, path, filename):
+        return jscompiler.generate(node, env, path, filename)
+
     def __init__(self, *args, **kwargs):
         self.env = environment.create_environment(
             packages = kwargs.get("packages", "").split(),
@@ -29,7 +32,19 @@ class Resources(JinjaEnvironment):
 
         node = self.env._parse(source, path, filename)
 
-        output = jscompiler.generate(node, self.env, path, filename)
+        output = self.compiler(node, self.env, path, filename)
 
         return webob.Response(
             body = output, content_type = "application/javascript")
+
+
+class ClosureResources(Resources):
+
+    def compiler(self, node, env, path, filename):
+        return jscompiler.generateClosure(node, env, path, filename)
+
+
+class ConcatResources(Resources):
+
+    def compiler(self, node, env, path, filename):
+        return jscompiler.generateConcat(node, env, path, filename)
