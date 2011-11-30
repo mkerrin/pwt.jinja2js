@@ -8,14 +8,14 @@ import environment
 
 class JinjaEnvironment(object):
 
-    def compiler(self, node, env, path, filename):
-        return jscompiler.generate(node, env, path, filename)
-
     def __init__(self, *args, **kwargs):
         self.env = environment.create_environment(
             packages = kwargs.get("packages", "").split(),
             autoescape = kwargs.get("autoescape", "").split(),
             writer = kwargs.get("writer", "pwt.jinja2js.jscompiler.StringBuilder"))
+
+    def compiler(self, node, env, path, filename):
+        return jscompiler.generate(node, env, path, filename)
 
 
 class Resources(JinjaEnvironment):

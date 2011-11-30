@@ -49,35 +49,6 @@ OPERATORS = {
     }
 
 
-def generate(node, environment, name, filename):
-    """Generate the python source for a node tree."""
-    if not isinstance(node, jinja2.nodes.Template):
-        raise TypeError("Can't compile non template nodes")
-
-    generator = CodeGenerator(environment, name, filename)
-    generator.writer = environment.writer()
-    generator.visit(node)
-    return generator.writer.stream.getvalue()
-
-
-def generateClosure(node, environment, name, filename):
-    if not isinstance(node, jinja2.nodes.Template):
-        raise TypeError("Can't compile non template nodes")
-
-    generator = ClosureCodeGenerator(environment, name, filename)
-    generator.visit(node)
-    return generator.writer.stream.getvalue()
-
-
-def generateConcat(node, environment, name, filename):
-    if not isinstance(node, jinja2.nodes.Template):
-        raise TypeError("Can't compile non template nodes")
-
-    generator = ConcatCodeGenerator(environment, name, filename)
-    generator.visit(node)
-    return generator.writer.stream.getvalue()
-    
-
 class JSFrameIdentifierVisitor(jinja2.compiler.FrameIdentifierVisitor):
 
     def __init__(self, identifiers, environment, ctx):
@@ -1113,3 +1084,28 @@ def filter_round(generator, node, frame, precision = jinja2.nodes.Const(0)):
     generator.writer.write(")")
     if precision > 1:
         generator.writer.write(" / %s" % precision)
+
+
+def _generate(node, generator):
+    if not isinstance(node, jinja2.nodes.Template):
+        raise TypeError("Can't compile non template nodes")
+
+    generator.visit(node)
+    return generator.writer.stream.getvalue()
+
+
+def generate(node, environment, name, filename):
+    """Generate the python source for a node tree."""
+    generator = CodeGenerator(environment, name, filename)
+    generator.writer = environment.writer()
+    return _generate(node, generator)
+
+
+def generateClosure(node, environment, name, filename):
+    generator = ClosureCodeGenerator(environment, name, filename)
+    return _generate(node, generator)
+
+
+def generateConcat(node, environment, name, filename):
+    generator = ConcatCodeGenerator(environment, name, filename)
+    return _generate(node, generator)

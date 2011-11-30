@@ -66,6 +66,7 @@ def main(args = None, output = None):
         output = jscompiler.generate(node, env, name, filename)
 
         output_filename = get_output_filename(options.output_format, filename)
+
         open(output_filename, "w").write(output)
 
     return 0

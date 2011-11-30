@@ -1861,6 +1861,8 @@ extension = soy
             # in the eggs dir.
             ("buildout", "develop-eggs-directory", deggs),
             ("buildout", "offline", "true"),
+            ("buildout", "newest", "false"),
+            ("buildout", "unzip", "true"),
             ]
         zc.buildout.buildout.Buildout(
             "buildout.cfg", config, user_defaults=False,
