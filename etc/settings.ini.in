@@ -33,7 +33,7 @@ document_root = ${buildout:directory}/src/pwt/jinja2js/media
 
 [app:closure]
 use = egg:Paste#static
-document_root = ${closure-library:location}/closure-library
+document_root = ${buildout:sources-dir}/closure
 
 [app:home]
 paste.app_factory = pwt.jinja2js.app:main
