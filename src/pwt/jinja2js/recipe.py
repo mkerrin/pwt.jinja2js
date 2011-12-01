@@ -15,13 +15,8 @@ import environment
 
 class Source(jinja2.visitor.NodeVisitor):
 
-    def __init__(self, path, packages = "", autoescape = "", extensions = "", writer = "pwt.jinja2js.jscompiler.StringBuilder"):
-        self.env = environment.create_environment(
-            packages = packages.split(),
-            autoescape = autoescape.split(),
-            extensions = extensions.split(),
-            writer = writer,
-            )
+    def __init__(self, path, env):
+        self.env = env
 
         self.source = source.GetFileContents(path)
         self.node = self.env._parse(self.source, os.path.basename(path), path)
@@ -36,7 +31,7 @@ class Source(jinja2.visitor.NodeVisitor):
         self.tmp = None
 
     def GetSourcePath(self):
-        jscode = jscompiler.generate(
+        jscode = jscompiler.generateClosure(
             self.node, self.env, os.path.basename(self._path), self._path)
         self.tmp = tempfile.NamedTemporaryFile(delete = False)
         self.tmp.write(jscode)
@@ -94,8 +89,12 @@ class Deps(pwt.recipe.closurebuilder.Deps):
                 os.path.join(prefix, path))
             path_to_source[prefixed_path] = Source(
                 os.path.join(start_wd, root, path),
-                self.options.get("packages", ""),
-                self.options.get("autoescape", ""))
+                environment.create_environment(
+                    packages = self.options.get("packages", "").split(),
+                    autoescape = self.options.get("autoescape", "").split(),
+                    extensions = self.options.get("extensions", "").split(),
+                    )
+                )
 
         os.chdir(start_wd)
 
