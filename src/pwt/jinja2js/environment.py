@@ -58,7 +58,8 @@ def create_environment(packages = [], autoescape = [], extensions = [], writer =
         loader = loader,
         extensions = extensions,
         autoescape = autoescape,
-        writer = writer)
+        writer = writer,
+        )
 
 
 def parse_environment(config):
