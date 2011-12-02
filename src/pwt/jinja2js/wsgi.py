@@ -7,10 +7,10 @@ import jscompiler
 import environment
 
 
-class Resources(object):
+class ResourcesApp(object):
 
-    def __init__(self, *args, **kwargs):
-        self.env = environment.parse_environment(kwargs)
+    def __init__(self, env):
+        self.env = env
 
     def compiler(self, node, env, path, filename):
         return jscompiler.generate(node, env, path, filename)
@@ -33,13 +33,28 @@ class Resources(object):
             body = output, content_type = "application/javascript")
 
 
-class ClosureResources(Resources):
+def Resources(*args, **kwargs):
+    env = environment.parse_environment(kwargs)
+    return ResourcesApp(env)
+
+
+class ClosureResourcesApp(ResourcesApp):
 
     def compiler(self, node, env, path, filename):
         return jscompiler.generateClosure(node, env, path, filename)
 
 
-class ConcatResources(Resources):
+def ClosureResources(*args, **kwargs):
+    env = environment.parse_environment(kwargs)
+    return ClosureResourcesApp(env)
+
+
+class ConcatResourcesApp(ResourcesApp):
 
     def compiler(self, node, env, path, filename):
         return jscompiler.generateConcat(node, env, path, filename)
+
+
+def ConcatResources(*args, **kwargs):
+    env = environment.parse_environment(kwargs)
+    return ConcatResourcesApp(env)
