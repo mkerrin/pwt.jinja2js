@@ -6,19 +6,14 @@ import jinja2
 import jscompiler
 import environment
 
-class JinjaEnvironment(object):
+
+class Resources(object):
 
     def __init__(self, *args, **kwargs):
-        self.env = environment.create_environment(
-            packages = kwargs.get("packages", "").split(),
-            autoescape = kwargs.get("autoescape", "").split(),
-            writer = kwargs.get("writer", "pwt.jinja2js.jscompiler.StringBuilder"))
+        self.env = environment.parse_environment(kwargs)
 
     def compiler(self, node, env, path, filename):
         return jscompiler.generate(node, env, path, filename)
-
-
-class Resources(JinjaEnvironment):
 
     @webob.dec.wsgify
     def __call__(self, request):

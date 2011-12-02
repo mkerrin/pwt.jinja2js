@@ -1,3 +1,7 @@
+"""
+XXX - remove this and just use an unmodified Jinja2 environment. This
+would keep things simple.
+"""
 import jinja2
 import jinja2.environment
 import jinja2.utils
@@ -51,5 +55,15 @@ def create_environment(packages = [], autoescape = [], extensions = [], writer =
     extensions.append("pwt.jinja2js.jscompiler.Namespace")
 
     return Environment(
-        loader = loader, extensions = extensions, autoescape = autoescape,
+        loader = loader,
+        extensions = extensions,
+        autoescape = autoescape,
         writer = writer)
+
+
+def parse_environment(config):
+    return create_environment(
+        packages = config.get("packages", "").split(),
+        autoescape = config.get("autoescape", "").split(),
+        writer = config.get("writer", "pwt.jinja2js.jscompiler.StringBuilder")
+        )

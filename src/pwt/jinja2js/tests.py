@@ -9,8 +9,6 @@ import webtest
 import zc.buildout.testing
 from zc.buildout.rmtree import rmtree
 
-import wsgi
-
 import jinja2.compiler
 import jinja2.nodes
 import jinja2.optimizer
@@ -18,6 +16,8 @@ import jinja2.optimizer
 import jscompiler
 import cli
 import environment
+import wsgi
+import app
 
 
 def generateMacro(
@@ -1801,6 +1801,20 @@ example.hello = function(opt_data, opt_sb, opt_caller) {
                 "/builddir/${INPUT_FILE_NAME}.js",
                 "src/test.soy"),
             "/builddir/test.soy.js")
+
+
+class TestJinja2JSFunctionalTestSetup(unittest.TestCase):
+    # Test that we haven't broken the application that serves the Java Script
+    # test suite for pwt.jinja2js
+
+    def test_testsuite_works1(self):
+        jsapp = webtest.TestApp(
+            app.main(
+                packages = "pwt.jinja2js",
+                )
+            )
+
+        self.assertEqual(jsapp.get("/").status_int, 200)
 
 
 class RecipeTestCase(unittest.TestCase):

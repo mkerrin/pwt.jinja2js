@@ -3,12 +3,12 @@ import webob.dec
 
 import jinja2
 import wsgi
+import environment
 
-class main(wsgi.JinjaEnvironment):
+class main(object):
 
     def __init__(self, *args, **config):
-        super(main, self).__init__(*args, **config)
-
+        self.env = environment.parse_environment(config)
         self.config = config
 
     @webob.dec.wsgify
