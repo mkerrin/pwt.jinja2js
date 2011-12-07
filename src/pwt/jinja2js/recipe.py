@@ -89,11 +89,7 @@ class Deps(pwt.recipe.closurebuilder.Deps):
                 os.path.join(prefix, path))
             path_to_source[prefixed_path] = Source(
                 os.path.join(start_wd, root, path),
-                environment.create_environment(
-                    packages = self.options.get("packages", "").split(),
-                    autoescape = self.options.get("autoescape", "").split(),
-                    extensions = self.options.get("extensions", "").split(),
-                    )
+                environment.parse_environment(self.options),
                 )
 
         os.chdir(start_wd)

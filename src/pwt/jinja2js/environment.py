@@ -15,10 +15,13 @@ class Environment(jinja2.Environment):
         super(Environment, self).__init__(*args, **kwargs)
 
 
-def create_environment(packages = [], autoescape = [], extensions = [], writer = "pwt.jinja2js.jscompiler.Concat"):
+def create_environment(packages = [], directories = [], autoescape = [], extensions = [], writer = "pwt.jinja2js.jscompiler.Concat"):
     loaders = []
     for package in packages:
         loaders.append(jinja2.PackageLoader(*package.split(":")))
+
+    if directories:
+        loaders.append(jinja2.FileSystemLoader(directories))
 
     if len(loaders) == 1:
         loader = loaders[0]
@@ -65,6 +68,7 @@ def create_environment(packages = [], autoescape = [], extensions = [], writer =
 def parse_environment(config):
     return create_environment(
         packages = config.get("packages", "").split(),
+        directories = config.get("directories", "").split(),
         autoescape = config.get("autoescape", "").split(),
         writer = config.get("writer", "pwt.jinja2js.jscompiler.StringBuilder")
         )

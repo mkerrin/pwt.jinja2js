@@ -48,6 +48,18 @@ class JSCompilerTestCase(unittest.TestCase):
         return node
 
 
+class JSEnvironment(unittest.TestCase):
+
+    def test_env_directories(self):
+        env = environment.create_environment(
+            directories = ["%s/test_templates" % os.path.dirname(jscompiler.__file__)],
+            writer = "pwt.jinja2js.jscompiler.StringBuilder",
+            )
+
+        source = env.loader.get_source(env, "example.soy")
+        self.assertEqual(source[0], "{% namespace example %}\n\n{% macro hello(name) %}\nHello, {{ name }}!\n{% endmacro %}\n")
+
+
 class JSCompilerTemplateTestCase(JSCompilerTestCase):
 
     def test_missing_namespace1(self):

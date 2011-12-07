@@ -38,6 +38,11 @@ def main(args = None, output = None):
 
     # jinja2js specific options
     parser.add_option(
+        "--directories", dest = "directories",
+        default = [], action = "append",
+        help = "List of directories to look for template files.",
+        metavar = "DIRECTORIES")
+    parser.add_option(
         "--packages", dest = "packages",
         default = [], action = "append",
         help = "List of packages to look for template files.",
@@ -56,7 +61,8 @@ def main(args = None, output = None):
         return 1
 
     env = environment.create_environment(
-        options.packages,
+        packages = options.packages,
+        directories = options.directories,
         writer = writerclasses[options.codeStyle])
 
     for filename in files:
