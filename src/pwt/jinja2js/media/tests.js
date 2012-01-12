@@ -31,6 +31,14 @@ window.onload = function() {
         assertEquals(tests.variables.var1({name: "Michael"}), "Hello Michael");
     }));
 
+    testcase.add(new goog.testing.TestCase.Test("var2_objectaccess", function() {
+        assertEquals(
+            tests.variables.var2_objectaccess({
+                obj: {"namevar": "Michael"},
+                name: "namevar"}),
+            "Hello Michael");
+    }));
+
     testcase.add(new goog.testing.TestCase.Test("numadd1", function() {
         assertEquals(tests.variables.add1({num: 10}), "20");
         assertEquals(tests.variables.add1({num: 20}), "30");

@@ -4,6 +4,8 @@
 
 {% macro var1(name) %}Hello {{ name }}{% endmacro %}
 
+{% macro var2_objectaccess(obj, name) %}Hello {{ obj[name] }}{% endmacro %}
+
 {% macro add1(num) %}{{ num + 10 }}{% endmacro %}
 
 {% macro add2(num, step) %}{{ num + step }}{% endmacro %}

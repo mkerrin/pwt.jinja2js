@@ -132,6 +132,35 @@ test.hello = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_var1_accessobject1(self):
+        # Try and access the property `name` from the object properties
+        node = self.get_compile_from_string("""{% macro hello(properties) %}
+{{ properties["name"] }}
+{% endmacro %}
+""")
+        source_code = generateMacro(node, self.env, "var1.html", "var1.html")
+
+        self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append('\\n', opt_data.properties['name'], '\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_var1_accessobject2(self):
+        # Try and access the property name reference by `name` from the object
+        # properties
+        node = self.get_compile_from_string("""{% macro hello(properties, name) %}
+{{ properties[name] }}
+{% endmacro %}
+""")
+        source_code = generateMacro(node, self.env, "var1.html", "var1.html")
+
+        self.assertEqual(source_code, """test.hello = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append('\\n', opt_data.properties[opt_data.name], '\\n');
+    if (!opt_sb) return output.toString();
+}""")
+
     def test_var2(self):
         node = self.get_compile_from_string("""{% macro helloName(name) %}
 Hello, {{ name }}!

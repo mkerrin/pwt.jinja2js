@@ -668,6 +668,14 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
         return isparam
 
+    def visit_Getitem(self, node, frame):
+        # Careful, there is something in Jinja2 about node.arg extending
+        # jinja2.nodes.Slice
+        self.visit(node.node, frame)
+        self.writer.write("[")
+        self.visit(node.arg, frame)
+        self.writer.write("]")
+
     def visit_Getattr(self, node, frame, dotted_name = None):
         if frame.forloop_buffer and node.node.name == "loop":
             if node.attr == "index0":
