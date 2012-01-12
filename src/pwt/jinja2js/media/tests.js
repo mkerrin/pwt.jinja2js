@@ -217,6 +217,10 @@ window.onload = function() {
         assertEquals(tests.call.call3({}), "Michael Kerrin");
     }));
 
+    testcase.add(new goog.testing.TestCase.Test("call_positional1", function() {
+        assertEquals(tests.call.call_positional1({}), "Michael");
+    }));
+
     testcase.add(new goog.testing.TestCase.Test("callblock1", function() {
         assertEquals(tests.call.render_dialog({}), '<div class="box">Hello, World!</div>');
     }));

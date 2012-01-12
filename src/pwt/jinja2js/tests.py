@@ -861,7 +861,7 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
 
 {% macro testcall() %}Hello, {{ xxx.ns1.testif(option = true) }}!{% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, ".html", "f.html")
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('goog.string');
@@ -886,9 +886,39 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     def test_call_macro5(self):
         # call macro with positional arguments
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
-{% macro testif(option) -%}
-{% if option %}{{ option }}{% endif %}{% endmacro %}
-{% macro testcall() %}Hello, {{ xxx.ns1.testif(true) }}!{% endmacro %}""")
+testif(option) {
+    if (option) return 'me';
+    return 'you';
+}
+
+{% macro testcall() %}Hello, {{ testif(true) }}!{% endmacro %}""")
+
+        source_code = jscompiler.generate(node, self.env, "", "")
+
+        self.assertEqual(source_code, """goog.provide('xxx.ns1');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
+
+testif(option) {
+    if (option) return 'me';
+    return 'you';
+}
+
+xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append('Hello, ', testif(true), '!');
+    if (!opt_sb) return output.toString();
+}""")
+
+    def test_call_macro5_positional_keyword(self):
+        # We can't mix positional and keyword arguments in Java Script
+        node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
+testif(option) {
+    if (option) return 'me';
+    return 'you'
+}
+
+{% macro testcall() %}Hello, {{ testif(true, keyword = false) }}!{% endmacro %}""")
 
         self.assertRaises(
             jinja2.compiler.TemplateAssertionError,

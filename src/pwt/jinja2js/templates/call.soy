@@ -14,6 +14,10 @@
 
 {% macro call3() %}{{ tests.call.dictcall(name = {'first': 'Michael', 'second': 'Kerrin'}) }}{% endmacro %}
 
+function dummy_call(one) { return "Michael"; };
+
+{% macro call_positional1() %}{{ dummy_call(true) }}{% endmacro %}
+
 /**
  * Test call blocks
  */

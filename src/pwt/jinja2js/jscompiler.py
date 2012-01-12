@@ -506,13 +506,16 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 # different code then concat.
                 if self.writer.__class__.__name__ == STRINGBUILDER:
                     if isinstance(item, jinja2.nodes.Call):
-                        if not start:
-                            self.writer.write_outputappend_end(item, frame)
-                            start = True
-                        self.writer.newline(item)
-                        self.visit(item, frame)
-                        self.writer.write(";")
-                        continue
+                        # XXX - If we are a macro then we must end the
+                        # appending of the output.
+                        if not item.args:
+                            if not start:
+                                self.writer.write_outputappend_end(item, frame)
+                                start = True
+                            self.writer.newline(item)
+                            self.visit(item, frame)
+                            self.writer.write(";")
+                            continue
 
                 if start:
                     self.writer.writeline_outputappend(item, frame)
@@ -963,10 +966,10 @@ class MacroCodeGenerator(BaseCodeGenerator):
         self.visit(node.call, frame, forward_caller = "func_caller")
         self.writer.write(";")
 
-    def signature(self, node, frame):
-        if node.args:
+    def signature(self, node, frame, forward_caller):
+        if node.args and node.kwargs:
             self.fail(
-                "Function call with positional arguments not allowed with JS",
+                "Function call with positional and keyword arguments not allowed",
                 node.lineno)
 
         if node.dyn_args or node.dyn_kwargs:
@@ -974,24 +977,33 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 "JS Does not support positional or keyword arguments",
                 node.lineno)
 
-        start = True
+        if node.args:
+            # We have only positional arguments here. In this case we assume
+            # that we have an ordinary Java Script function we wish to call
+            start_arg = True
+            for arg in node.args:
+                if not start_arg:
+                    self.write(", ")
+                self.visit(arg, frame)
+                start_arg = False
+
+            # Since this is a ordinary call bail out
+            return
+
+        # Now assume that we are calling an other macro
+        # XXX - we should be able test this by looking up the environment to
+        # see if that is the case.
+
+        start_kw = True
         self.writer.write("{")
         for kwarg in node.kwargs:
-            if not start:
+            if not start_kw:
                 self.writer.write(", ")
             self.writer.write(kwarg.key)
             self.writer.write(": ")
             self.visit(kwarg.value, frame)
-            start = False
+            start_kw = False
         self.writer.write("}")
-
-    def visit_Call(self, node, frame, forward_caller = None):
-        # function symbol to call
-        dotted_name = []
-        self.visit(node.node, frame, dotted_name = dotted_name)
-        # function signature
-        self.writer.write("%s(" % ".".join(dotted_name))
-        self.signature(node, frame)
 
         # If we are using the string builder then we generate slightly
         # different code.
@@ -1006,6 +1018,14 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
             self.writer.write(", ")
             self.writer.write(forward_caller)
+
+    def visit_Call(self, node, frame, forward_caller = None):
+        # function symbol to call
+        dotted_name = []
+        self.visit(node.node, frame, dotted_name = dotted_name)
+        # function signature
+        self.writer.write("%s(" % ".".join(dotted_name))
+        self.signature(node, frame, forward_caller)
         self.writer.write(")")
 
 
