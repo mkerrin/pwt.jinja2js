@@ -983,7 +983,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
             start_arg = True
             for arg in node.args:
                 if not start_arg:
-                    self.write(", ")
+                    self.writer.write(", ")
                 self.visit(arg, frame)
                 start_arg = False
 

@@ -922,6 +922,31 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_call_macro5_multiplepositional(self):
+        # call macro with positional arguments
+        node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
+printName(name, age) {
+    retuurn name + ' is ' + age;
+}
+
+{% macro testcall() %}{{ printName('michael', 31) }}!{% endmacro %}""")
+
+        source_code = jscompiler.generate(node, self.env, "", "")
+
+        self.assertEqual(source_code, """goog.provide('xxx.ns1');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
+
+printName(name, age) {
+    retuurn name + ' is ' + age;
+}
+
+xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append(printName('michael', 31), '!');
+    if (!opt_sb) return output.toString();
+}""")
+
     def test_call_macro5_positional_keyword(self):
         # We can't mix positional and keyword arguments in Java Script
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
