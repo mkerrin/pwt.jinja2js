@@ -209,6 +209,10 @@ window.onload = function() {
         assertEquals(tests.call.call2({}), "Michael was called!");
     }));
 
+    testcase.add(new goog.testing.TestCase.Test("call2", function() {
+        assertEquals(tests.call.call_multipleArgs1({}), "Michael is 31!");
+    }));
+
     testcase.add(new goog.testing.TestCase.Test("call3", function() {
         assertEquals(tests.call.call3({}), "Michael Kerrin");
     }));
