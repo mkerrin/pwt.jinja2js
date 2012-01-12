@@ -34,8 +34,19 @@ window.onload = function() {
     testcase.add(new goog.testing.TestCase.Test("var2_objectaccess", function() {
         assertEquals(
             tests.variables.var2_objectaccess({
-                obj: {"namevar": "Michael"},
+                obj: {
+                    "namevar": "Michael" // key needs to be quoted to work in compiled mode
+                },
                 name: "namevar"}),
+            "Hello Michael");
+    }));
+
+    testcase.add(new goog.testing.TestCase.Test("var2_objectaccess2", function() {
+        assertEquals(
+            tests.variables.var2_objectaccess2({
+                obj: {
+                    "namevar": "Michael" // key needs to be quoted to work in compiled mode
+                }}),
             "Hello Michael");
     }));
 
