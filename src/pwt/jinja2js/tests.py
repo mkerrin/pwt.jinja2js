@@ -795,6 +795,35 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_call_macro3_multiple_arguments(self):
+        # call macro passing in multiple arguments
+        node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
+{% macro testif(option, value) -%}
+{% if option %}{{ option }}{% endif %}{{ value }}{% endmacro %}
+
+{% macro testcall() %}{{ xxx.ns1.testif(option = true, value = 3) }}{% endmacro %}""")
+
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+
+        self.assertEqual(source_code, """goog.provide('xxx.ns1');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
+
+xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    if (opt_data.option) {
+        output.append(opt_data.option);
+    }
+    output.append(opt_data.value);
+    if (!opt_sb) return output.toString();
+}
+
+xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    xxx.ns1.testif({option: true, value: 3}, output);
+    if (!opt_sb) return output.toString();
+}""")
+
     def test_call_macro4(self):
         # call macro passing parament, with extra output
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}

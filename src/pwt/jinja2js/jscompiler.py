@@ -971,10 +971,10 @@ class MacroCodeGenerator(BaseCodeGenerator):
         for kwarg in node.kwargs:
             if not start:
                 self.writer.write(", ")
-                start = False
             self.writer.write(kwarg.key)
             self.writer.write(": ")
             self.visit(kwarg.value, frame)
+            start = False
         self.writer.write("}")
 
     def visit_Call(self, node, frame, forward_caller = None):
