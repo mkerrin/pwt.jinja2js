@@ -739,6 +739,18 @@ No option.
     if (!opt_sb) return output.toString();
 }""")
 
+    def test_set1(self):
+        node = self.get_compile_from_string("""{% macro set1() %}{% set num = 2 %}{{ num }}{% endmacro %}""")
+
+        source_code = generateMacro(node, self.env, "if.html", "if.html")
+
+        self.assertEqual(source_code, """test.set1 = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    var num = 2;
+    output.append(num);
+    if (!opt_sb) return output.toString();
+}""")
+
     def test_call_macro1(self):
         # call macro in same template, without arguments.
         node = self.get_compile_from_string("""{% namespace xxx %}

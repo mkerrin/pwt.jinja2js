@@ -1028,6 +1028,15 @@ class MacroCodeGenerator(BaseCodeGenerator):
         self.signature(node, frame, forward_caller)
         self.writer.write(")")
 
+    def visit_Assign(self, node, frame):
+        # XXX - test that we don't override any variable names doing this
+        self.writer.newline(node)
+        self.writer.write("var ")
+        self.visit(node.target, frame)
+        self.writer.write(" = ")
+        self.visit(node.node, frame)
+        self.writer.write(";")
+
 
 FILTERS = {}
 

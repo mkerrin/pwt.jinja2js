@@ -42,3 +42,8 @@ Hello {{ name }}!
 {% macro defaultparam3(name = 'Michael', age = 30) -%}
 Hello {{ name }} aged {{ age }}
 {%- endmacro %}
+
+{% macro assignment1() -%}
+{% set num = 1 -%}
+{{ num }}
+{%- endmacro %}

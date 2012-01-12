@@ -125,6 +125,10 @@ window.onload = function() {
         assertEquals(tests.variables.defaultparam3({name: "Aengus", age: 25}), "Hello Aengus aged 25");
     }));
 
+    testcase.add(new goog.testing.TestCase.Test("assignment1", function() {
+        assertEquals(tests.variables.assignment1(), "1");
+    }));
+
     // QUnit.module("if.soy");
 
     // test with option
