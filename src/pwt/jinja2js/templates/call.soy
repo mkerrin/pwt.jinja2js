@@ -10,6 +10,10 @@
 
 {% macro call_multipleArgs1() %}{{ tests.call.callme2(name = "Michael", age = 31) }}{% endmacro %}
 
+{% macro printRow(index) %}{{ index }}{% endmacro %}
+
+{% macro call_specialVariables(menus) %}{% for menu in menus %}{{ tests.call.printRow(index = loop.index0) }}{% endfor %}{% endmacro %}
+
 {% macro dictcall(name) %}{{ name.first }} {{ name.second }}{% endmacro %}
 
 {% macro call3() %}{{ tests.call.dictcall(name = {'first': 'Michael', 'second': 'Kerrin'}) }}{% endmacro %}

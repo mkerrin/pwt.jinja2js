@@ -1094,6 +1094,35 @@ Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
             jinja2.compiler.TemplateAssertionError,
             jscompiler.generate, node, self.env, "f.html", "f.html")
 
+    def test_call_macro12_special_for_loop_variables(self):
+        node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
+{% macro hello(index) -%}Hello, {{ index }}{% endmacro %}
+
+{% macro testcall(menus) %}{% for menu in menus %}{{ xxx.ns1.hello(index = loop.index0) }}{% endfor %}{% endmacro %}""")
+
+        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+
+        self.assertEqual(source_code, """goog.provide('xxx.ns1');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
+
+xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append('Hello, ', opt_data.index);
+    if (!opt_sb) return output.toString();
+}
+
+xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    var menuList = opt_data.menus;
+    var menuListLen = menuList.length;
+    for (var menuIndex = 0; menuIndex < menuListLen; menuIndex++) {
+        var menuData = menuList[menuIndex];
+        xxx.ns1.hello({index: menuIndex}, output);
+    }
+    if (!opt_sb) return output.toString();
+}""")
+
     def test_callblock1(self):
         node = self.get_compile_from_string("""{% namespace tests %}
 {% macro render_dialog(type) -%}

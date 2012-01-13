@@ -213,8 +213,14 @@ window.onload = function() {
         assertEquals(tests.call.call2({}), "Michael was called!");
     }));
 
-    testcase.add(new goog.testing.TestCase.Test("call2", function() {
+    testcase.add(new goog.testing.TestCase.Test("call2_multipleArgs1", function() {
         assertEquals(tests.call.call_multipleArgs1({}), "Michael is 31!");
+    }));
+
+    testcase.add(new goog.testing.TestCase.Test("call2_specialvariables", function() {
+        assertEquals(tests.call.call_specialVariables({
+            menus: ["one", "two", "three"]
+        }), "012");
     }));
 
     testcase.add(new goog.testing.TestCase.Test("call3", function() {

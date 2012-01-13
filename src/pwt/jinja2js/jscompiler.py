@@ -680,7 +680,10 @@ class MacroCodeGenerator(BaseCodeGenerator):
         self.writer.write("]")
 
     def visit_Getattr(self, node, frame, dotted_name = None):
-        if frame.forloop_buffer and node.node.name == "loop":
+        # We only need to check when `loop` is the first name-space in the
+        # Getattr node. Sometimes we have more then one level name-spaces and
+        # we are inside a for loop, likely when we are calling other macros.
+        if frame.forloop_buffer and getattr(node.node, "name", None) == "loop":
             if node.attr == "index0":
                 self.writer.write("%sIndex" % frame.forloop_buffer)
             elif node.attr == "index":
