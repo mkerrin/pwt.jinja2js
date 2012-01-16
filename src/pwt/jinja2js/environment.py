@@ -40,18 +40,20 @@ def create_environment(packages = [], directories = [], autoescape = [], extensi
                 break
 
             auto_templates.append(auto)
+        else:
+            # Don't override the autoescape variable
+            # XXX - this is not tested at the moment!!!
+            def autoescape(template_name):
+                if template_name in auto_templates:
+                    return True
 
-        def autoescape(template_name):
-            if template_name in auto_templates:
-                return True
+                if template_name[0] == "/" and template_name[1:] in auto_templates:
+                    return True
+                if template_name[0] != "/" \
+                       and template_name + "/" in auto_templates:
+                    return True
 
-            if template_name[0] == "/" and template_name[1:] in auto_templates:
-                return True
-            if template_name[0] != "/" \
-                   and template_name + "/" in auto_templates:
-                return True
-
-            return False
+                return False
     else:
         autoescape = False
 
