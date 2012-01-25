@@ -56,7 +56,7 @@ class JSEnvironment(unittest.TestCase):
             writer = "pwt.jinja2js.jscompiler.StringBuilder",
             )
 
-        source = env.loader.get_source(env, "example.soy")
+        source = env.loader.get_source(env, "example.jinja2")
         self.assertEqual(source[0], "{% namespace example %}\n\n{% macro hello(name) %}\nHello, {{ name }}!\n{% endmacro %}\n")
 
 
@@ -1318,7 +1318,7 @@ users = function(opt_data, opt_sb, opt_caller) {
 
     def test_import1(self):
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
-{% import 'test_import.soy' as forms %}
+{% import 'test_import.jinja2' as forms %}
 
 {% macro hello(name) %}{{ forms.input(name = 'test') }}{% endmacro %}""")
 
@@ -1718,7 +1718,7 @@ hello = function(opt_data, opt_sb, opt_caller) {
 
     def test_comments3(self):
         node = self.get_compile_from_string("""// ok
-{% import 'test_import.soy' as forms %}
+{% import 'test_import.jinja2' as forms %}
 // ok 2
 /**
  * This prints out hello world!
@@ -1747,7 +1747,7 @@ hello = function(opt_data, opt_sb, opt_caller) {
         # same as previous but put in new lines into templates.
         node = self.get_compile_from_string("""// ok
 
-{% import 'test_import.soy' as forms %}
+{% import 'test_import.jinja2' as forms %}
 
 // ok 2
 
@@ -1811,13 +1811,13 @@ class SoyServer(unittest.TestCase):
 
     def test_soy2(self):
         app = self.get_app()
-        res = app.get("/example.soy")
+        res = app.get("/example.jinja2")
 
     def test_concat_soy1(self):
         app = webtest.TestApp(
             wsgi.ConcatResources(packages = "pwt.jinja2js:test_templates")
             )
-        res = app.get("/example.soy")
+        res = app.get("/example.jinja2")
 
         self.assertEqual(res.body, """if (typeof example == 'undefined') { var example = {}; }
 
@@ -1832,7 +1832,7 @@ example.hello = function(opt_data, opt_sb, opt_caller) {
         app = webtest.TestApp(
             wsgi.ClosureResources(packages = "pwt.jinja2js:test_templates")
             )
-        res = app.get("/example.soy")
+        res = app.get("/example.jinja2")
 
         self.assertEqual(res.body, """goog.provide('example');
 goog.require('goog.string');
@@ -1856,11 +1856,11 @@ class RealSoyServer(unittest.TestCase):
 
     def test_soy1(self):
         app = self.get_app()
-        res = app.get("/variables.soy")
+        res = app.get("/variables.jinja2")
 
     def test_soy2(self):
         app = self.get_app()
-        res = app.get("/autoescaped.soy")
+        res = app.get("/autoescaped.jinja2")
 
 
 class CLInterfaceTestCase(unittest.TestCase):
@@ -1889,7 +1889,8 @@ class CLInterfaceTestCase(unittest.TestCase):
         output = StringIO()
         result = cli.main([
             "--outputPathFormat", "%s/${INPUT_FILE_NAME_NO_EXT}.js" % self.tempdir,
-            "%s/test_templates/example.soy" % os.path.dirname(jscompiler.__file__)
+            "%s/test_templates/example.jinja2" %(
+                os.path.dirname(jscompiler.__file__))
             ], output)
         self.assertEqual(result, 0)
 
@@ -1912,7 +1913,8 @@ example.hello = function(opt_data, opt_sb, opt_caller) {
         result = cli.main([
             "--outputPathFormat", "%s/${INPUT_FILE_NAME_NO_EXT}.js" % self.tempdir,
             "--codeStyle", "stringbuilder",
-            "%s/test_templates/example.soy" % os.path.dirname(jscompiler.__file__)
+            "%s/test_templates/example.jinja2" %(
+                os.path.dirname(jscompiler.__file__))
             ], output)
         self.assertEqual(result, 0)
 

@@ -1,6 +1,6 @@
 {% namespace tests.importtest %}
 
-{% import "imported.soy" as macros %}
+{% import "imported.jinja2" as macros %}
 
 {% macro testcall() -%}
 {{ macros.hello(name = "Michael") }}
