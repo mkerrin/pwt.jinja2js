@@ -928,7 +928,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
         self.blockvisit(node.body, frame)
         self.writer.writeline_endoutput(node, frame)
         self.writer.outdent()
-        self.writer.writeline("}")
+        self.writer.writeline("};")
 
     def visit_Macro(self, node, frame):
         name = node.name

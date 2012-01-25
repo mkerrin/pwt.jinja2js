@@ -74,7 +74,7 @@ hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, world!\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_const1(self):
         node = self.get_compile_from_string("""{% macro hello() %}
@@ -86,7 +86,7 @@ Hello, world!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, world!\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_undeclared_var1(self):
         # variable is undeclared
@@ -118,7 +118,7 @@ test.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', goog.color.names.aqua, '\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var1(self):
         node = self.get_compile_from_string("""{% macro hello(name) %}
@@ -131,7 +131,7 @@ test.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', opt_data.name, '\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var1_accessobject1(self):
         # Try and access the property `name` from the object properties
@@ -145,7 +145,7 @@ test.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', opt_data.properties['name'], '\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var1_accessobject2(self):
         # Try and access the property name reference by `name` from the object
@@ -160,7 +160,7 @@ test.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', opt_data.properties[opt_data.name], '\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var2(self):
         node = self.get_compile_from_string("""{% macro helloName(name) %}
@@ -173,7 +173,7 @@ Hello, {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, ', opt_data.name, '!\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var3(self):
         # variables with numerical addition
@@ -187,7 +187,7 @@ Hello, {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', (opt_data.num + 200), '\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var4(self):
         # variables with numerical addition to variable
@@ -201,7 +201,7 @@ Hello, {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', (opt_data.num + opt_data.step), '\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var5(self):
         # variables minus, power of,
@@ -215,7 +215,7 @@ Hello, {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', Math.pow((opt_data.num - opt_data.step), 2), '\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var6(self):
         # variables floor division
@@ -229,7 +229,7 @@ Hello, {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', Math.floor((opt_data.num / opt_data.step)), '\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var6(self):
         # variables minus, power of,
@@ -243,7 +243,7 @@ Hello, {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', (opt_data.num - Math.pow(opt_data.step, 2)), '\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var7(self):
         # variables + with autoescape on
@@ -255,7 +255,7 @@ Hello, {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(goog.string.htmlEscape(String((opt_data.num - Math.pow(opt_data.step, 2)))));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var8(self):
         # variables + with autoescape and the escape filter
@@ -267,7 +267,7 @@ Hello, {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(goog.string.htmlEscape(String((opt_data.num - Math.pow(opt_data.step, 2)))));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var9(self):
         # variables -
@@ -279,7 +279,7 @@ Hello, {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(goog.string.htmlEscape(String(((-opt_data.num) + 20))));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var10(self):
         # variables +
@@ -291,7 +291,7 @@ Hello, {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(goog.string.htmlEscape(String(((+opt_data.num) + 20))));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var11(self):
         # variables not
@@ -303,7 +303,7 @@ Hello, {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(goog.string.htmlEscape(String((!opt_data.bool))));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var12(self):
         # variables with default values
@@ -323,7 +323,7 @@ Hello {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('Hello ', opt_data.name, '!');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var13(self):
         # variables with default values
@@ -343,7 +343,7 @@ Hello {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(opt_data.name, ' is ', opt_data.age);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_var14(self):
         # variables with multiple default values
@@ -363,7 +363,7 @@ Hello {{ name }}!
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(opt_data.name, ' is ', opt_data.age);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_for1(self):
         # test for loop
@@ -397,7 +397,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
     }
     output.append('\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_for2(self):
         # test loop.index0 variables
@@ -413,7 +413,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         output.append(itemIndex);
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_for3(self):
         # test loop.index variables
@@ -429,7 +429,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         output.append(itemIndex + 1);
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_for4(self):
         # test loop.revindex & loop.revindex0 variables
@@ -445,7 +445,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         output.append(itemListLen - itemIndex - 1, ' - ', itemListLen - itemIndex);
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_for5(self):
         # test loop.length & loop.first & loop.last variables
@@ -461,7 +461,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         output.append(itemListLen, ' - ', itemIndex == 0, ' - ', itemIndex == (itemListLen - 1));
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_for6(self):
         # test invalid loop access
@@ -484,7 +484,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         output.append(itemIndex + 1, ' - ', opt_data.name);
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_for8(self):
         # test loop.index with other variable, with attribute
@@ -500,7 +500,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
         output.append(itemIndex + 1, ' - ', opt_data.param.name);
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_for9(self):
         # bug report - need to rename nested for loop iterators.
@@ -532,7 +532,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
     }
     output.append('\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_for10(self):
         # test for in list loop
@@ -555,7 +555,7 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
     }
     output.append('\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_for11(self):
         # test for loop not producing extra namespace requirements
@@ -579,7 +579,7 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
     }
     output.append('\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_for12(self):
         # test for loop for conflicting variables, which doesn't happen
@@ -601,7 +601,7 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
         output.append(jobData.name, ' does ', opt_data.jobData);
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_for13_confliction_variables_for_loop(self):
         # XXX - test for loop for conflicting variables. Here we have a
@@ -626,7 +626,7 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
         output.append(jobData.name, ' does ', jobData.name);
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_if1(self):
         # test if
@@ -640,7 +640,7 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
         output.append(opt_data.option);
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_if2(self):
         # test if / else
@@ -665,7 +665,7 @@ No option.
     }
     output.append('\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_if3(self):
         # test if ==
@@ -679,7 +679,7 @@ No option.
         output.append(opt_data.num);
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_if4(self):
         # test if == and !=
@@ -693,7 +693,7 @@ No option.
         output.append(opt_data.num);
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_if5(self):
         # test if > and >= and < and <=
@@ -707,7 +707,7 @@ No option.
         output.append(opt_data.num);
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_if6(self):
         # test if in
@@ -737,7 +737,7 @@ No option.
         output.append(opt_data.num);
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_set1(self):
         node = self.get_compile_from_string("""{% macro set1() %}{% set num = 2 %}{{ num }}{% endmacro %}""")
@@ -749,7 +749,7 @@ No option.
     var num = 2;
     output.append(num);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_call_macro1(self):
         # call macro in same template, without arguments.
@@ -771,13 +771,13 @@ xxx.testif = function(opt_data, opt_sb, opt_caller) {
         output.append(opt_data.option);
     }
     if (!opt_sb) return output.toString();
-}
+};
 
 xxx.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     xxx.testif({}, output);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_call_macro2(self):
         # call macro in same template where the namespace contains
@@ -800,13 +800,13 @@ xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
         output.append(opt_data.option);
     }
     if (!opt_sb) return output.toString();
-}
+};
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     xxx.ns1.testif({}, output);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_call_macro3(self):
         # call macro passing in a argument
@@ -828,13 +828,13 @@ xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
         output.append(opt_data.option);
     }
     if (!opt_sb) return output.toString();
-}
+};
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     xxx.ns1.testif({option: true}, output);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_call_macro3_multiple_arguments(self):
         # call macro passing in multiple arguments
@@ -857,13 +857,13 @@ xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
     }
     output.append(opt_data.value);
     if (!opt_sb) return output.toString();
-}
+};
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     xxx.ns1.testif({option: true, value: 3}, output);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_call_macro4(self):
         # call macro passing parament, with extra output
@@ -885,7 +885,7 @@ xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
         output.append(opt_data.option);
     }
     if (!opt_sb) return output.toString();
-}
+};
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -893,7 +893,7 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     xxx.ns1.testif({option: true}, output);
     output.append('!');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_call_macro5(self):
         # call macro with positional arguments
@@ -920,7 +920,7 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('Hello, ', testif(true), '!');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_call_macro5_multiplepositional(self):
         # call macro with positional arguments
@@ -945,7 +945,7 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(printName('michael', 31), '!');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_call_macro5_positional_keyword(self):
         # We can't mix positional and keyword arguments in Java Script
@@ -998,13 +998,13 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     }
     output.append('!');
     if (!opt_sb) return output.toString();
-}
+};
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     xxx.ns1.hello({name: 'Michael'}, output);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_call_macro8(self):
         # call macro with parameter sub
@@ -1030,13 +1030,13 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     }
     output.append('!');
     if (!opt_sb) return output.toString();
-}
+};
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     xxx.ns1.hello({name: {first: 'Michael'}}, output);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_call_macro9(self):
         # call macro with parameter sub, without quotes
@@ -1062,13 +1062,13 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     }
     output.append('!');
     if (!opt_sb) return output.toString();
-}
+};
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     xxx.ns1.hello({name: {first: 'Michael'}}, output);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_call_macro10(self):
         # call macro with parameter sub, key constains a dot.
@@ -1110,7 +1110,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('Hello, ', opt_data.index);
     if (!opt_sb) return output.toString();
-}
+};
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -1121,7 +1121,7 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
         xxx.ns1.hello({index: menuIndex}, output);
     }
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_callblock1(self):
         node = self.get_compile_from_string("""{% namespace tests %}
@@ -1148,7 +1148,7 @@ tests.render_dialog = function(opt_data, opt_sb, opt_caller) {
     opt_caller({}, output);
     output.append('</div>');
     if (!opt_sb) return output.toString();
-}
+};
 
 tests.render = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -1156,10 +1156,10 @@ tests.render = function(opt_data, opt_sb, opt_caller) {
         var output = func_sb || new goog.string.StringBuffer();
         output.append('Hello ', opt_data.name, '!');
         if (!func_sb) return output.toString();
-    }
+    };
     tests.render_dialog({type: 'box'}, output, func_caller);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_callblock2(self):
         node = self.get_compile_from_string("""{% macro list_users(users) -%}
@@ -1194,7 +1194,7 @@ list_users = function(opt_data, opt_sb, opt_caller) {
     }
     output.append('\\n</ul>');
     if (!opt_sb) return output.toString();
-}
+};
 
 users = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -1202,10 +1202,10 @@ users = function(opt_data, opt_sb, opt_caller) {
         var output = func_sb || new goog.string.StringBuffer();
         output.append('Hello, ', func_data.user, '!');
         if (!func_sb) return output.toString();
-    }
+    };
     list_users({users: opt_data.users}, output, func_caller);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_callblock3(self):
         node = self.get_compile_from_string("""{% macro list_users(users) -%}
@@ -1243,7 +1243,7 @@ list_users = function(opt_data, opt_sb, opt_caller) {
     }
     output.append('\\n</ul>');
     if (!opt_sb) return output.toString();
-}
+};
 
 users = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -1251,17 +1251,17 @@ users = function(opt_data, opt_sb, opt_caller) {
         var output = func_sb || new goog.string.StringBuffer();
         output.append('Hello, ', func_data.user, '!');
         if (!func_sb) return output.toString();
-    }
+    };
     list_users({users: opt_data.users}, output, func_caller);
     output.append('\\n');
     func_caller = function(func_data, func_sb, func_caller) {
         var output = func_sb || new goog.string.StringBuffer();
         output.append('Goodbye, ', func_data.user, ' from ', opt_data.name, '!');
         if (!func_sb) return output.toString();
-    }
+    };
     list_users({users: opt_data.users2}, output, func_caller);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_callblock4(self):
         #
@@ -1297,7 +1297,7 @@ list_users = function(opt_data, opt_sb, opt_caller) {
     }
     output.append('\\n</ul>');
     if (!opt_sb) return output.toString();
-}
+};
 
 users = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
@@ -1311,10 +1311,10 @@ users = function(opt_data, opt_sb, opt_caller) {
         var output = func_sb || new goog.string.StringBuffer();
         output.append('Hello, ', func_data.user, '!');
         if (!func_sb) return output.toString();
-    }
+    };
     list_users({users: opt_data.users}, output, func_caller);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_import1(self):
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
@@ -1334,7 +1334,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     test.ns1.input({name: 'test'}, output);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_filters1(self):
         # calling undefined filter
@@ -1352,7 +1352,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(goog.string.htmlEscape(String(opt_data.data)));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_filter_escape2(self):
         # autoescape filter
@@ -1364,7 +1364,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(goog.string.htmlEscape(String(opt_data.data)));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_filter_escape3(self):
         # autoescape with safe filter
@@ -1376,7 +1376,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(opt_data.data);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_filter_escape4(self):
         # autoescape with safe filter withg autoescape off
@@ -1388,7 +1388,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(opt_data.data);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_filter_default1(self):
         node = self.get_compile_from_string("""{% macro hello(name) %}{{ name|default('World') }}{% endmacro %}""")
@@ -1399,7 +1399,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append((opt_data.name ? opt_data.name : 'World'));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_filter_default2(self):
         # same as previous but test keyword arguments to filters.
@@ -1411,7 +1411,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append((opt_data.name ? opt_data.name : 'World'));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_filter_truncate1(self):
         node = self.get_compile_from_string("""{% macro trunc(s) %}{{ s|truncate(length = 280) }}{% endmacro %}""")
@@ -1422,7 +1422,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(opt_data.s.substring(0, 280));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_filter_capitalize(self):
         # different in concat and stringbuilder modes
@@ -1434,7 +1434,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(opt_data.s.substring(0, 1).toUpperCase(), opt_data.s.substring(1));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_filter_round1(self):
         node = self.get_compile_from_string("""{% macro round(num) %}{{ num|round }}{% endmacro %}""")
@@ -1445,7 +1445,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(Math.round(opt_data.num));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_filter_round2(self):
         node = self.get_compile_from_string("""{% macro round(num) %}{{ num|round(precision = 2) }}{% endmacro %}""")
@@ -1456,7 +1456,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(Math.round(opt_data.num * 100) / 100);
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_filter_round3(self):
         node = self.get_compile_from_string("""{% macro round(num, prec) %}{{ num|round(precision = prec) }}{% endmacro %}""")
@@ -1467,7 +1467,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(Math.round(opt_data.num * Math.pow(10, opt_data.prec)) / Math.pow(10, opt_data.prec));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_filter_round4(self):
         node = self.get_compile_from_string("""{% macro round(num) %}{{ num|round(precision = 0) }}{% endmacro %}""")
@@ -1478,7 +1478,7 @@ xxx.ns1.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append(Math.round(opt_data.num));
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_filter_round5(self):
         node = self.get_compile_from_string("""{% macro round(num) %}{{ num|round(precision = 0, method = 'ceil') }}{% endmacro %}""")
@@ -1510,7 +1510,7 @@ testns.consts.hello = function(opt_data, opt_sb, opt_caller) {
     var output = '';
     output += 'Hello, world!';
     return output;
-}""")
+};""")
 
     def test_var1(self):
         node = self.get_compile_from_string("""{% macro hello(name) %}
@@ -1523,7 +1523,7 @@ testns.consts.hello = function(opt_data, opt_sb, opt_caller) {
     var output = '';
     output += '\\n' + opt_data.name + '\\n';
     return output;
-}""")
+};""")
 
     def test_for13(self):
         # XXX - test for loop for conflicting variables. Here we have a
@@ -1546,7 +1546,7 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
         output += jobData.name + ' does ' + jobData.name;
     }
     return output;
-}""")
+};""")
 
     def test_call_macro1(self):
         # call macro in same template, without arguments.
@@ -1566,13 +1566,13 @@ xxx.testif = function(opt_data, opt_sb, opt_caller) {
         output += opt_data.option;
     }
     return output;
-}
+};
 
 xxx.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = '';
     output += xxx.testif({});
     return output;
-}""")
+};""")
 
     def test_call_macro3(self): # Copied from above and modified
         # call macro passing in a argument
@@ -1593,13 +1593,13 @@ xxx.ns1.testif = function(opt_data, opt_sb, opt_caller) {
         output += opt_data.option;
     }
     return output;
-}
+};
 
 xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
     var output = '';
     output += xxx.ns1.testif({option: true});
     return output;
-}""")
+};""")
 
     def test_callblock1(self):
         node = self.get_compile_from_string("""{% namespace tests %}
@@ -1622,7 +1622,7 @@ tests.render_dialog = function(opt_data, opt_sb, opt_caller) {
     var output = '';
     output += '<div class="type">' + opt_caller({}) + '</div>';
     return output;
-}
+};
 
 tests.render = function(opt_data, opt_sb, opt_caller) {
     var output = '';
@@ -1630,10 +1630,10 @@ tests.render = function(opt_data, opt_sb, opt_caller) {
         var output = '';
         output += 'Hello ' + opt_data.name + '!';
         return output;
-    }
+    };
     output += tests.render_dialog({type: 'box'}, null, func_caller);
     return output;
-}""")
+};""")
 
     def test_filter_capitalize(self):
         # different in concat and stringbuilder modes
@@ -1645,7 +1645,7 @@ tests.render = function(opt_data, opt_sb, opt_caller) {
     var output = '';
     output += opt_data.s.substring(0, 1).toUpperCase() + opt_data.s.substring(1);
     return output;
-}""")
+};""")
 
 
 class JSCompilerTemplateTestCaseOutput(JSCompilerTestCase):
@@ -1672,7 +1672,7 @@ hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, world!\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_comments_containing_variables(self):
         # Make sure that any comments in the template get output in a
@@ -1693,7 +1693,7 @@ hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, ', opt_data.name, '!\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_comments2(self):
         node = self.get_compile_from_string("""/**
@@ -1714,7 +1714,7 @@ hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, ', opt_data.name.firstname, '!\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_comments3(self):
         node = self.get_compile_from_string("""// ok
@@ -1741,7 +1741,7 @@ hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, ', opt_data.name.firstname, '!\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     def test_comments4(self):
         # same as previous but put in new lines into templates.
@@ -1775,7 +1775,7 @@ hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, ', opt_data.name.firstname, '!\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
 
 class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):
@@ -1826,7 +1826,7 @@ example.hello = function(opt_data, opt_sb, opt_caller) {
     var output = '';
     output += '\\nHello, ' + opt_data.name + '!\\n';
     return output;
-}""")
+};""")
 
     def test_closure_soy1(self):
         app = webtest.TestApp(
@@ -1843,7 +1843,7 @@ example.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, ', opt_data.name, '!\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
 
 class RealSoyServer(unittest.TestCase):
@@ -1905,7 +1905,7 @@ example.hello = function(opt_data, opt_sb, opt_caller) {
     var output = '';
     output += '\\nHello, ' + opt_data.name + '!\\n';
     return output;
-}""")
+};""")
 
     def test_cli4(self):
         # test using a different code style
@@ -1931,7 +1931,7 @@ example.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\nHello, ', opt_data.name, '!\\n');
     if (!opt_sb) return output.toString();
-}""")
+};""")
 
     # test the generation of different filenames
 
