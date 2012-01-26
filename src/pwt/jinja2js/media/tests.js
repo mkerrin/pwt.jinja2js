@@ -21,7 +21,7 @@ goog.require("goog.testing.TestRunner");
 // with the closure compiler and test the output from the templates when we
 // are compiled to a single file.
 window.onload = function() {
-    var testcase = new goog.testing.TestCase("variables.soy");
+    var testcase = new goog.testing.TestCase("variables.jinja2");
 
     testcase.add(new goog.testing.TestCase.Test("constvar", function() {
         assertEquals("Hello", tests.variables.constvar({}));
@@ -129,7 +129,7 @@ window.onload = function() {
         assertEquals("1", tests.variables.assignment1());
     }));
 
-    // QUnit.module("if.soy");
+    // QUnit.module("if.jinja2");
 
     // test with option
     testcase.add(new goog.testing.TestCase.Test("basicif", function() {
@@ -179,7 +179,7 @@ window.onload = function() {
         assertEquals(tests.iftest.ifequal2({option: 1}), "");
     }));
 
-    // QUnit.module("for.soy");
+    // QUnit.module("for.jinja2");
 
     testcase.add(new goog.testing.TestCase.Test("for1", function() {
         assertEquals(tests.fortest.for1({data: [1, 2, 3]}), "123");
