@@ -99,8 +99,10 @@ Hello, world!
             generateMacro, node, self.env, "var1.html", "var1.html")
 
     def test_namespaced_var1(self):
-        # variable is undeclared
+        # variable is undeclared. We if need to require these variables then
+        # we can do so outside the macro definition, like so.
         node = self.get_compile_from_string("""{% namespace test %}
+goog.require('goog.color.names'); // needed to use goog.color.names data
 {% macro hello() %}
 {{ goog.color.names.aqua }}
 {% endmacro %}
@@ -111,8 +113,7 @@ Hello, world!
 goog.require('goog.string');
 goog.require('goog.string.StringBuffer');
 
-
-goog.require('goog.color.names');
+goog.require('goog.color.names'); // needed to use goog.color.names data
 test.hello = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n', goog.color.names.aqua, '\\n');
@@ -602,7 +603,7 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 }""")
 
-    def test_for13(self):
+    def test_for13_confliction_variables_for_loop(self):
         # XXX - test for loop for conflicting variables. Here we have a
         # namespaced variable that gets required but conflicts with the
         # variable inside the loop that we created. If this is a problem
@@ -616,7 +617,6 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
         self.assertEqual(source_code, """goog.provide('test');
 goog.require('goog.string');
 goog.require('goog.string.StringBuffer');
-goog.require('jobData');
 test.forinlist = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     var jobList = opt_data.jobs;

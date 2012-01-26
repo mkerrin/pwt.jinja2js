@@ -396,12 +396,6 @@ class CodeGenerator(BaseCodeGenerator):
             self.filename)
         generator.visit(node, frame)
 
-        for requirement in generator.requirements:
-            self.writer.writeline_require(
-                node, frame, requirement.encode(frame.eval_ctx.encoding))
-        if generator.requirements:
-            self.writer.newline(node) # keep whitespace ok
-
         self.writer.write(generator.writer.stream.getvalue())
 
     def visit_TemplateData(self, node, frame):
@@ -441,16 +435,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
     def __init__(self, environment, writer, name, filename):
         super(MacroCodeGenerator, self).__init__(environment, name, filename)
 
-        # collect all the namespaced requirements
-        self.requirements = set([])
-
         self.writer = writer
-
-    def addRequirement(self, requirement, frame):
-        if requirement == frame.eval_ctx.namespace:
-            return
-
-        self.requirements.add(requirement)
 
     def visit_Output(self, node, frame):
         # JS is only interested in macros etc, as all of JavaScript
@@ -706,6 +691,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
             else:
                 raise AttributeError("loop.%s not defined" % node.attr)
         else:
+            # write_variable is going to be true if dotted_name is None which
+            # implies that we are gathering the variable name together. So
+            # don't write it out yet.
             write_variable = False
             if dotted_name is None:
                 dotted_name = []
@@ -716,8 +704,6 @@ class MacroCodeGenerator(BaseCodeGenerator):
             dotted_name.append(node.attr)
 
             if write_variable:
-                if not param:
-                    self.addRequirement(".".join(dotted_name[:-1]), frame)
                 self.writer.write(".".join(dotted_name))
 
     def binop(operator):
