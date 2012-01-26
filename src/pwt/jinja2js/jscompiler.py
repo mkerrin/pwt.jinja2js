@@ -1032,6 +1032,19 @@ class MacroCodeGenerator(BaseCodeGenerator):
         self.visit(node.node, frame)
         self.writer.write(";")
 
+    def visit_CondExpr(self, node, frame):
+        self.visit(node.test, frame)
+        self.writer.write(' ? ')
+        self.visit(node.expr1, frame)
+        self.writer.write(' : ')
+        # XXX - should this allow undefined else clauses? it's tough to
+        #       really judge what the correct behaviour should be, but
+        #       I have chosen an empty string since it is falsy and won't
+        #       be printed if that's what the value is ultimately used for.
+        if node.expr2:
+            self.visit(node.expr2, frame)
+        else:
+            self.writer.write("''")
 
 FILTERS = {}
 

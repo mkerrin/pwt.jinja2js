@@ -739,6 +739,34 @@ No option.
     if (!opt_sb) return output.toString();
 };""")
 
+    def test_condexpr1(self):
+        # test if
+        node = self.get_compile_from_string("""{% macro testif(option) %}{{ option if option }}{% endmacro %}""")
+
+        source_code = generateMacro(node, self.env, "condexpr.html", "condexpr.html")
+
+        self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append(opt_data.option ? opt_data.option : '');
+    if (!opt_sb) return output.toString();
+};""")
+
+    def test_condexpr2(self):
+        # test if / else
+        node = self.get_compile_from_string("""{% macro iftest(option) %}
+{{ 'Option set.' if option else 'No option.' }}
+{% endmacro %}
+""")
+
+        source_code = generateMacro(node, self.env, "condexpr.html", "condexpr.html")
+
+        self.assertEqual(source_code, """test.iftest = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append('\\n', opt_data.option ? 'Option set.' : 'No option.', '\\n');
+    if (!opt_sb) return output.toString();
+};""")
+
+
     def test_set1(self):
         node = self.get_compile_from_string("""{% macro set1() %}{% set num = 2 %}{{ num }}{% endmacro %}""")
 
