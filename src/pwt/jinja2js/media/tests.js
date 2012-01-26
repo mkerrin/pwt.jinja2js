@@ -24,118 +24,118 @@ window.onload = function() {
     var testcase = new goog.testing.TestCase("variables.soy");
 
     testcase.add(new goog.testing.TestCase.Test("constvar", function() {
-        assertEquals(tests.variables.constvar({}), "Hello");
+        assertEquals("Hello", tests.variables.constvar({}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("var1", function() {
-        assertEquals(tests.variables.var1({name: "Michael"}), "Hello Michael");
+        assertEquals("Hello Michael", tests.variables.var1({name: "Michael"}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("var2_objectaccess", function() {
         assertEquals(
+            "Hello Michael",
             tests.variables.var2_objectaccess({
                 obj: {
                     "namevar": "Michael" // key needs to be quoted to work in compiled mode
                 },
-                name: "namevar"}),
-            "Hello Michael");
+                name: "namevar"}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("var2_objectaccess2", function() {
         assertEquals(
+            "Hello Michael",
             tests.variables.var2_objectaccess2({
                 obj: {
                     "namevar": "Michael" // key needs to be quoted to work in compiled mode
-                }}),
-            "Hello Michael");
+                }}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("numadd1", function() {
-        assertEquals(tests.variables.add1({num: 10}), "20");
-        assertEquals(tests.variables.add1({num: 20}), "30");
+        assertEquals("20", tests.variables.add1({num: 10}));
+        assertEquals("30", tests.variables.add1({num: 20}));
     }))
 
     testcase.add(new goog.testing.TestCase.Test("numadd2", function() {
-        assertEquals(tests.variables.add2({num: 10, step: 4}), "14");
+        assertEquals("14", tests.variables.add2({num: 10, step: 4}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("numsub1", function() {
-        assertEquals(tests.variables.sub1({num: 10, step: 4}), "6");
+        assertEquals("6", tests.variables.sub1({num: 10, step: 4}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("div1", function() {
-        assertEquals(tests.variables.div1({num: 10, step: 5}), "2");
-        assertEquals(tests.variables.div1({num: 9, step: 4}), "2.25");
+        assertEquals("2", tests.variables.div1({num: 10, step: 5}));
+        assertEquals("2.25", tests.variables.div1({num: 9, step: 4}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("floordiv1", function() {
-        assertEquals(tests.variables.floordiv1({n1: 3, n2: 2}), "1");
-        assertEquals(tests.variables.floordiv1({n1: 19, n2: 5}), "3");
+        assertEquals("1", tests.variables.floordiv1({n1: 3, n2: 2}));
+        assertEquals("3", tests.variables.floordiv1({n1: 19, n2: 5}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("pow1", function() {
-        assertEquals(tests.variables.pow1({num: 2, power: 3}), "8");
+        assertEquals("8", tests.variables.pow1({num: 2, power: 3}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("mod1", function() {
-        assertEquals(tests.variables.mod1({n1: 3, n2: 2}), "1");
-        assertEquals(tests.variables.mod1({n1: 9, n2: 5}), "4");
+        assertEquals("1", tests.variables.mod1({n1: 3, n2: 2}));
+        assertEquals("4", tests.variables.mod1({n1: 9, n2: 5}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("ordering1", function() {
         // (3 + 2) ** 2
-        assertEquals(tests.variables.order1({n1: 3, n2: 2}), "25");
+        assertEquals("25", tests.variables.order1({n1: 3, n2: 2}));
         // 3 + (2 ** 2)
-        assertEquals(tests.variables.order2({n1: 3, n2: 2}), "7");
+        assertEquals("7", tests.variables.order2({n1: 3, n2: 2}));
         // 7 + 3 * 4
-        assertEquals(tests.variables.order3({n1: 7, n2: 3, n3: 4}), "19");
+        assertEquals("19", tests.variables.order3({n1: 7, n2: 3, n3: 4}));
         // (7 + 3) * 4
-        assertEquals(tests.variables.order4({n1: 7, n2: 3, n3: 4}), "40");
+        assertEquals("40", tests.variables.order4({n1: 7, n2: 3, n3: 4}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("unaryminus1", function() {
-        assertEquals(tests.variables.unaryminus1({num: 10}), "5");
-        assertEquals(tests.variables.unaryminus1({num: 5}), "10");
+        assertEquals("5", tests.variables.unaryminus1({num: 10}));
+        assertEquals("10", tests.variables.unaryminus1({num: 5}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("unaryminus2", function() {
-        assertEquals(tests.variables.unaryminus2({num: 10}), "25");
-        assertEquals(tests.variables.unaryminus2({num: 5}), "20");
+        assertEquals("25", tests.variables.unaryminus2({num: 10}));
+        assertEquals("20", tests.variables.unaryminus2({num: 5}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("unarynot", function() {
-        assertEquals(tests.variables.unarynot({bool: 1}), "false");
-        assertEquals(tests.variables.unarynot({bool: 0}), "true");
+        assertEquals("false", tests.variables.unarynot({bool: 1}));
+        assertEquals("true", tests.variables.unarynot({bool: 0}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("defaultparam1", function() {
-        assertEquals(tests.variables.defaultparam1({}), "Hello World!");
-        assertEquals(tests.variables.defaultparam1({name: "Michael"}), "Hello Michael!");
+        assertEquals("Hello World!", tests.variables.defaultparam1({}));
+        assertEquals("Hello Michael!", tests.variables.defaultparam1({name: "Michael"}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("defaultparam2", function() {
-        assertEquals(tests.variables.defaultparam2({}), "Null");
-        assertEquals(tests.variables.defaultparam2({option: ""}), "Not null");
-        assertEquals(tests.variables.defaultparam2({option: null}), "Null");
+        assertEquals("Null", tests.variables.defaultparam2({}));
+        assertEquals("Not null", tests.variables.defaultparam2({option: ""}));
+        assertEquals("Null", tests.variables.defaultparam2({option: null}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("defaultparam3", function() {
-        assertEquals(tests.variables.defaultparam3({}), "Hello Michael aged 30");
-        assertEquals(tests.variables.defaultparam3({name: "Aengus"}), "Hello Aengus aged 30");
-        assertEquals(tests.variables.defaultparam3({name: "Aengus", age: 25}), "Hello Aengus aged 25");
+        assertEquals("Hello Michael aged 30", tests.variables.defaultparam3({}));
+        assertEquals("Hello Aengus aged 30", tests.variables.defaultparam3({name: "Aengus"}));
+        assertEquals("Hello Aengus aged 25", tests.variables.defaultparam3({name: "Aengus", age: 25}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("assignment1", function() {
-        assertEquals(tests.variables.assignment1(), "1");
+        assertEquals("1", tests.variables.assignment1());
     }));
 
     // QUnit.module("if.soy");
 
     // test with option
     testcase.add(new goog.testing.TestCase.Test("basicif", function() {
-        assertEquals(tests.iftest.basicif({}), "No option set.");
-        assertEquals(tests.iftest.basicif({option: false}), "No option set.");
-        assertEquals(tests.iftest.basicif({option: true}), "Option set.");
+        assertEquals("No option set.", tests.iftest.basicif({}));
+        assertEquals("No option set.", tests.iftest.basicif({option: false}));
+        assertEquals("Option set.", tests.iftest.basicif({option: true}));
     }));
 
     // test with option.data
@@ -143,30 +143,30 @@ window.onload = function() {
         // undefined error as option is not passed into the if
         assertThrows(function() { tests.iftest.basicif2({}) });
 
-        assertEquals(tests.iftest.basicif2({option: true}), "No option data set.");
-        assertEquals(tests.iftest.basicif2({option: {data: true}}), "Option data set.");
+        assertEquals("No option data set.", tests.iftest.basicif2({option: true}));
+        assertEquals("Option data set.", tests.iftest.basicif2({option: {data: true}}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("basicif3", function() {
-        assertEquals(tests.iftest.basicif3({option: "XXX"}), "XXX");
-        assertEquals(tests.iftest.basicif3({option: true}), "true");
-        assertEquals(tests.iftest.basicif3({option: false}), "");
+        assertEquals("XXX", tests.iftest.basicif3({option: "XXX"}));
+        assertEquals("true", tests.iftest.basicif3({option: true}));
+        assertEquals("", tests.iftest.basicif3({option: false}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("ifand1", function() {
-        assertEquals(tests.iftest.ifand1({}), "");
-        assertEquals(tests.iftest.ifand1({option: true, option2: false}), "");
-        assertEquals(tests.iftest.ifand1({option: false, option2: true}), "");
-        assertEquals(tests.iftest.ifand1({option: false, option2: false}), "");
-        assertEquals(tests.iftest.ifand1({option: true, option2: true}), "Equal");
+        assertEquals("", tests.iftest.ifand1({}));
+        assertEquals("", tests.iftest.ifand1({option: true, option2: false}));
+        assertEquals("", tests.iftest.ifand1({option: false, option2: true}));
+        assertEquals("", tests.iftest.ifand1({option: false, option2: false}));
+        assertEquals("Equal", tests.iftest.ifand1({option: true, option2: true}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("ifor1", function() {
-        assertEquals(tests.iftest.ifor1({}), "");
-        assertEquals(tests.iftest.ifor1({option: true, option2: false}), "Equal");
-        assertEquals(tests.iftest.ifor1({option: false, option2: true}), "Equal");
-        assertEquals(tests.iftest.ifor1({option: false, option2: false}), "");
-        assertEquals(tests.iftest.ifor1({option: true, option2: true}), "Equal");
+        assertEquals("", tests.iftest.ifor1({}), "");
+        assertEquals("Equal", tests.iftest.ifor1({option: true, option2: false}));
+        assertEquals("Equal", tests.iftest.ifor1({option: false, option2: true}));
+        assertEquals("", tests.iftest.ifor1({option: false, option2: false}));
+        assertEquals("Equal", tests.iftest.ifor1({option: true, option2: true}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("ifequal", function() {
