@@ -18,13 +18,13 @@ use = egg:Paste#urlmap
 use = egg:pwt.jinja2js#closure
 url = /soy/
 packages = pwt.jinja2js
-autoescape = autoescaped.soy
+autoescape = autoescaped.jinja2
 
 [app:concatsoy_templates]
 use = egg:pwt.jinja2js#concat
 url = /concat_soy/
 packages = pwt.jinja2js
-autoescape = autoescaped.soy
+autoescape = autoescaped.jinja2
 writer = pwt.jinja2js.jscompiler.Concat
 
 [app:static]
