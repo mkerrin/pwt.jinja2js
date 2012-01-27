@@ -170,163 +170,214 @@ window.onload = function() {
     }));
 
     testcase.add(new goog.testing.TestCase.Test("ifequal", function() {
-        assertEquals(tests.iftest.ifequal1({}), "");
-        assertEquals(tests.iftest.ifequal1({option: 1}), "Equal");
-        assertEquals(tests.iftest.ifequal1({option: 2}), "");
+        assertEquals("", tests.iftest.ifequal1({}));
+        assertEquals("Equal", tests.iftest.ifequal1({option: 1}));
+        assertEquals("", tests.iftest.ifequal1({option: 2}));
 
-        assertEquals(tests.iftest.ifequal2({}), "Equal");
-        assertEquals(tests.iftest.ifequal2({option: null}), "Equal");
-        assertEquals(tests.iftest.ifequal2({option: 1}), "");
+        assertEquals("Equal", tests.iftest.ifequal2({}));
+        assertEquals("Equal", tests.iftest.ifequal2({option: null}));
+        assertEquals("", tests.iftest.ifequal2({option: 1}));
     }));
 
     // QUnit.module("for.jinja2");
 
     testcase.add(new goog.testing.TestCase.Test("for1", function() {
-        assertEquals(tests.fortest.for1({data: [1, 2, 3]}), "123");
-        assertEquals(tests.fortest.for1({data: []}), "");
+        assertEquals("123", tests.fortest.for1({data: [1, 2, 3]}));
+        assertEquals("", tests.fortest.for1({data: []}));
         assertThrows(function() { tests.fortest.for1({}); });
     }));
 
     testcase.add(new goog.testing.TestCase.Test("for2", function() {
-        assertEquals(tests.fortest.for2({data: [1, 2, 3]}), "123");
-        assertEquals(tests.fortest.for2({data: []}), "Empty");
+        assertEquals("123", tests.fortest.for2({data: [1, 2, 3]}));
+        assertEquals("Empty", tests.fortest.for2({data: []}));
     }))
 
     testcase.add(new goog.testing.TestCase.Test("forloop1", function() {
-        assertEquals(tests.fortest.forloop1({data: [5, 4, 3]}), "1 - 0<br/>2 - 1<br/>3 - 2<br/>");
+        assertEquals(
+            "1 - 0<br/>2 - 1<br/>3 - 2<br/>",
+            tests.fortest.forloop1({data: [5, 4, 3]})
+        );
     }));
 
     testcase.add(new goog.testing.TestCase.Test("forloop2", function() {
-        assertEquals(tests.fortest.forloop2({
-            jobs: [{badges: [{name: "Badge 1"}, {name: "Badge 2"}, {name: "Badge 3"}]},
-                   {badges: [{name: "Badge 1.1"}, {name: "Badge 2.1"}]}
-                  ]}), "Badge 1 Badge 2 Badge 3 Badge 1.1 Badge 2.1 ");
+        assertEquals(
+            "Badge 1 Badge 2 Badge 3 Badge 1.1 Badge 2.1 ",
+            tests.fortest.forloop2({
+                jobs: [{badges: [{name: "Badge 1"}, {name: "Badge 2"}, {name: "Badge 3"}]},
+                       {badges: [{name: "Badge 1.1"}, {name: "Badge 2.1"}]}
+                      ]})
+        );
     }));
 
     // QUnit.module("call macro");
 
     testcase.add(new goog.testing.TestCase.Test("call1", function() {
-        assertEquals(tests.call.call1({}), "I was called!");
+        assertEquals("I was called!", tests.call.call1({}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("call2", function() {
-        assertEquals(tests.call.call2({}), "Michael was called!");
+        assertEquals("Michael was called!", tests.call.call2({}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("call2_multipleArgs1", function() {
-        assertEquals(tests.call.call_multipleArgs1({}), "Michael is 31!");
+        assertEquals("Michael is 31!", tests.call.call_multipleArgs1({}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("call2_specialvariables", function() {
-        assertEquals(tests.call.call_specialVariables({
-            menus: ["one", "two", "three"]
-        }), "012");
+        assertEquals(
+            "012",
+            tests.call.call_specialVariables({
+                menus: ["one", "two", "three"]
+            })
+        );
     }));
 
     testcase.add(new goog.testing.TestCase.Test("call3", function() {
-        assertEquals(tests.call.call3({}), "Michael Kerrin");
+        assertEquals("Michael Kerrin", tests.call.call3({}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("call_positional1", function() {
-        assertEquals(tests.call.call_positional1({}), "Michael");
+        assertEquals("Michael", tests.call.call_positional1({}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("call_positional2", function() {
-        assertEquals(tests.call.call_positional2({}), "Michael is 31");
+        assertEquals("Michael is 31", tests.call.call_positional2({}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("callblock1", function() {
-        assertEquals(tests.call.render_dialog({}), '<div class="box">Hello, World!</div>');
+        assertEquals('<div class="box">Hello, World!</div>', tests.call.render_dialog({}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("callblock2", function() {
-        assertEquals(tests.call.users({users: ["User1", "User2"]}), "<ul><li>Hello, User1!</li><li>Hello, User2!</li></ul>");
+        assertEquals(
+            "<ul><li>Hello, User1!</li><li>Hello, User2!</li></ul>",
+            tests.call.users({users: ["User1", "User2"]})
+        );
     }));
 
     testcase.add(new goog.testing.TestCase.Test("callblock3", function() {
-        assertEquals(tests.call.users2({users: ["User1", "User2"]}), "<ul><li>Goodbye, User1!</li><li>Goodbye, User2!</li></ul>");
+        assertEquals(
+            "<ul><li>Goodbye, User1!</li><li>Goodbye, User2!</li></ul>",
+            tests.call.users2({users: ["User1", "User2"]})
+        );
     }));
 
     testcase.add(new goog.testing.TestCase.Test("callblock4", function() {
-        assertEquals(tests.call.users3({name: "Me", users: ["User1"], users_old: ["Joe"]}), "<ul><li>Hello User1!</li></ul><ul><li>Goodbye Joe from Me!</li></ul>");
+        assertEquals(
+            "<ul><li>Hello User1!</li></ul><ul><li>Goodbye Joe from Me!</li></ul>",
+            tests.call.users3({name: "Me", users: ["User1"], users_old: ["Joe"]})
+        );
     }));
 
     // check default values
 
     testcase.add(new goog.testing.TestCase.Test("callblock5", function() {
-        assertEquals(tests.call.users4({name: "Me", users: ["User1"]}), "<ul><li>Hi User1 from Me!</li></ul>");
+        assertEquals(
+            "<ul><li>Hi User1 from Me!</li></ul>",
+            tests.call.users4({name: "Me", users: ["User1"]})
+        );
     }));
 
     testcase.add(new goog.testing.TestCase.Test("callblock5b", function() {
-        assertEquals(tests.call.users4({users: ["User1"]}), "<ul><li>Hi User1 from Michael!</li></ul>");
+        assertEquals(
+            "<ul><li>Hi User1 from Michael!</li></ul>",
+            tests.call.users4({users: ["User1"]})
+        );
     }));
 
     testcase.add(new goog.testing.TestCase.Test("callblock6", function() {
-        assertEquals(tests.call.users5({users: ["User1"]}), "<ul><li>Hi User1 from Michael!</li></ul>");
+        assertEquals(
+            "<ul><li>Hi User1 from Michael!</li></ul>",
+            tests.call.users5({users: ["User1"]})
+        );
 
         // This template skips the user Michael 
-        assertEquals(tests.call.users5({users: ["Michael"]}), "<ul><li>Hi Anonymous from Michael!</li></ul>");
-        assertEquals(tests.call.users5({users: ["Michael2"]}), "<ul><li>Hi Michael2 from Michael!</li></ul>");
+        assertEquals(
+            "<ul><li>Hi Anonymous from Michael!</li></ul>",
+            tests.call.users5({users: ["Michael"]})
+        );
+        assertEquals(
+            "<ul><li>Hi Michael2 from Michael!</li></ul>",
+            tests.call.users5({users: ["Michael2"]})
+        );
     }));
 
     // QUnit.module("import macros");
 
     testcase.add(new goog.testing.TestCase.Test("import1", function() {
-        assertEquals(tests.importtest.testcall({}), "Hello, Michael!");
+        assertEquals("Hello, Michael!", tests.importtest.testcall({}));
     }));
 
     // QUnit.module("autoescape");
 
     testcase.add(new goog.testing.TestCase.Test("autoescapeoff", function() {
-        assertEquals(tests.variables.var1({name: "<b>Michael</b>"}), "Hello <b>Michael</b>");
+        assertEquals(
+            "Hello <b>Michael</b>",
+            tests.variables.var1({name: "<b>Michael</b>"})
+        );
     }));
 
     testcase.add(new goog.testing.TestCase.Test("autoescapeon", function() {
-        assertEquals(tests.autoescaped.var1({name: "<b>Michael</b>"}), "Hello &lt;b&gt;Michael&lt;/b&gt;");
+        assertEquals(
+            "Hello &lt;b&gt;Michael&lt;/b&gt;",
+            tests.autoescaped.var1({name: "<b>Michael</b>"})
+        );
     }));
 
     testcase.add(new goog.testing.TestCase.Test("autoescape safe", function() {
-        assertEquals(tests.autoescaped.var2({name: "<b>Michael</b>"}), "Hello <b>Michael</b>");
+        assertEquals(
+            "Hello <b>Michael</b>",
+            tests.autoescaped.var2({name: "<b>Michael</b>"})
+        );
     }));
 
     // QUnit.module("filters");
 
     testcase.add(new goog.testing.TestCase.Test("default1", function() {
-        assertEquals(tests.filters.default1({}), "Hello, World");
-        assertEquals(tests.filters.default1({name: "Michael"}), "Hello, Michael");
+        assertEquals("Hello, World", tests.filters.default1({}));
+        assertEquals(
+            "Hello, Michael",
+            tests.filters.default1({name: "Michael"})
+        );
     }));
 
     testcase.add(new goog.testing.TestCase.Test("truncate1", function() {
-        assertEquals(tests.filters.truncate1({s: "xxxxxxxxxx", length: 5}), "xxxxx");
-        assertEquals(tests.filters.truncate1({s: "xxxxxxxxxx", length: 20}), "xxxxxxxxxx");
+        assertEquals(
+            "xxxxx",
+            tests.filters.truncate1({s: "xxxxxxxxxx", length: 5})
+        );
+        assertEquals(
+            "xxxxxxxxxx",
+            tests.filters.truncate1({s: "xxxxxxxxxx", length: 20})
+        );
     }));
 
     testcase.add(new goog.testing.TestCase.Test("capitalize", function() {
-        assertEquals(tests.filters.capitalize({s: "hello"}), "Hello");
-        assertEquals(tests.filters.capitalize({s: "Hello"}), "Hello");
-        assertEquals(tests.filters.capitalize({s: "HELLO"}), "HELLO");
+        assertEquals("Hello", tests.filters.capitalize({s: "hello"}));
+        assertEquals("Hello", tests.filters.capitalize({s: "Hello"}));
+        assertEquals("HELLO", tests.filters.capitalize({s: "HELLO"}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("last", function() {
-        assertEquals(tests.filters.last({}), "3");
+        assertEquals("3", tests.filters.last({}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("length", function() {
-        assertEquals(tests.filters.len({}), "4");
+        assertEquals("4", tests.filters.len({}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("replace1", function() {
-        assertEquals(tests.filters.replace1({}), "Goodbye World");
+        assertEquals("Goodbye World", tests.filters.replace1({}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("round1", function() {
-        assertEquals(tests.filters.round1({num: 5.66, precision: 0}), "6");
-        assertEquals(tests.filters.round1({num: 5.49, precision: 0}), "5");
+        assertEquals("6", tests.filters.round1({num: 5.66, precision: 0}));
+        assertEquals("5", tests.filters.round1({num: 5.49, precision: 0}));
     }));
 
     testcase.add(new goog.testing.TestCase.Test("round1 - precision", function() {
-        assertEquals(tests.filters.round1({num: 5.66, precision: 2}), "5.66");
-        assertEquals(tests.filters.round1({num: 5.49, precision: 2}), "5.49");
+        assertEquals("5.66", tests.filters.round1({num: 5.66, precision: 2}));
+        assertEquals("5.49", tests.filters.round1({num: 5.49, precision: 2}));
     }));
 
     // run the tests
