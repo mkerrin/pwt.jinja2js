@@ -326,12 +326,6 @@ class BaseCodeGenerator(NodeVisitor):
         self.name = name
         self.filename = filename
 
-    # Copied
-    def fail(self, msg, lineno):
-        """Fail with a :exc:`TemplateAssertionError`."""
-        raise jinja2.compiler.TemplateAssertionError(
-            msg, lineno, self.name, self.filename)
-
     def blockvisit(self, nodes, frame):
         """
         Visit a list of noes ad block in a frame. Some times we want to
@@ -352,7 +346,9 @@ class CodeGenerator(BaseCodeGenerator):
         """
         namespace = list(node.find_all(nodes.NamespaceNode))
         if len(namespace) > 1:
-            self.fail("You can only supply one namespace per template", 0)
+            raise jinja2.compiler.TemplateAssertionError(
+                "You can only supply one namespace per template",
+                0, self.name, self.filename)
         if namespace:
             namespace = namespace[0].namespace
         else:
@@ -549,7 +545,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
             FILTERS[node.name](self, node, frame, *node.args, **kwargs)
         else:
-            self.fail("Filter does not exist: '%s'" % node.name, node.lineno)
+            raise jinja2.compiler.TemplateAssertionError(
+                "Filter does not exist: '%s'" % node.name,
+                node.lineno, self.name, self.filename)
 
     def visit_Const(self, node, frame, dotted_name = None):
         # XXX - need to know the JavaScript ins and out here.
@@ -646,7 +644,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
             frame.assigned_names.add(frame.identifiers.imports[name])
         else:
             if dotted_name is None:
-                self.fail("Variable '%s' not defined" % name, node.lineno)
+                raise jinja2.compiler.TemplateAssertionError(
+                    "Variable '%s' not defined" % name,
+                    node.lineno, self.name, self.filename)
             output = node.name
 
         if dotted_name is None:
@@ -763,9 +763,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
 
     def visit_Operand(self, node, frame):
         if node.op not in OPERATORS:
-            self.fail(
+            raise jinja2.compiler.TemplateAssertionError(
                 "Comparison operator '%s' not supported in JavaScript",
-                node.lineno)
+                node.lineno, self.name, self.filename)
         self.writer.write(" %s " % OPERATORS[node.op])
         self.visit(node.expr, frame)
 
@@ -807,8 +807,9 @@ class MacroCodeGenerator(BaseCodeGenerator):
             loop_frame.forloop_buffer = node.target.name
         for name in node.find_all(jinja2.nodes.Name):
             if name.ctx == "store" and name.name == "loop":
-                self.fail("Can't assign to special loop variable "
-                          "in for-loop target", name.lineno)
+                raise jinja2.compiler.TemplateAssertionError(
+                    "Can't assign to special loop variable in for-loop target",
+                    name.lineno, self.name, self.filename)
 
         self.writer.writeline("var %sList = " % node.target.name)
         self.visit(node.iter, loop_frame)
@@ -863,9 +864,12 @@ class MacroCodeGenerator(BaseCodeGenerator):
              func_frame.identifiers.declared_parameter)
         )
         if overriden_closure_vars:
-            self.fail("It's not possible to set and access variables "
-                      "derived from an outer scope! (affects: %s)" %
-                      ", ".join(sorted(overriden_closure_vars)), node.lineno)
+            raise jinja2.compiler.TemplateAssertionError(
+                "It's not possible to set and access variables "
+                "derived from an outer scope! (affects: %s)" %(
+                    ", ".join(sorted(overriden_closure_vars)), node.lineno),
+                lineno, self.name, self.filename
+                )
 
         # remove variables from a closure from the frame's undeclared
         # identifiers.
@@ -916,7 +920,8 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.writer.writeline(
                 "    if (!(key in %s_data)) {" % frame.parameter_prefix)
             self.writer.writeline(
-                "        %s_data[key] = defaults[key];" % frame.parameter_prefix)
+                "        %s_data[key] = defaults[key];" %(
+                    frame.parameter_prefix))
             self.writer.writeline("    }")
             self.writer.writeline("}")
         self.writer.writeline_startoutput(node, frame)
@@ -950,21 +955,22 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.writer.writeline_outputappend(node, frame)
         else:
             # XXX - we shouldn't get here
-            self.fail("Unknown writer class", node.lineno)
+            raise jinja2.compiler.TemplateAssertionError(
+                "Unknown writer class", node.lineno, self.name, self.filename)
 
         self.visit(node.call, frame, forward_caller = "func_caller")
         self.writer.write(";")
 
     def signature(self, node, frame, forward_caller):
         if node.args and node.kwargs:
-            self.fail(
-                "Function call with positional and keyword arguments not allowed",
-                node.lineno)
+            raise jinja2.compiler.TemplateAssertionError(
+                "Function call with positional and keyword arguments "
+                "are not allowed", node.lineno, self.name, self.filename)
 
         if node.dyn_args or node.dyn_kwargs:
-            self.fail(
+            raise jinja2.compiler.TemplateAssertionError(
                 "JS Does not support positional or keyword arguments",
-                node.lineno)
+                node.lineno, self.name, self.filename)
 
         if node.args:
             # We have only positional arguments here. In this case we assume
