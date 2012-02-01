@@ -34,7 +34,10 @@ def create_environment(packages = [], directories = [], autoescape = [], extensi
         loader = jinja2.ChoiceLoader(loaders)
 
     # autoescape, turn off by default no.
-    if autoescape:
+    if isinstance(autoescape, bool):
+        # No changes necessary
+        pass
+    elif autoescape:
         auto_templates = []
         for auto in autoescape:
             if auto.lower() == "false":
