@@ -1397,6 +1397,85 @@ test_annotations = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 };""")
 
+    def test_recursive_macros_with_namespace(self):
+        node = self.get_compile_from_string("""// A comment
+{% namespace jinja2js %}
+{% macro test_macro(item) %}
+    <li>
+        {{ item.title }}
+        {% if item.children %}
+            <ul>
+                {% for child in item.children %}
+                    {{ test_macro(child) }}
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </li>
+{% endmacro %}
+""")
+
+        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
+
+        self.assertEqual(source_code, """goog.provide('jinja2js');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
+// A comment
+
+jinja2js.test_macro = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append('\\n    <li>\\n        ', opt_data.item.title, '\\n        ');
+    if (opt_data.item.children) {
+        output.append('\\n            <ul>\\n                ');
+        var childList = opt_data.item.children;
+        var childListLen = childList.length;
+        for (var childIndex = 0; childIndex < childListLen; childIndex++) {
+            var childData = childList[childIndex];
+            output.append('\\n                    ', jinja2js.test_macro(childData), '\\n                ');
+        }
+        output.append('\\n            </ul>\\n        ');
+    }
+    output.append('\\n    </li>\\n');
+    if (!opt_sb) return output.toString();
+};""")
+
+    def test_calling_other_macros_with_implied_namespace(self):
+        node = self.get_compile_from_string("""// A comment
+{% namespace jinja2js %}
+{% macro test_macro(item) %}
+    <li>
+        {{ item.title }}
+        {% if item.related %}
+            {{ test_related(item.related) }}
+        {% endif %}
+    </li>
+{% endmacro %}
+{% macro test_related(related) %}
+    {{ related.name }}
+{% endmacro %}
+""")
+
+        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
+
+        self.assertEqual(source_code, """goog.provide('jinja2js');
+goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
+// A comment
+
+jinja2js.test_macro = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append('\\n    <li>\\n        ', opt_data.item.title, '\\n        ');
+    if (opt_data.item.related) {
+        output.append('\\n            ', jinja2js.test_related(opt_data.item.related), '\\n        ');
+    }
+    output.append('\\n    </li>\\n');
+    if (!opt_sb) return output.toString();
+};
+jinja2js.test_related = function(opt_data, opt_sb, opt_caller) {
+    var output = opt_sb || new goog.string.StringBuffer();
+    output.append('\\n    ', opt_data.related.name, '\\n');
+    if (!opt_sb) return output.toString();
+};""")
+
     def test_import1(self):
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
 {% import 'test_import.jinja2' as forms %}

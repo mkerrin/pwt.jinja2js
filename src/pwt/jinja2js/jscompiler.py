@@ -653,7 +653,21 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 raise jinja2.compiler.TemplateAssertionError(
                     "Variable '%s' not defined" % name,
                     node.lineno, self.name, self.filename)
-            output = node.name
+
+            if not dotted_name and frame.eval_ctx.namespace:
+                # For compatibility with regular jinja2 env, when one macro
+                # calls itself or another macro within the same template, it
+                # will not specify the namespace in the macro name. For the
+                # compiled JS we must inject the namespace.
+                top_frame = frame
+                while top_frame.parent:
+                    top_frame = top_frame.parent
+
+                namespaced_name = frame.eval_ctx.namespace + '.' + node.name
+                if namespaced_name in top_frame.identifiers.declared_locally:
+                    name = namespaced_name
+
+            output = name
 
         if dotted_name is None:
             self.writer.write(output)
