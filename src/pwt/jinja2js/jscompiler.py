@@ -1,3 +1,5 @@
+import re
+
 from cStringIO import StringIO
 
 from jinja2.visitor import NodeVisitor
@@ -481,8 +483,12 @@ class MacroCodeGenerator(BaseCodeGenerator):
                     start = False
                 else:
                     self.writer.write_outputappend_add(node, frame)
+                if self.environment.strip_html_whitespace:
+                    item = [strip_html_whitespace(itemhtml)
+                            for itemhtml in item]
                 self.writer.write(repr("".join(item)))
             else:
+                # This is a non-data node.
                 # If we are using the string builder then we generate slightly
                 # different code then concat.
                 if self.writer.__class__.__name__ == STRINGBUILDER:
@@ -1064,6 +1070,15 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.visit(node.expr2, frame)
         else:
             self.writer.write("''")
+
+_pre_tag_whitespace = re.compile(r'\s*<')
+_post_tag_whitespace = re.compile(r'>\s*')
+_excess_whitespace = re.compile(r'\s\s+')
+
+def strip_html_whitespace(value):
+    value = _pre_tag_whitespace.sub('<', value)
+    value = _post_tag_whitespace.sub('>', value)
+    return _excess_whitespace.sub(' ', value)
 
 FILTERS = {}
 

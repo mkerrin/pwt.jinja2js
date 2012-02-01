@@ -14,6 +14,8 @@ class Environment(jinja2.Environment):
         self.js_func_aliases = kwargs.pop("js_func_aliases", {})
         self.add_compiler_annotations = kwargs.pop(
             "add_compiler_annotations", False)
+        self.strip_html_whitespace = kwargs.pop(
+            "strip_html_whitespace", False)
 
         super(Environment, self).__init__(*args, **kwargs)
 

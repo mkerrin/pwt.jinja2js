@@ -1344,11 +1344,18 @@ users = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 };""")
 
-    def test_aliasing_functions(self):
-        self.env.js_func_aliases = {'_': 'goog.getMsg'}
+    def test_strip_html_whitespace(self):
+        self.env.strip_html_whitespace = True
 
         node = self.get_compile_from_string("""// A comment
-{% macro test_aliases(arg) %}<h1>{{ _('Localize me') }}</h1>{% endmacro %}
+
+{% macro test_html(name, link) %}
+    <h1>
+        <a href="{{ link }}">
+            {{ name }}
+        </a>
+    </h1>
+{% endmacro %}
 """)
 
         source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
@@ -1356,9 +1363,10 @@ users = function(opt_data, opt_sb, opt_caller) {
         self.assertEqual(source_code, """goog.require('goog.string');
 goog.require('goog.string.StringBuffer');
 // A comment
-test_aliases = function(opt_data, opt_sb, opt_caller) {
+
+test_html = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
-    output.append('<h1>', goog.getMsg('Localize me'), '</h1>');
+    output.append('<h1><a href="', opt_data.link, '">', opt_data.name, '</a></h1>');
     if (!opt_sb) return output.toString();
 };""")
 
