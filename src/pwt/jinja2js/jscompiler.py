@@ -935,6 +935,15 @@ class MacroCodeGenerator(BaseCodeGenerator):
         if frame.eval_ctx.namespace:
             name = frame.eval_ctx.namespace + "." + name
 
+        if self.environment.add_compiler_annotations:
+            self.writer.writeline('/**')
+            self.writer.writeline(' * @param {Object.<string, *>=} opt_data')
+            self.writer.writeline(' * @param {goog.string.StringBuffer=} opt_sb')
+            self.writer.writeline(' * @param {Function=} opt_caller')
+            self.writer.writeline(' * @return {string|undefined}')
+            self.writer.writeline(' * @notypecheck')
+            self.writer.writeline(' */')
+
         body = self.macro_body(name, node, frame)
         frame.assigned_names.add("%s.%s" %(frame.eval_ctx.namespace, node.name))
 

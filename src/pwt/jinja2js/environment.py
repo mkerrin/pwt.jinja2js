@@ -12,6 +12,8 @@ class Environment(jinja2.Environment):
         writer = kwargs.pop("writer", "pwt.jinja2js.jscompiler.Concat")
         self.writer = jinja2.utils.import_string(writer)
         self.js_func_aliases = kwargs.pop("js_func_aliases", {})
+        self.add_compiler_annotations = kwargs.pop(
+            "add_compiler_annotations", False)
 
         super(Environment, self).__init__(*args, **kwargs)
 
