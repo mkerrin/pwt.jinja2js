@@ -16,11 +16,12 @@ class Environment(jinja2.Environment):
             "add_compiler_annotations", False)
         self.strip_html_whitespace = kwargs.pop(
             "strip_html_whitespace", False)
+        self.js_indentation = kwargs.pop("js_indentation", "    ")
 
         super(Environment, self).__init__(*args, **kwargs)
 
 
-def create_environment(packages = [], directories = [], autoescape = [], extensions = [], writer = "pwt.jinja2js.jscompiler.Concat"):
+def create_environment(packages = [], directories = [], autoescape = [], extensions = [], writer = "pwt.jinja2js.jscompiler.Concat", **kwargs):
     loaders = []
     for package in packages:
         loaders.append(jinja2.PackageLoader(*package.split(":")))
@@ -72,6 +73,7 @@ def create_environment(packages = [], directories = [], autoescape = [], extensi
         extensions = extensions,
         autoescape = autoescape,
         writer = writer,
+        **kwargs
         )
 
 

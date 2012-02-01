@@ -168,7 +168,7 @@ class JSFrame(jinja2.compiler.Frame):
 
 class StringBuilder(object):
 
-    def __init__(self):
+    def __init__(self, environment=None):
         self.stream = StringIO()
 
         # the current line number
@@ -187,8 +187,11 @@ class StringBuilder(object):
         # true if nothing was written so far.
         self._first_write = True
 
-        # the current indentation
+        # the current indentation multiplier
         self._indentation = 0
+
+        # the character(s) to display as a single indent
+        self._indentation_text = getattr(environment, 'js_indentation', '    ')
 
     # Copied
     def indent(self):
@@ -213,7 +216,7 @@ class StringBuilder(object):
                                             self.code_lineno))
                     self._write_debug_info = None
             self._first_write = False
-            self.stream.write('    ' * self._indentation)
+            self.stream.write(self._indentation_text * self._indentation)
             self._new_lines = 0
         self.stream.write(x)
 
@@ -275,9 +278,6 @@ class StringBuilder(object):
 
 
 class Concat(StringBuilder):
-
-    def __init__(self):
-        super(Concat, self).__init__()
 
     def writeline_provides(self, node, frame, namespace):
         parts = namespace.split(".")
@@ -389,7 +389,7 @@ class CodeGenerator(BaseCodeGenerator):
     def visit_Macro(self, node, frame):
         generator = MacroCodeGenerator(
             self.environment,
-            self.writer.__class__(),
+            self.writer.__class__(self.environment),
             self.name,
             self.filename)
         generator.visit(node, frame)
@@ -937,12 +937,16 @@ class MacroCodeGenerator(BaseCodeGenerator):
                 start = False
             self.writer.write("};")
             self.writer.writeline("for (var key in defaults) {")
+            self.writer.indent()
             self.writer.writeline(
-                "    if (!(key in %s_data)) {" % frame.parameter_prefix)
+                "if (!(key in %s_data)) {" % frame.parameter_prefix)
+            self.writer.indent()
             self.writer.writeline(
-                "        %s_data[key] = defaults[key];" %(
+                "%s_data[key] = defaults[key];" % (
                     frame.parameter_prefix))
-            self.writer.writeline("    }")
+            self.writer.outdent()
+            self.writer.writeline("}")
+            self.writer.outdent()
             self.writer.writeline("}")
         self.writer.writeline_startoutput(node, frame)
         self.blockvisit(node.body, frame)
@@ -1190,7 +1194,7 @@ def _generate(node, generator):
 def generate(node, environment, name, filename):
     """Generate the python source for a node tree."""
     generator = CodeGenerator(environment, name, filename)
-    generator.writer = environment.writer()
+    generator.writer = environment.writer(environment)
     return _generate(node, generator)
 
 

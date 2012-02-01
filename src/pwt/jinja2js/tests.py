@@ -1476,6 +1476,24 @@ jinja2js.test_related = function(opt_data, opt_sb, opt_caller) {
     if (!opt_sb) return output.toString();
 };""")
 
+    def test_indentation_customization(self):
+        self.env.js_indentation = '  '
+
+        node = self.get_compile_from_string("""// A comment
+{% macro test_indent(arg) %}<h1>Test</h1>{% endmacro %}
+""")
+
+        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
+
+        self.assertEqual(source_code, """goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
+// A comment
+test_indent = function(opt_data, opt_sb, opt_caller) {
+  var output = opt_sb || new goog.string.StringBuffer();
+  output.append('<h1>Test</h1>');
+  if (!opt_sb) return output.toString();
+};""")
+
     def test_import1(self):
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
 {% import 'test_import.jinja2' as forms %}
