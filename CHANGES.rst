@@ -2,6 +2,24 @@
 CHANGES
 =======
 
+0.7.4
+-----
+
+- Add support for inline conditional expressions
+
+- Add support for aliasing function calls
+
+- Automatically inject compiler annotations for Closure compiler
+
+- Add support for stripping white-space from text nodes within macros
+
+- Rewrite calls to local macros to include the namespace
+
+- Allow the amount of indentation to be customized
+
+0.7.3
+-----
+
 0.7.2
 -----
 
