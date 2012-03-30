@@ -179,6 +179,30 @@ window.onload = function() {
         assertEquals("", tests.iftest.ifequal2({option: 1}));
     }));
 
+    testcase.add(new goog.testing.TestCase.Test("conditionalif1", function() {
+        assertEquals("True cond", tests.iftest.ifconditional1({cond: true}));
+        assertEquals("False cond", tests.iftest.ifconditional1({cond: false}));
+
+        // defaults to false
+        assertEquals("False cond", tests.iftest.ifconditional1({}));
+    }));
+
+    testcase.add(new goog.testing.TestCase.Test("conditionalif2", function() {
+        assertEquals("True cond", tests.iftest.ifconditional2({cond: true}));
+        assertEquals("", tests.iftest.ifconditional2({cond: false}));
+    }));
+
+    testcase.add(new goog.testing.TestCase.Test("conditionalif3", function() {
+        assertEquals(
+            "True cond",
+            tests.iftest.ifconditional3({cond: true, defaultmsg: 'No'}));
+        assertEquals("No", tests.iftest.ifconditional3({cond: false, defaultmsg: 'No'}));
+
+        // XXX - leaving the default message undefined results in a undefined
+        // string. Is this the correct behaviour?
+        assertEquals("undefined", tests.iftest.ifconditional3({cond: false}));
+    }));
+
     // QUnit.module("for.jinja2");
 
     testcase.add(new goog.testing.TestCase.Test("for1", function() {
