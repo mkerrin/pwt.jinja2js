@@ -3,14 +3,14 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD = /home/michael/webdev/jscomp/bin/sphinx-build
+SPHINXBUILD = /home/michael/deri/javascript/pwt.jinja2js/bin/sphinx-build
 PAPER         =
-BUILDDIR      = /home/michael/webdev/jscomp/docs
+BUILDDIR      = /home/michael/deri/javascript/pwt.jinja2js/docs
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) /home/michael/webdev/jscomp/docs-sources
+ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) /home/michael/deri/javascript/pwt.jinja2js/docs-sources
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest
 
