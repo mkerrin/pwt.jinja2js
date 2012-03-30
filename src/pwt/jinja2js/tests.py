@@ -12,6 +12,7 @@ from zc.buildout.rmtree import rmtree
 import jinja2.compiler
 import jinja2.nodes
 import jinja2.optimizer
+import jinja2.environment
 
 import jscompiler
 import cli
@@ -21,9 +22,12 @@ import app
 
 
 def generateMacro(
-        node, environment, name, filename, autoescape = False):
+        node, environment, name, filename, autoescape = False, writer = None):
+    # Need to test when we are not using an Environment from jinja2js
+    if writer is None:
+        writer = getattr(environment, "writer", jscompiler.StringBuilder)
     generator = jscompiler.MacroCodeGenerator(
-        environment, environment.writer(), None, None)
+        environment, writer(), None, None)
     eval_ctx = jinja2.nodes.EvalContext(environment, name)
     eval_ctx.namespace = "test"
     eval_ctx.autoescape = autoescape
@@ -66,7 +70,8 @@ class JSCompilerTemplateTestCase(JSCompilerTestCase):
         node = self.get_compile_from_string("""{% macro hello() %}
 Hello, world!
 {% endmacro %}""")
-        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.require('goog.string');
 goog.require('goog.string.StringBuffer');
@@ -107,7 +112,8 @@ goog.require('goog.color.names'); // needed to use goog.color.names data
 {{ goog.color.names.aqua }}
 {% endmacro %}
 """)
-        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.provide('test');
 goog.require('goog.string');
@@ -367,8 +373,7 @@ Hello {{ name }}!
 
     def test_for1(self):
         # test for loop
-        node = self.get_compile_from_string("""{% namespace xxx %}
-{% macro fortest(data) %}
+        node = self.get_compile_from_string("""{% macro fortest(data) %}
 {% for item in data %}
   Item {{ item }}.
 {% else %}
@@ -376,13 +381,9 @@ Hello {{ name }}!
 {% endfor %}
 {% endmacro %}
 """)
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+        source_code = generateMacro(node, self.env, "f.html", "f.html")
 
-        self.assertEqual(source_code, """goog.provide('xxx');
-goog.require('goog.string');
-goog.require('goog.string.StringBuffer');
-
-xxx.fortest = function(opt_data, opt_sb, opt_caller) {
+        self.assertEqual(source_code, """test.fortest = function(opt_data, opt_sb, opt_caller) {
     var output = opt_sb || new goog.string.StringBuffer();
     output.append('\\n');
     var itemList = opt_data.data;
@@ -563,7 +564,8 @@ xxx.fortest = function(opt_data, opt_sb, opt_caller) {
 {% for job in jobs %}{{ job.name }}{% endfor %}
 {% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('test');
 goog.require('goog.string');
@@ -587,7 +589,8 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
 {% for job in jobs %}{{ job.name }} does {{ jobData }}{% endfor %}
 {%- endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('test');
 goog.require('goog.string');
@@ -612,7 +615,8 @@ test.forinlist = function(opt_data, opt_sb, opt_caller) {
 {% for job in jobs %}{{ job.name }} does {{ jobData.name }}{% endfor %}
 {%- endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('test');
 goog.require('goog.string');
@@ -787,7 +791,8 @@ No option.
 
 {% macro testcall() %}{{ xxx.testif() }}{% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx');
 goog.require('goog.string');
@@ -816,7 +821,8 @@ xxx.testcall = function(opt_data, opt_sb, opt_caller) {
 
 {% macro testcall() %}{{ xxx.ns1.testif() }}{% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('goog.string');
@@ -844,7 +850,8 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
 
 {% macro testcall() %}{{ xxx.ns1.testif(option = true) }}{% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('goog.string');
@@ -872,7 +879,8 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
 
 {% macro testcall() %}{{ xxx.ns1.testif(option = true, value = 3) }}{% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('goog.string');
@@ -901,7 +909,8 @@ xxx.ns1.testcall = function(opt_data, opt_sb, opt_caller) {
 
 {% macro testcall() %}Hello, {{ xxx.ns1.testif(option = true) }}!{% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('goog.string');
@@ -933,7 +942,7 @@ testif(option) {
 
 {% macro testcall() %}Hello, {{ testif(true) }}!{% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "", "")
+        source_code = jscompiler.generateClosure(node, self.env, "", "")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('goog.string');
@@ -959,7 +968,7 @@ printName(name, age) {
 
 {% macro testcall() %}{{ printName('michael', 31) }}!{% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "", "")
+        source_code = jscompiler.generateClosure(node, self.env, "", "")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('goog.string');
@@ -987,7 +996,7 @@ testif(option) {
 
         self.assertRaises(
             jinja2.compiler.TemplateAssertionError,
-            jscompiler.generate, node, self.env, "", "")
+            jscompiler.generateClosure, node, self.env, "", "")
 
     def test_call_macro6(self):
         # call macro with dynamic keywrod arguments
@@ -999,7 +1008,7 @@ testif(option) {
 
         self.assertRaises(
             jinja2.compiler.TemplateAssertionError,
-            jscompiler.generate, node, self.env, "", "")
+            jscompiler.generateClosure, node, self.env, "", "")
 
     def test_call_macro7(self):
         # call macro with string keyword
@@ -1009,7 +1018,7 @@ Hello, {% if name %}{{ name }}{% else %}world{% endif %}!{% endmacro %}
 
 {% macro testcall() %}{{ xxx.ns1.hello(name = "Michael") }}{% endmacro %}""")
 
-        source_code = jscompiler.generate(
+        source_code = jscompiler.generateClosure(
             node, self.env, "for.html", "for.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
@@ -1042,7 +1051,8 @@ Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
 
 {% macro testcall() %}{{ xxx.ns1.hello(name = {"first": "Michael"}) }}{% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('goog.string');
@@ -1074,7 +1084,8 @@ Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
 
 {% macro testcall() %}{{ xxx.ns1.hello(name = {first: "Michael"}) }}{% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('goog.string');
@@ -1108,7 +1119,7 @@ Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
 
         self.assertRaises(
             jinja2.compiler.TemplateAssertionError,
-            jscompiler.generate, node, self.env, "f.html", "f.html")
+            jscompiler.generateClosure, node, self.env, "f.html", "f.html")
 
     def test_call_macro11(self):
         # call macro with parameter sub, with invalid key
@@ -1120,7 +1131,7 @@ Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
 
         self.assertRaises(
             jinja2.compiler.TemplateAssertionError,
-            jscompiler.generate, node, self.env, "f.html", "f.html")
+            jscompiler.generateClosure, node, self.env, "f.html", "f.html")
 
     def test_call_macro12_special_for_loop_variables(self):
         node = self.get_compile_from_string("""{% namespace xxx.ns1 %}
@@ -1128,7 +1139,8 @@ Hello, {% if name %}{{ name.first }}{% else %}world{% endif %}!{% endmacro %}
 
 {% macro testcall(menus) %}{% for menu in menus %}{{ xxx.ns1.hello(index = loop.index0) }}{% endfor %}{% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('goog.string');
@@ -1164,7 +1176,8 @@ Hello {{ name }}!
 {%- endmacro %}
 """)
 
-        source_code = jscompiler.generate(node, self.env, "cb.html", "cb.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "cb.html", "cb.html")
 
         self.assertEqual(source_code, """goog.provide('tests');
 goog.require('goog.string');
@@ -1205,7 +1218,8 @@ Hello, {{ user }}!
 {%- endmacro %}
 """)
 
-        source_code = jscompiler.generate(node, self.env, "cb.html", "cb.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "cb.html", "cb.html")
 
         self.assertEqual(source_code, """goog.require('goog.string');
 goog.require('goog.string.StringBuffer');
@@ -1254,7 +1268,8 @@ Goodbye, {{ user }} from {{ name }}!
 {%- endmacro %}
 """)
 
-        source_code = jscompiler.generate(node, self.env, "cb.html", "cb.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "cb.html", "cb.html")
 
         self.assertEqual(source_code, """goog.require('goog.string');
 goog.require('goog.string.StringBuffer');
@@ -1308,7 +1323,8 @@ Hello, {{ user }}!
 {%- endmacro %}
 """)
 
-        source_code = jscompiler.generate(node, self.env, "cb.html", "cb.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "cb.html", "cb.html")
 
         self.assertEqual(source_code, """goog.require('goog.string');
 goog.require('goog.string.StringBuffer');
@@ -1358,7 +1374,7 @@ users = function(opt_data, opt_sb, opt_caller) {
 {% endmacro %}
 """)
 
-        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
+        source_code = jscompiler.generateClosure(node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.require('goog.string');
 goog.require('goog.string.StringBuffer');
@@ -1378,7 +1394,8 @@ test_html = function(opt_data, opt_sb, opt_caller) {
 {% macro test_annotations(arg) %}{{ arg }}{% endmacro %}
 """)
 
-        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.require('goog.string');
 goog.require('goog.string.StringBuffer');
@@ -1414,7 +1431,7 @@ test_annotations = function(opt_data, opt_sb, opt_caller) {
 {% endmacro %}
 """)
 
-        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
+        source_code = jscompiler.generateClosure(node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.provide('jinja2js');
 goog.require('goog.string');
@@ -1454,7 +1471,8 @@ jinja2js.test_macro = function(opt_data, opt_sb, opt_caller) {
 {% endmacro %}
 """)
 
-        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.provide('jinja2js');
 goog.require('goog.string');
@@ -1483,7 +1501,8 @@ jinja2js.test_related = function(opt_data, opt_sb, opt_caller) {
 {% macro test_indent(arg) %}<h1>Test</h1>{% endmacro %}
 """)
 
-        source_code = jscompiler.generate(node, self.env, "v.html", "v.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "v.html", "v.html")
 
         self.assertEqual(source_code, """goog.require('goog.string');
 goog.require('goog.string.StringBuffer');
@@ -1500,7 +1519,8 @@ test_indent = function(opt_data, opt_sb, opt_caller) {
 
 {% macro hello(name) %}{{ forms.input(name = 'test') }}{% endmacro %}""")
 
-        source_code = jscompiler.generate(node, self.env, "f.html", "f.html")
+        source_code = jscompiler.generateClosure(
+            node, self.env, "f.html", "f.html")
 
         self.assertEqual(source_code, """goog.provide('xxx.ns1');
 goog.require('goog.string');
@@ -1964,6 +1984,17 @@ class JSCompilerTemplateTestCaseOptimized(JSCompilerTemplateTestCase):
         node = jinja2.optimizer.optimize(node, self.env)
 
         return node
+
+
+class JSCompilerTemplateTestCase(JSCompilerTemplateTestCase):
+
+    def setUp(self):
+        super(JSCompilerTemplateTestCase, self).setUp()
+
+        self.env = jinja2.environment.Environment(
+            extensions = ["pwt.jinja2js.jscompiler.Namespace"],
+            loader = jinja2.PackageLoader("pwt.jinja2js", "test_templates")
+            )
 
 
 class JSConcatCompilerTemplateTestCaseOptimized(JSConcatCompilerTemplateTestCase):

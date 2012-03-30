@@ -483,7 +483,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
                     start = False
                 else:
                     self.writer.write_outputappend_add(node, frame)
-                if self.environment.strip_html_whitespace:
+                if getattr(self.environment, "strip_html_whitespace", False):
                     item = [strip_html_whitespace(itemhtml)
                             for itemhtml in item]
                 self.writer.write(repr("".join(item)))
@@ -959,7 +959,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
         if frame.eval_ctx.namespace:
             name = frame.eval_ctx.namespace + "." + name
 
-        if self.environment.add_compiler_annotations:
+        if getattr(self.environment, "add_compiler_annotations", False):
             self.writer.writeline('/**')
             self.writer.writeline(' * @param {Object.<string, *>=} opt_data')
             self.writer.writeline(' * @param {goog.string.StringBuffer=} opt_sb')
@@ -1058,7 +1058,7 @@ class MacroCodeGenerator(BaseCodeGenerator):
         # allows you to call differently named functions in the client JS
         # than when rendering a template on the server.
         if node.args and not node.kwargs \
-        and func_name in self.environment.js_func_aliases:
+               and func_name in getattr(self.environment, "js_func_aliases", []):
             func_name = self.environment.js_func_aliases[func_name]
 
         # function signature
