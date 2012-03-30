@@ -5,6 +5,8 @@ port = 8000
 
 [composite:main]
 use = egg:Paste#urlmap
+filter-with = translogger
+
 / = home
 /favicon.ico = static
 
@@ -44,3 +46,7 @@ packages = pwt.jinja2js
 deps_js = /media/${deps.js:filename}
 
 compiled_tests_js = /media/compiled/${compiled_tests.js:filename}
+
+[filter:translogger]
+use = egg:Paste#translogger
+setup_console_handler = True
