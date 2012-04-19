@@ -21,7 +21,10 @@ class Environment(jinja2.Environment):
         super(Environment, self).__init__(*args, **kwargs)
 
 
-def create_environment(packages = [], directories = [], autoescape = [], extensions = [], writer = "pwt.jinja2js.jscompiler.Concat", **kwargs):
+def create_environment(packages = [], directories = [],
+                       autoescape = [], extensions = [],
+                       writer = "pwt.jinja2js.jscompiler.Concat",
+                       **kwargs):
     loaders = []
     for package in packages:
         loaders.append(jinja2.PackageLoader(*package.split(":")))
@@ -56,7 +59,8 @@ def create_environment(packages = [], directories = [], autoescape = [], extensi
                 if template_name in auto_templates:
                     return True
 
-                if template_name[0] == "/" and template_name[1:] in auto_templates:
+                if template_name[0] == "/" \
+                       and template_name[1:] in auto_templates:
                     return True
                 if template_name[0] != "/" \
                        and template_name + "/" in auto_templates:
@@ -82,5 +86,8 @@ def parse_environment(config):
         packages = config.get("packages", "").split(),
         directories = config.get("directories", "").split(),
         autoescape = config.get("autoescape", "").split(),
-        writer = config.get("writer", "pwt.jinja2js.jscompiler.StringBuilder")
+        writer = config.get("writer", "pwt.jinja2js.jscompiler.StringBuilder"),
+        add_compiler_annotations = bool(config.get(
+            "add_compiler_annotations", False)),
+        strip_html_whitespace = bool(config.get("strip_html_whitespace", False))
         )
