@@ -35,15 +35,15 @@ setup(
 
     install_requires = [
         "setuptools",
-        "pwt.recipe.closurebuilder",
+        "pwt.closure",
         "WebOb",
         # "MarkupSafe",
         "Jinja2",
         ],
     extras_require = {
         "test": [
-            "pwt.recipe.closurebuilder[test]",
             "WebTest",
+            "zc.buildout"
             ],
         },
 
@@ -52,7 +52,8 @@ setup(
 test-suites = pwt.jinja2js.nose_test_suites:Suites
 
 [zc.buildout]
-dependency = pwt.jinja2js.recipe:Deps
+dependency = pwt.closure.recipe:DepsRecipe
+compile = pwt.closure.recipe:CompileRecipe
 
 [paste.app_factory]
 main = pwt.jinja2js.wsgi:Resources

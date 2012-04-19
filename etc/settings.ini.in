@@ -13,8 +13,7 @@ filter-with = translogger
 /soy = soy_templates
 /concat_soy = concatsoy_templates
 
-/closure = closure
-/media = static
+/js = js
 
 [app:soy_templates]
 use = egg:pwt.jinja2js#closure
@@ -28,6 +27,19 @@ url = /concat_soy/
 packages = pwt.jinja2js
 autoescape = autoescaped.jinja2
 writer = pwt.jinja2js.jscompiler.Concat
+
+[app:js]
+use = egg:pwt.closure#main
+
+paths =
+    ${buildout:sources-dir}/closure
+    src/pwt/jinja2js/media
+    src/pwt/jinja2js/templates
+
+# Describe how to find and compile any dependent templates
+packages = pwt.jinja2js
+
+autoescape = autoescaped.jinja2
 
 [app:static]
 use = egg:Paste#static
@@ -43,9 +55,9 @@ paste.app_factory = pwt.jinja2js.app:main
 # configure Jinja2 loader
 packages = pwt.jinja2js
 
-deps_js = /media/${deps.js:filename}
+deps_js = /js/deps
 
-compiled_tests_js = /media/compiled/${compiled_tests.js:filename}
+compiled_tests_js = /js/input/compiled/${compiled_tests.js:filename}
 
 [filter:translogger]
 use = egg:Paste#translogger
