@@ -5,6 +5,9 @@ CHANGES
 0.7.4
 -----
 
+- Remove dependency on the pwt.recipe.closurebuilder and use the pwt.closure
+  package instead.
+
 - Add support for inline conditional expressions
 
 - Add support for aliasing function calls
