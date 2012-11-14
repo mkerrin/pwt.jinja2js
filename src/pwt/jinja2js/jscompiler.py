@@ -1076,6 +1076,8 @@ class MacroCodeGenerator(BaseCodeGenerator):
         self.writer.write(";")
 
     def visit_CondExpr(self, node, frame):
+        if self.writer.__class__.__name__ == CONCAT:
+            self.writer.write('(')
         self.visit(node.test, frame)
         self.writer.write(' ? ')
         self.visit(node.expr1, frame)
@@ -1088,6 +1090,8 @@ class MacroCodeGenerator(BaseCodeGenerator):
             self.visit(node.expr2, frame)
         else:
             self.writer.write("''")
+        if self.writer.__class__.__name__ == CONCAT:
+            self.writer.write(')')
 
 _pre_tag_whitespace = re.compile(r'\s*<')
 _post_tag_whitespace = re.compile(r'>\s*')

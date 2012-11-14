@@ -1845,6 +1845,18 @@ tests.render = function(opt_data, opt_sb, opt_caller) {
     return output;
 };""")
 
+    def test_condexpr1(self):
+        # test if
+        node = self.get_compile_from_string("""{% macro testif(option) %}{{ option if option }}hello{% endmacro %}""")
+
+        source_code = generateMacro(node, self.env, "condexpr.html", "condexpr.html")
+
+        self.assertEqual(source_code, """test.testif = function(opt_data, opt_sb, opt_caller) {
+    var output = '';
+    output += (opt_data.option ? opt_data.option : '') + 'hello';
+    return output;
+};""")
+
 
 class JSCompilerTemplateTestCaseOutput(JSCompilerTestCase):
     # Test the standard output so that if a developer needs to debug the
