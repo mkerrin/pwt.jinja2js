@@ -203,6 +203,14 @@ window.onload = function() {
         assertEquals("undefined", tests.iftest.ifconditional3({cond: false}));
     }));
 
+    testcase.add(new goog.testing.TestCase.Test("conditionalif4", function() {
+        assertEquals(
+            "True statement.",
+            tests.iftest.ifconditional4({cond: true, defaultmsg: 'No'}));
+
+        assertEquals("No statement.", tests.iftest.ifconditional4({cond: false, defaultmsg: 'No'}));
+    }));
+
     // QUnit.module("for.jinja2");
 
     testcase.add(new goog.testing.TestCase.Test("for1", function() {

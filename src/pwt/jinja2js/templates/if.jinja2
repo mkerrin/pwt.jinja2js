@@ -24,3 +24,8 @@
 {% macro ifconditional3(cond, defaultmsg) -%}
 {{ 'True cond' if cond else defaultmsg }}
 {%- endmacro %}
+
+{# if conditional with string after it #}
+{% macro ifconditional4(cond, defaultmsg) -%}
+{{ 'True' if cond else defaultmsg }} statement.
+{%- endmacro %}
