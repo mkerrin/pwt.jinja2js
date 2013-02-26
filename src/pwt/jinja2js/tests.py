@@ -427,7 +427,7 @@ Hello {{ name }}!
     var itemListLen = itemList.length;
     for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
         var itemData = itemList[itemIndex];
-        output.append(itemIndex + 1);
+        output.append((itemIndex + 1));
     }
     if (!opt_sb) return output.toString();
 };""")
@@ -482,7 +482,7 @@ Hello {{ name }}!
     var itemListLen = itemList.length;
     for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
         var itemData = itemList[itemIndex];
-        output.append(itemIndex + 1, ' - ', opt_data.name);
+        output.append((itemIndex + 1), ' - ', opt_data.name);
     }
     if (!opt_sb) return output.toString();
 };""")
@@ -498,7 +498,7 @@ Hello {{ name }}!
     var itemListLen = itemList.length;
     for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
         var itemData = itemList[itemIndex];
-        output.append(itemIndex + 1, ' - ', opt_data.param.name);
+        output.append((itemIndex + 1), ' - ', opt_data.param.name);
     }
     if (!opt_sb) return output.toString();
 };""")

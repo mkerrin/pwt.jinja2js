@@ -15,3 +15,10 @@
 {% macro forloop2(jobs) -%}
 {% for job in jobs %}{% for badge in job.badges %}{{ badge.name }} {% endfor %}{% endfor %}
 {%- endmacro %}
+
+{# Bug fix for reference index as part of string #}
+{% macro forloop_bug_loopindex(lst) -%}
+{% for item in lst %}
+{{ loop.index }}: {{ item.name }}
+{%- endfor %}
+{%- endmacro %}
