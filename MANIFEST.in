@@ -1,0 +1,1 @@
+recursive-include src/pwt/jinja2js *.js *.jinja2 *.html
