@@ -241,10 +241,19 @@ window.onload = function() {
         );
     }));
 
-    testcase.add(new goog.testing.TestCase.Test("forloop3", function() {
+    testcase.add(new goog.testing.TestCase.Test("forloop_bug_loopindex", function() {
         assertEquals(
-            "\n1: x\n2: y",
+            "\n0:1: x\n1:2: y",
             tests.fortest.forloop_bug_loopindex({
+                lst: [{name: 'x'}, {name: 'y'}]
+            })
+        );
+    }));
+
+    testcase.add(new goog.testing.TestCase.Test("forloop_bug_looprevindex", function() {
+        assertEquals(
+            "\n2:1: x\n1:0: y",
+            tests.fortest.forloop_bug_looprevindex({
                 lst: [{name: 'x'}, {name: 'y'}]
             })
         );

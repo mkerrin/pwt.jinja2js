@@ -694,12 +694,15 @@ class MacroCodeGenerator(BaseCodeGenerator):
             elif node.attr == "index":
                 self.writer.write("(%sIndex + 1)" % frame.forloop_buffer)
             elif node.attr == "revindex0":
-                self.writer.write("%sListLen - %sIndex" %(frame.forloop_buffer,
-                                                          frame.forloop_buffer))
+                self.writer.write("(%sListLen - %sIndex)" %(
+                    frame.forloop_buffer,
+                    frame.forloop_buffer)
+                    )
             elif node.attr == "revindex":
                 self.writer.write(
-                    "%sListLen - %sIndex - 1" %(frame.forloop_buffer,
-                                                frame.forloop_buffer))
+                    "(%sListLen - %sIndex - 1)" %(frame.forloop_buffer,
+                                                  frame.forloop_buffer)
+                    )
             elif node.attr == "first":
                 self.writer.write("%sIndex == 0" % frame.forloop_buffer)
             elif node.attr == "last":

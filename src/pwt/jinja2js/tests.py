@@ -443,7 +443,7 @@ Hello {{ name }}!
     var itemListLen = itemList.length;
     for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
         var itemData = itemList[itemIndex];
-        output.append(itemListLen - itemIndex - 1, ' - ', itemListLen - itemIndex);
+        output.append((itemListLen - itemIndex - 1), ' - ', (itemListLen - itemIndex));
     }
     if (!opt_sb) return output.toString();
 };""")

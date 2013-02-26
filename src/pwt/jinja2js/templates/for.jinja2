@@ -19,6 +19,12 @@
 {# Bug fix for reference index as part of string #}
 {% macro forloop_bug_loopindex(lst) -%}
 {% for item in lst %}
-{{ loop.index }}: {{ item.name }}
+{{ loop.index0 }}:{{ loop.index }}: {{ item.name }}
+{%- endfor %}
+{%- endmacro %}
+
+{% macro forloop_bug_looprevindex(lst) -%}
+{% for item in lst %}
+{{ loop.revindex0 }}:{{ loop.revindex }}: {{ item.name }}
 {%- endfor %}
 {%- endmacro %}
