@@ -259,6 +259,15 @@ window.onload = function() {
         );
     }));
 
+    testcase.add(new goog.testing.TestCase.Test("forloop_bug_loopfirst", function() {
+        assertEquals(
+            "true:falsefalse:true",
+            tests.fortest.forloop_bug_loopfirst({
+                lst: [{name: 'x'}, {name: 'y'}]
+            })
+        );
+    }));
+
     // QUnit.module("call macro");
 
     testcase.add(new goog.testing.TestCase.Test("call1", function() {

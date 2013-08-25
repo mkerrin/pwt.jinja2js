@@ -711,11 +711,11 @@ class MacroCodeGenerator(BaseCodeGenerator):
                                                   frame.forloop_buffer)
                     )
             elif node.attr == "first":
-                self.writer.write("%sIndex == 0" % frame.forloop_buffer)
+                self.writer.write("(%sIndex == 0)" % frame.forloop_buffer)
             elif node.attr == "last":
                 self.writer.write(
-                    "%sIndex == (%sListLen - 1)" %(frame.forloop_buffer,
-                                                   frame.forloop_buffer))
+                    "(%sIndex == (%sListLen - 1))" %(frame.forloop_buffer,
+                                                     frame.forloop_buffer))
             elif node.attr == "length":
                 self.writer.write("%sListLen" % frame.forloop_buffer)
             else:

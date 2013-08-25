@@ -28,3 +28,9 @@
 {{ loop.revindex0 }}:{{ loop.revindex }}: {{ item.name }}
 {%- endfor %}
 {%- endmacro %}
+
+{% macro forloop_bug_loopfirst(lst) -%}
+{% for item in lst -%}
+{{ loop.first }}:{{ loop.last }}
+{%- endfor %}
+{%- endmacro %}

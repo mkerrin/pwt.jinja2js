@@ -459,7 +459,7 @@ Hello {{ name }}!
     var itemListLen = itemList.length;
     for (var itemIndex = 0; itemIndex < itemListLen; itemIndex++) {
         var itemData = itemList[itemIndex];
-        output.append(itemListLen, ' - ', itemIndex == 0, ' - ', itemIndex == (itemListLen - 1));
+        output.append(itemListLen, ' - ', (itemIndex == 0), ' - ', (itemIndex == (itemListLen - 1)));
     }
     if (!opt_sb) return output.toString();
 };""")
