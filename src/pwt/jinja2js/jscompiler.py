@@ -6,9 +6,16 @@ from jinja2.visitor import NodeVisitor
 import jinja2.nodes
 import jinja2.compiler
 import jinja2.ext
-from jinja2.utils import escape, next
+from jinja2.utils import escape
 
 import nodes
+
+try:
+    next = next
+except NameError:
+    def next(it):
+        return it.next()
+
 
 class Namespace(jinja2.ext.Extension):
     """

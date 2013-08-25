@@ -2238,6 +2238,7 @@ class RecipeTestCase(unittest.TestCase):
         zc.buildout.testing.install_develop("pwt.closure", deggs)
         zc.buildout.testing.install_develop("Jinja2", deggs)
         zc.buildout.testing.install_develop("WebOb", deggs)
+        zc.buildout.testing.install_develop("MarkupSafe", deggs)
 
         os.mkdir(os.path.join(sample, "media"))
 
@@ -2251,6 +2252,8 @@ class RecipeTestCase(unittest.TestCase):
         open(os.path.join(sample, "buildout.cfg"), "w").write("""
 [buildout]
 parts = deps.js
+
+offline = true
 
 [deps.js]
 recipe = pwt.jinja2js:dependency
